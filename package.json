@@ -1,0 +1,12 @@
+{
+  "name": "core-exteriors",
+  "version": "1.0.0",
+  "description": "Premium Exterior Maintenance Website",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx live-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
