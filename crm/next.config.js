@@ -1,14 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Required for Next.js 16+ with Turbopack
-    turbopack: {},
-    webpack: (config) => {
-        config.resolve.alias = {
-            ...config.resolve.alias,
-            '@': __dirname,
-        };
-        return config;
-    },
+    // Next.js 16+ uses Turbopack by default
+    // Module aliases are configured in tsconfig.json
 };
 
 module.exports = nextConfig;
