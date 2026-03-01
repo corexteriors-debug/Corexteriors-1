@@ -304,6 +304,7 @@
         </div>
     </footer>
 
+    <script src="crm-service.js"></script>
     <script src="script.js"></script>
 
     <script>
@@ -311,11 +312,30 @@
         const contactForm = document.getElementById('contactForm');
 
         if (contactForm) {
-            contactForm.addEventListener('submit', (e) => {
+            contactForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                // For now, just show an alert. Later, connect to backend or email service.
-                alert('Thank you for your inquiry! We will contact you within 24 hours.');
-                contactForm.reset();
+
+                const formData = new FormData(contactForm);
+                const leadData = {
+                    name: `${formData.get('firstName')} ${formData.get('lastName')}`,
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    address: formData.get('address'),
+                    service: formData.get('service'),
+                    message: formData.get('message'),
+                    source: 'contact.html'
+                };
+
+                try {
+                    if (window.crmService) {
+                        await window.crmService.saveLead(leadData);
+                    }
+                    alert('Thank you for your inquiry! We will contact you within 24 hours.');
+                    contactForm.reset();
+                } catch (error) {
+                    console.error('Error saving lead:', error);
+                    alert('There was an error sending your request. Please try again or call us directly.');
+                }
             });
         }
     </script>

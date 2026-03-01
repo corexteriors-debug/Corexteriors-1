@@ -273,11 +273,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const quoteForm = document.getElementById('quoteForm');
 
     if (quoteForm) {
-        quoteForm.addEventListener('submit', (e) => {
+        quoteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // For now, just show an alert. Later, connect to backend or email service.
-            alert('Thank you! We will contact you within 24 hours.');
-            quoteForm.reset();
+
+            const formData = new FormData(quoteForm);
+            const leadData = {
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                service: formData.get('service'),
+                source: window.location.pathname.split('/').pop() || 'index.html'
+            };
+
+            try {
+                if (window.crmService) {
+                    await window.crmService.saveLead(leadData);
+                }
+                alert('Thank you! We will contact you within 24 hours.');
+                quoteForm.reset();
+            } catch (error) {
+                console.error('Error saving lead:', error);
+                alert('There was an error sending your request. Please try again or call us directly.');
+            }
         });
     }
 
