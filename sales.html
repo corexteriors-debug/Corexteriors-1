@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Portal | Core Exteriors</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#e67e22">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a1628, #1a2a4a, #0d1f3c);
+            min-height: 100vh;
+            color: #fff
+        }
+
+        /* LOGIN */
+        .portal-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+        }
+
+        .login-card h1 {
+            font-size: 1.8rem;
+            margin-bottom: .5rem
+        }
+
+        .login-card .subtitle {
+            color: rgba(255, 255, 255, .5);
+            margin-bottom: 2rem;
+            font-size: .95rem
+        }
+
+        .login-card input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color .3s
+        }
+
+        .login-card input[type="password"]:focus {
+            border-color: #3498db
+        }
+
+        .login-card .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform .2s, box-shadow .2s;
+            font-family: 'Inter', sans-serif
+        }
+
+        .login-card .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, .4)
+        }
+
+        .login-error {
+            color: #e74c3c;
+            margin-top: 1rem;
+            font-size: .9rem;
+            display: none
+        }
+
+        .admin-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: rgba(255, 255, 255, .3);
+            font-size: .8rem;
+            text-decoration: none;
+            transition: color .3s
+        }
+
+        .admin-link:hover {
+            color: rgba(255, 255, 255, .6)
+        }
+
+        /* ESTIMATOR */
+        .estimator-wrapper {
+            display: none;
+            padding: 1.5rem;
+            padding-bottom: 200px
+        }
+
+        .estimator-container {
+            max-width: 900px;
+            margin: 0 auto
+        }
+
+        .est-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem
+        }
+
+        .est-header h1 {
+            font-size: 1.6rem
+        }
+
+        .header-actions {
+            display: flex;
+            gap: .75rem;
+            align-items: center
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, .2);
+            background: rgba(255, 255, 255, .1);
+            color: #fff;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: .85rem;
+            transition: background .3s
+        }
+
+        .btn-sm:hover {
+            background: rgba(255, 255, 255, .2)
+        }
+
+        .btn-sm.danger {
+            color: #e74c3c;
+            border-color: rgba(231, 76, 60, .3);
+            background: rgba(231, 76, 60, .1)
+        }
+
+        .btn-sm.danger:hover {
+            background: rgba(231, 76, 60, .25)
+        }
+
+        /* SECTIONS */
+        .section {
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .2)
+        }
+
+        .section h2 {
+            font-size: 1.15rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem
+        }
+
+        .section h2 .icon {
+            font-size: 1.3rem
+        }
+
+        /* FORM INPUTS */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem
+        }
+
+        @media(max-width:600px) {
+            .form-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: .3rem
+        }
+
+        .field.full {
+            grid-column: 1/-1
+        }
+
+        .field label {
+            color: rgba(255, 255, 255, .7);
+            font-size: .8rem;
+            font-weight: 500
+        }
+
+        .field label .req {
+            color: #e74c3c
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            font-size: .9rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color .3s
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            border-color: #3498db
+        }
+
+        .field select option {
+            background: #1a2a4a
+        }
+
+        .field textarea {
+            resize: vertical;
+            min-height: 70px
+        }
+
+        /* SERVICE CHECKLIST */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .75rem
+        }
+
+        @media(max-width:700px) {
+            .service-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media(max-width:450px) {
+            .service-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .service-check {
+            position: relative
+        }
+
+        .service-check input {
+            display: none
+        }
+
+        .service-check label {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all .3s;
+            background: rgba(255, 255, 255, .04);
+            font-size: .9rem;
+            font-weight: 500
+        }
+
+        .service-check input:checked+label {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, .15);
+            box-shadow: 0 0 15px rgba(52, 152, 219, .15)
+        }
+
+        .service-check label .check-icon {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, .3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .3s;
+            flex-shrink: 0
+        }
+
+        .service-check input:checked+label .check-icon {
+            border-color: #3498db;
+            background: #3498db
+        }
+
+        .service-check input:checked+label .check-icon::after {
+            content: '✓';
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .bundle-badge {
+            display: none;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: .85rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: .75rem;
+            animation: fadeIn .3s
+        }
+
+        .bundle-badge.show {
+            display: block
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* SERVICE CARDS */
+        .service-card {
+            display: none;
+            animation: slideDown .3s ease
+        }
+
+        .service-card.active {
+            display: block
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .service-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem
+        }
+
+        .service-card .card-header h3 {
+            font-size: 1rem;
+            color: #fff
+        }
+
+        .service-card .card-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2ecc71
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: 8px 0
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0
+        }
+
+        .toggle input {
+            display: none
+        }
+
+        .toggle .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, .15);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .3s
+        }
+
+        .toggle .slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .3s
+        }
+
+        .toggle input:checked+.slider {
+            background: #3498db
+        }
+
+        .toggle input:checked+.slider::before {
+            transform: translateX(20px)
+        }
+
+        .toggle-label {
+            font-size: .85rem;
+            color: rgba(255, 255, 255, .7)
+        }
+
+        .slider-input {
+            width: 100%
+        }
+
+        .slider-input input[type="range"] {
+            width: 100%;
+            accent-color: #3498db;
+            cursor: pointer
+        }
+
+        .slider-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .4);
+            margin-top: 2px
+        }
+
+        .radio-group {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap
+        }
+
+        .radio-pill input {
+            display: none
+        }
+
+        .radio-pill label {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: .82rem;
+            transition: all .3s;
+            background: rgba(255, 255, 255, .04)
+        }
+
+        .radio-pill input:checked+label {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, .2);
+            color: #fff
+        }
+
+        /* CONDITION SWITCH */
+        .rotten-notice {
+            background: rgba(231, 76, 60, .12);
+            border: 1px solid rgba(231, 76, 60, .25);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: .5rem;
+            font-size: .82rem;
+            color: #e74c3c;
+            display: none
+        }
+
+        .rotten-notice.show {
+            display: block
+        }
+
+        /* HAZARD CHECKLIST */
+        .hazard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem
+        }
+
+        .hazard-item {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 8px;
+            font-size: .82rem;
+            cursor: pointer;
+            transition: all .3s
+        }
+
+        .hazard-item input {
+            display: none
+        }
+
+        .hazard-item.checked {
+            border-color: #e67e22;
+            background: rgba(230, 126, 34, .12)
+        }
+
+        /* PHOTO UPLOAD */
+        .upload-zone {
+            border: 2px dashed rgba(255, 255, 255, .15);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all .3s;
+            color: rgba(255, 255, 255, .4);
+            font-size: .9rem
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, .05);
+            color: rgba(255, 255, 255, .6)
+        }
+
+        .upload-zone input {
+            display: none
+        }
+
+        .photo-previews {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            margin-top: .75rem
+        }
+
+        .photo-previews img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, .15)
+        }
+
+        /* LEGAL */
+        .legal-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .05)
+        }
+
+        .legal-item:last-child {
+            border-bottom: none
+        }
+
+        .legal-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3498db;
+            flex-shrink: 0;
+            margin-top: 2px;
+            cursor: pointer
+        }
+
+        .legal-item label {
+            font-size: .85rem;
+            color: rgba(255, 255, 255, .7);
+            cursor: pointer
+        }
+
+        .legal-item.error label {
+            color: #e74c3c
+        }
+
+        /* SIGNATURE */
+        .sig-wrapper {
+            position: relative
+        }
+
+        .sig-pad {
+            border: 2px solid rgba(255, 255, 255, .2);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .95);
+            cursor: crosshair;
+            touch-action: none;
+            width: 100%;
+            height: 180px;
+            display: block
+        }
+
+        .sig-pad.signing {
+            border-color: #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, .2)
+        }
+
+        .sig-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            color: rgba(0, 0, 0, .15);
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: opacity .3s
+        }
+
+        .sig-placeholder.hidden {
+            opacity: 0
+        }
+
+        .sig-line {
+            position: absolute;
+            bottom: 40px;
+            left: 30px;
+            right: 30px;
+            height: 1px;
+            background: rgba(0, 0, 0, .15);
+            pointer-events: none
+        }
+
+        .sig-line-label {
+            position: absolute;
+            bottom: 24px;
+            left: 30px;
+            font-size: .65rem;
+            color: rgba(0, 0, 0, .25);
+            pointer-events: none;
+            letter-spacing: .05em
+        }
+
+        .sig-actions {
+            display: flex;
+            gap: .5rem;
+            margin-top: .75rem;
+            align-items: center
+        }
+
+        .sig-actions .btn-sm {
+            padding: 8px 18px
+        }
+
+        .sig-status {
+            margin-left: auto;
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .3)
+        }
+
+        /* STICKY FOOTER */
+        .estimate-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 22, 40, .95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            padding: 1rem 2rem;
+            z-index: 100;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, .4)
+        }
+
+        .footer-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .75rem
+        }
+
+        .footer-breakdown {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap
+        }
+
+        .footer-item {
+            text-align: center
+        }
+
+        .footer-item .lbl {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .4);
+            text-transform: uppercase;
+            letter-spacing: .05em
+        }
+
+        .footer-item .val {
+            font-size: 1.15rem;
+            font-weight: 700
+        }
+
+        .footer-item .val.total {
+            color: #2ecc71;
+            font-size: 1.4rem
+        }
+
+        .footer-item .val.discount {
+            color: #e67e22
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: .5rem
+        }
+
+        .submit-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: transform .2s, box-shadow .2s
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, .4)
+        }
+
+        .submit-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        .pdf-btn {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, .1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 12px;
+            font-size: .9rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all .3s
+        }
+
+        .pdf-btn:hover {
+            background: rgba(255, 255, 255, .2)
+        }
+
+        /* ESTIMATE ID */
+        .estimate-id {
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .3);
+            text-align: right;
+            margin-bottom: .5rem
+        }
+
+        /* MESSAGES */
+        .msg {
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+            font-size: .9rem;
+            animation: fadeIn .3s
+        }
+
+        .msg.success {
+            background: rgba(39, 174, 96, .15);
+            border: 1px solid rgba(39, 174, 96, .3);
+            color: #2ecc71;
+            display: block
+        }
+
+        .msg.error {
+            background: rgba(231, 76, 60, .15);
+            border: 1px solid rgba(231, 76, 60, .3);
+            color: #e74c3c;
+            display: block
+        }
+
+        /* DRAFT INDICATOR */
+        .draft-indicator {
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .3);
+            text-align: center;
+            padding: .5rem
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOGIN -->
+    <div class="portal-wrapper" id="loginScreen">
+        <div class="login-card">
+            <h1>Sales Portal</h1>
+            <p class="subtitle">Core Exteriors — Internal Use Only</p>
+            <form id="loginForm">
+                <input type="text" id="repName" placeholder="Your Name" autocomplete="name" required
+                    style="width:100%;padding:14px 18px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:1rem;font-family:'Inter',sans-serif;outline:none;margin-bottom:.75rem;transition:border-color .3s">
+                <div style="position:relative">
+                    <input type="password" id="salesPassword" placeholder="Sales Password" autocomplete="current-password"
+                        required style="width:100%;padding:14px 18px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:1rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .3s;padding-right:50px">
+                    <button type="button" id="toggleSalesPw" onclick="togglePw('salesPassword','toggleSalesPw')"
+                        style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:1.1rem;padding:4px">👁</button>
+                </div>
+                <button type="submit" class="login-btn" style="margin-top:.75rem">Sign In</button>
+            </form>
+            <p class="login-error" id="loginError">Invalid password. Please try again.</p>
+            <a href="admin.html" class="admin-link">Manager access →</a>
+        </div>
+    </div>
+
+    <!-- ESTIMATOR -->
+    <div class="estimator-wrapper" id="estimatorScreen">
+        <div class="estimator-container">
+            <div class="est-header">
+                <h1>📋 New Estimate</h1>
+                <div class="header-actions">
+                    <button class="btn-sm" id="newEstBtn">+ New</button>
+                    <button class="btn-sm danger" id="logoutBtn">Sign Out</button>
+                </div>
+            </div>
+            <p class="estimate-id" id="estimateId"></p>
+
+            <!-- CLIENT INFO -->
+            <div class="section">
+                <h2><span class="icon">👤</span> Client Information</h2>
+                <div class="form-grid">
+                    <div class="field"><label>Client Name <span class="req">*</span></label><input type="text"
+                            id="clientName"></div>
+                    <div class="field"><label>Phone <span class="req">*</span></label><input type="tel"
+                            id="clientPhone"></div>
+                    <div class="field"><label>Email <span class="req">*</span></label><input type="email"
+                            id="clientEmail" required></div>
+                    <div class="field"><label>Property Address <span class="req">*</span></label><input type="text"
+                            id="clientAddress"></div>
+                </div>
+            </div>
+
+            <!-- SERVICE CHECKLIST -->
+            <div class="section">
+                <h2><span class="icon">🛠️</span> Services</h2>
+                <div class="service-grid">
+                    <div class="service-check"><input type="checkbox" id="svc_deck"
+                            onchange="toggleService('deck')"><label for="svc_deck"><span class="check-icon"></span>Deck
+                            Restoration</label></div>
+                    <div class="service-check"><input type="checkbox" id="svc_gutter"
+                            onchange="toggleService('gutter')"><label for="svc_gutter"><span
+                                class="check-icon"></span>Gutter Cleaning</label></div>
+                    <div class="service-check"><input type="checkbox" id="svc_interlock"
+                            onchange="toggleService('interlock')"><label for="svc_interlock"><span
+                                class="check-icon"></span>Interlock</label></div>
+                    <div class="service-check"><input type="checkbox" id="svc_window"
+                            onchange="toggleService('window')"><label for="svc_window"><span
+                                class="check-icon"></span>Windows</label></div>
+                    <div class="service-check"><input type="checkbox" id="svc_siding"
+                            onchange="toggleService('siding')"><label for="svc_siding"><span
+                                class="check-icon"></span>Siding</label></div>
+                    <div class="service-check"><input type="checkbox" id="svc_garden"
+                            onchange="toggleService('garden')"><label for="svc_garden"><span
+                                class="check-icon"></span>Garden</label></div>
+                </div>
+                <div class="bundle-badge" id="bundleBadge">🎉 Bundle Discount Applied: $50 off for multiple services!
+                </div>
+            </div>
+
+            <!-- DECK RESTORATION CARD -->
+            <div class="service-card" id="card_deck">
+                <div class="section">
+                    <div class="card-header">
+                        <h3>🪵 Deck Restoration</h3><span class="card-price" id="price_deck">$0.00</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="field" id="deckSqftField"><label>Square Footage <span
+                                    class="req">*</span></label><input type="number" id="deck_sqft" min="0"
+                                oninput="calcAll()"></div>
+                        <div class="field" id="deckLinftField" style="display:none"><label>Linear Feet (Rotten) <span
+                                    class="req">*</span></label><input type="number" id="deck_linft" min="0"
+                                oninput="calcAll()"></div>
+                        <div class="field">
+                            <label>Condition: <span id="deckCondLabel">3</span></label>
+                            <div class="slider-input"><input type="range" id="deck_condition" min="0" max="5" value="3"
+                                    oninput="deckConditionChange()">
+                                <div class="slider-info"><span>0 (Rotten)</span><span>5 (Excellent)</span></div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Stain Tier: <span id="deckStainLabel">1</span></label>
+                            <div class="slider-input"><input type="range" id="deck_stain" min="1" max="5" value="1"
+                                    oninput="document.getElementById('deckStainLabel').textContent=this.value;calcAll()">
+                                <div class="slider-info"><span>1 (Light)</span><span>5 (Heavy)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="toggle"><input type="checkbox" id="deck_rails" onchange="calcAll()"><span
+                                class="slider"></span></label>
+                        <span class="toggle-label">Rails or Stairs (adds $0.60/sqft)</span>
+                    </div>
+                    <div class="rotten-notice" id="rottenNotice">⚠️ Condition 0 (Rotten): Pricing switches to Linear
+                        Foot at $12.50/ft</div>
+                </div>
+            </div>
+
+            <!-- GUTTER CLEANING CARD -->
+            <div class="service-card" id="card_gutter">
+                <div class="section">
+                    <div class="card-header">
+                        <h3>🏠 Gutter Cleaning</h3><span class="card-price" id="price_gutter">$0.00</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Stories <span class="req">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_1"
+                                        value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story
+                                        ($275)</label></div>
+                                <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_2"
+                                        value="2" onchange="calcAll()"><label for="gutter_2">2 Story ($475)</label>
+                                </div>
+                                <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_3"
+                                        value="3" onchange="calcAll()"><label for="gutter_3">3 Story ($675)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="toggle"><input type="checkbox" id="gutter_deep" onchange="calcAll()"><span
+                                class="slider"></span></label>
+                        <span class="toggle-label">Deep Clean (+$100 base + $50 per floor)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTERLOCK CARD -->
+            <div class="service-card" id="card_interlock">
+                <div class="section">
+                    <div class="card-header">
+                        <h3>🧱 Interlock Restoration</h3><span class="card-price" id="price_interlock">$0.00</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="field"><label>Square Footage <span class="req">*</span></label><input type="number"
+                                id="interlock_sqft" min="0" oninput="calcAll()"></div>
+                        <div class="field">
+                            <label>Re leveling Severity</label>
+                            <select id="interlock_severity" onchange="calcAll()">
+                                <option value="none">None (Base $2.05/sqft)</option>
+                                <option value="minor">Minor ($2.60/sqft total)</option>
+                                <option value="moderate">Moderate ($3.25/sqft total)</option>
+                                <option value="significant">Significant ($4.10/sqft total)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="toggle"><input type="checkbox" id="interlock_seal" onchange="calcAll()"><span
+                                class="slider"></span></label>
+                        <span class="toggle-label">Sealing (+$250 flat + materials)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WINDOW CLEANING CARD -->
+            <div class="service-card" id="card_window">
+                <div class="section">
+                    <div class="card-header">
+                        <h3>🪟 Window Cleaning</h3><span class="card-price" id="price_window">$0.00</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="field"><label>Number of Windows <span class="req">*</span></label><input
+                                type="number" id="window_count" min="0" oninput="calcAll()"></div>
+                        <div class="field">
+                            <label>Type</label>
+                            <div class="radio-group">
+                                <div class="radio-pill"><input type="radio" name="window_type" id="window_ext"
+                                        value="exterior" onchange="calcAll()" checked><label for="window_ext">Exterior
+                                        ($7.50/unit)</label></div>
+                                <div class="radio-pill"><input type="radio" name="window_type" id="window_full"
+                                        value="full" onchange="calcAll()"><label for="window_full">Full
+                                        ($9.50/unit)</label></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:.5rem">Minimum fee: $100</p>
+                </div>
+            </div>
+
+            <!-- SIDING CARD -->
+            <div class="service-card" id="card_siding">
+                <div class="section">
+                    <div class="card-header">
+                        <h3>🏡 Siding (Soft Wash)</h3><span class="card-price" id="price_siding">$0.00</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Stories <span class="req">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_1"
+                                        value="1" onchange="calcAll()" checked><label for="siding_1">1 Story
+                                        ($250)</label></div>
+                                <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_2"
+                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($350)</label>
+                                </div>
+                                <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_3"
+                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($450)</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Condition</label>
+                            <div class="radio-group">
+                                <div class="radio-pill"><input type="radio" name="siding_cond" id="siding_good"
+                                        value="good" onchange="calcAll()" checked><label for="siding_good">Good
+                                        (+$150)</label></div>
+                                <div class="radio-pill"><input type="radio" name="siding_cond" id="siding_poor"
+                                        value="poor" onchange="calcAll()"><label for="siding_poor">Poor (+$250)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GARDEN CARD -->
+            <div class="service-card" id="card_garden">
+                <div class="section">
+                    <div class="card-header">
+                        <h3>🌿 Garden Maintenance</h3><span class="card-price" id="price_garden">$0.00</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="field"><label>Mulch (cubic yards)</label><input type="number" id="garden_mulch"
+                                min="0" step="0.5" oninput="calcAll()"></div>
+                        <div class="field">
+                            <label>Weeding</label>
+                            <select id="garden_weeding" onchange="calcAll()">
+                                <option value="none">None</option>
+                                <option value="front">Front ($250 + $65 Enviro Fee)</option>
+                                <option value="back">Back ($450 + $65 Enviro Fee)</option>
+                            </select>
+                        </div>
+                        <div class="field"><label>Overgrowth (hours)</label><input type="number" id="garden_overgrowth"
+                                min="0" step="0.5" oninput="calcAll()"></div>
+                        <div class="field"><label>Edging (linear feet)</label><input type="number" id="garden_edging"
+                                min="0" oninput="calcAll()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SITE SURVEY -->
+            <div class="section">
+                <h2><span class="icon">📍</span> Site Survey</h2>
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Address Type (London By law W 8)</label>
+                        <select id="addressType">
+                            <option value="">Select</option>
+                            <option value="even">Even Address</option>
+                            <option value="odd">Odd Address</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Scheduled Visit Date</label>
+                        <input type="datetime-local" id="visitDate">
+                    </div>
+                    <div class="field">
+                        <label>Water Access</label>
+                        <div class="radio-group">
+                            <div class="radio-pill"><input type="radio" name="water" id="water_yes" value="yes"
+                                    checked><label for="water_yes">Yes</label></div>
+                            <div class="radio-pill"><input type="radio" name="water" id="water_no" value="no"><label
+                                    for="water_no">No</label></div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Power Access</label>
+                        <div class="radio-group">
+                            <div class="radio-pill"><input type="radio" name="power" id="power_yes" value="yes"
+                                    checked><label for="power_yes">Yes</label></div>
+                            <div class="radio-pill"><input type="radio" name="power" id="power_no" value="no"><label
+                                    for="power_no">No</label></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field full" style="margin-top:.75rem">
+                    <label>Hazards</label>
+                    <div class="hazard-grid" id="hazardGrid">
+                        <label class="hazard-item" onclick="this.classList.toggle('checked')"><input type="checkbox"
+                                value="Pets">🐕 Pets</label>
+                        <label class="hazard-item" onclick="this.classList.toggle('checked')"><input type="checkbox"
+                                value="Bees/Wasps">🐝 Bees/Wasps</label>
+                        <label class="hazard-item" onclick="this.classList.toggle('checked')"><input type="checkbox"
+                                value="Slope">⛰️ Slope</label>
+                        <label class="hazard-item" onclick="this.classList.toggle('checked')"><input type="checkbox"
+                                value="Overhead Wires">⚡ Overhead Wires</label>
+                        <label class="hazard-item" onclick="this.classList.toggle('checked')"><input type="checkbox"
+                                value="Fragile Landscaping">🌺 Fragile Landscaping</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHOTOS -->
+            <div class="section">
+                <h2><span class="icon">📸</span> Site Photos</h2>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('photoInput').click()">
+                    <input type="file" id="photoInput" multiple accept="image/*">
+                    📁 Click or drag photos here (before/after evidence)
+                </div>
+                <div class="photo-previews" id="photoPreviews"></div>
+            </div>
+
+            <!-- LEGAL -->
+            <div class="section">
+                <h2><span class="icon">⚖️</span> Legal Checkpoints</h2>
+                <div class="legal-item" id="legal1wrap"><input type="checkbox" id="legal_cooling"><label
+                        for="legal_cooling">10 day cooling off period acknowledged by client</label></div>
+                <div class="legal-item" id="legal2wrap"><input type="checkbox" id="legal_wsib"><label
+                        for="legal_wsib">WSIB/Insurance disclosure provided to client</label></div>
+                <div class="legal-item" id="legal3wrap"><input type="checkbox" id="legal_deposit"><label
+                        for="legal_deposit">25% Deposit Received</label></div>
+            </div>
+
+            <!-- SIGNATURE -->
+            <div class="section">
+                <h2><span class="icon">✍️</span> Client Signature</h2>
+                <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:.75rem">Have the client sign below to
+                    acknowledge the estimate</p>
+                <div class="sig-wrapper">
+                    <canvas class="sig-pad" id="sigCanvas"></canvas>
+                    <div class="sig-placeholder" id="sigPlaceholder">✍️ Sign here</div>
+                    <div class="sig-line"></div>
+                    <div class="sig-line-label">CLIENT SIGNATURE</div>
+                </div>
+                <div class="sig-actions">
+                    <button class="btn-sm" id="undoSig" type="button">↩ Undo</button>
+                    <button class="btn-sm danger" id="clearSig" type="button">✕ Clear</button>
+                    <span class="sig-status" id="sigStatus"></span>
+                </div>
+            </div>
+
+            <!-- COLLECT PAYMENT -->
+            <div class="section">
+                <h2><span class="icon">💳</span> Collect Payment</h2>
+                <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:.75rem">Optional — collect deposit or
+                    full payment</p>
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Payment Type</label>
+                        <select id="paymentType" onchange="updatePaymentAmount()">
+                            <option value="none">No Payment Now</option>
+                            <option value="deposit">25% Deposit</option>
+                            <option value="full">Full Payment</option>
+                            <option value="custom">Custom Amount</option>
+                        </select>
+                    </div>
+                    <div class="field" id="payMethodField" style="display:none">
+                        <label>Payment Method</label>
+                        <select id="paymentMethod" onchange="updatePaymentButton()">
+                            <option value="card">💳 Credit/Debit Card</option>
+                            <option value="cash">💵 Cash</option>
+                            <option value="cheque">📝 Cheque</option>
+                            <option value="etransfer">📧 E-Transfer</option>
+                        </select>
+                    </div>
+                    <div class="field" id="customAmountField" style="display:none">
+                        <label>Custom Amount ($)</label>
+                        <input type="number" id="customPayAmount" placeholder="0.00" step="0.01" min="0.50">
+                    </div>
+                </div>
+                <div id="paymentPreview"
+                    style="display:none;margin-top:.75rem;padding:1rem;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+                        <div>
+                            <div style="font-size:.85rem;color:rgba(255,255,255,.5)">Amount to collect</div>
+                            <div style="font-size:1.5rem;font-weight:800;color:#2ecc71" id="payAmountDisplay">$0.00
+                            </div>
+                        </div>
+                        <button type="button" class="btn-sm"
+                            style="background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;padding:10px 24px;border-radius:10px;font-weight:600;border:none;cursor:pointer;font-size:.9rem"
+                            id="collectPayBtn" onclick="collectPayment()">
+                            💳 Send Payment Link
+                        </button>
+                    </div>
+                    <p style="font-size:.75rem;color:rgba(255,255,255,.3);margin-top:.5rem" id="paymentHint">Client receives a secure Stripe payment link via email & text — link is not shown here</p>
+                </div>
+            </div>
+
+            <!-- REP & NOTES -->
+            <div class="section">
+                <h2><span class="icon">📝</span> Estimate Details</h2>
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Sales Rep <span class="req">*</span></label>
+                        <input type="text" id="salesRep" placeholder="Your full name" required>
+                    </div>
+                    <div class="field"><label>Notes</label><textarea id="estNotes"
+                            placeholder="Additional details..."></textarea></div>
+                </div>
+            </div>
+
+            <div class="draft-indicator" id="draftIndicator"></div>
+            <div class="msg" id="submitMsg"></div>
+        </div>
+    </div>
+
+    <!-- STICKY FOOTER -->
+    <div class="estimate-footer" id="estFooter" style="display:none">
+        <div class="footer-inner">
+            <div class="footer-breakdown">
+                <div class="footer-item">
+                    <div class="lbl">Services</div>
+                    <div class="val" id="footerServices">0</div>
+                </div>
+                <div class="footer-item" id="discountItem" style="display:none">
+                    <div class="lbl">Bundle Discount</div>
+                    <div class="val discount" id="footerDiscount">-$50</div>
+                </div>
+                <div class="footer-item">
+                    <div class="lbl">Subtotal</div>
+                    <div class="val" id="footerSubtotal">$0.00</div>
+                </div>
+                <div class="footer-item">
+                    <div class="lbl">HST (13%)</div>
+                    <div class="val" id="footerHST">$0.00</div>
+                </div>
+                <div class="footer-item">
+                    <div class="lbl">Total</div>
+                    <div class="val total" id="footerTotal">$0.00</div>
+                </div>
+            </div>
+            <div class="footer-actions">
+                <button class="pdf-btn" onclick="exportPDF()">📄 PDF</button>
+                <button class="submit-btn" id="submitEstBtn" onclick="submitEstimate()">Submit Estimate</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let authToken = localStorage.getItem('sales_token') || '';
+        let repName = localStorage.getItem('sales_rep_name') || '';
+        let estimateNumber = '';
+
+        if (authToken) showEstimator();
+
+        // Toggle password visibility
+        function togglePw(inputId, btnId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+            if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+            else { input.type = 'password'; btn.textContent = '👁'; }
+        }
+
+        // Generate estimate ID
+        function genEstimateId() {
+            const d = new Date(); const n = d.getFullYear().toString() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+            const r = Math.floor(Math.random() * 900) + 100;
+            estimateNumber = 'CE ' + n + ' ' + r;
+            document.getElementById('estimateId').textContent = 'Estimate #' + estimateNumber;
+        }
+
+        // LOGIN
+        document.getElementById('loginForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const name = document.getElementById('repName').value.trim();
+            const pw = document.getElementById('salesPassword').value;
+            const err = document.getElementById('loginError'); err.style.display = 'none';
+            if (!name) { err.textContent = 'Please enter your name.'; err.style.display = 'block'; return; }
+            try {
+                const r = await fetch(API_BASE + '/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw, role: 'sales', repName: name }) });
+                const d = await r.json();
+                if (d.success) {
+                    authToken = d.token;
+                    repName = name;
+                    localStorage.setItem('sales_token', authToken);
+                    localStorage.setItem('sales_rep_name', repName);
+                    showEstimator();
+                } else {
+                    err.textContent = d.error || 'Invalid password. Please try again.';
+                    err.style.display = 'block';
+                }
+            } catch (e) { err.textContent = 'Connection error.'; err.style.display = 'block' }
+        });
+
+        function showEstimator() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('estimatorScreen').style.display = 'block';
+            document.getElementById('estFooter').style.display = 'block';
+            // Show rep name in header
+            const headerEl = document.querySelector('.est-header h1');
+            if (headerEl && repName) headerEl.textContent = '📋 New Estimate — ' + repName;
+            genEstimateId(); loadDraft();
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            authToken = ''; repName = '';
+            localStorage.removeItem('sales_token');
+            localStorage.removeItem('sales_rep_name');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('estimatorScreen').style.display = 'none';
+            document.getElementById('estFooter').style.display = 'none';
+        });
+
+        document.getElementById('newEstBtn').addEventListener('click', () => {
+            if (confirm('Start a new estimate? Current data will be cleared.')) { clearForm(); genEstimateId() }
+        });
+
+        // SERVICE TOGGLE
+        function toggleService(svc) {
+            const card = document.getElementById('card_' + svc);
+            const checked = document.getElementById('svc_' + svc).checked;
+            if (checked) { card.classList.add('active') } else { card.classList.remove('active') }
+            updateBundle(); calcAll();
+        }
+
+        function updateBundle() {
+            const svcs = document.querySelectorAll('.service-check input:checked');
+            const badge = document.getElementById('bundleBadge');
+            const discountItem = document.getElementById('discountItem');
+            const count = svcs.length;
+            document.getElementById('footerServices').textContent = count;
+            if (count > 1) { badge.classList.add('show'); discountItem.style.display = 'block' }
+            else { badge.classList.remove('show'); discountItem.style.display = 'none' }
+        }
+
+        // DECK CONDITION CHANGE
+        function deckConditionChange() {
+            const val = parseInt(document.getElementById('deck_condition').value);
+            document.getElementById('deckCondLabel').textContent = val;
+            const sqftField = document.getElementById('deckSqftField');
+            const linftField = document.getElementById('deckLinftField');
+            const notice = document.getElementById('rottenNotice');
+            if (val === 0) { sqftField.style.display = 'none'; linftField.style.display = 'flex'; notice.classList.add('show') }
+            else { sqftField.style.display = 'flex'; linftField.style.display = 'none'; notice.classList.remove('show') }
+            calcAll();
+        }
+
+        // PRICING ENGINE
+        function calcAll() {
+            let subtotal = 0;
+            // DECK
+            if (document.getElementById('svc_deck').checked) {
+                const cond = parseInt(document.getElementById('deck_condition').value);
+                let deckPrice = 0;
+                if (cond === 0) {
+                    const linft = parseFloat(document.getElementById('deck_linft').value) || 0;
+                    deckPrice = linft * 12.50;
+                } else {
+                    const sqft = parseFloat(document.getElementById('deck_sqft').value) || 0;
+                    let rate = 3.00;
+                    if (cond >= 4) rate += 0.05;
+                    else if (cond >= 1) rate += 0.20;
+                    const stain = parseInt(document.getElementById('deck_stain').value);
+                    if (stain <= 2) rate += 0.05;
+                    else rate += 0.15;
+                    if (document.getElementById('deck_rails').checked) rate += 0.60;
+                    deckPrice = sqft * rate;
+                }
+                document.getElementById('price_deck').textContent = '$' + deckPrice.toFixed(2);
+                subtotal += deckPrice;
+            } else { document.getElementById('price_deck').textContent = '$0.00' }
+
+            // GUTTER
+            if (document.getElementById('svc_gutter').checked) {
+                const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
+                const base = { 1: 275, 2: 475, 3: 675 }[stories] || 275;
+                let gutterPrice = base;
+                if (document.getElementById('gutter_deep').checked) {
+                    gutterPrice += 100 + (parseInt(stories) * 50);
+                }
+                document.getElementById('price_gutter').textContent = '$' + gutterPrice.toFixed(2);
+                subtotal += gutterPrice;
+            } else { document.getElementById('price_gutter').textContent = '$0.00' }
+
+            // INTERLOCK
+            if (document.getElementById('svc_interlock').checked) {
+                const sqft = parseFloat(document.getElementById('interlock_sqft').value) || 0;
+                const sev = document.getElementById('interlock_severity').value;
+                const rates = { none: 2.05, minor: 2.60, moderate: 3.25, significant: 4.10 };
+                let intPrice = sqft * (rates[sev] || 2.05);
+                if (document.getElementById('interlock_seal').checked) intPrice += 250;
+                document.getElementById('price_interlock').textContent = '$' + intPrice.toFixed(2);
+                subtotal += intPrice;
+            } else { document.getElementById('price_interlock').textContent = '$0.00' }
+
+            // WINDOW
+            if (document.getElementById('svc_window').checked) {
+                const count = parseInt(document.getElementById('window_count').value) || 0;
+                const type = document.querySelector('input[name="window_type"]:checked').value;
+                const rate = type === 'full' ? 9.50 : 7.50;
+                let winPrice = Math.max(count * rate, count > 0 ? 100 : 0);
+                document.getElementById('price_window').textContent = '$' + winPrice.toFixed(2);
+                subtotal += winPrice;
+            } else { document.getElementById('price_window').textContent = '$0.00' }
+
+            // SIDING
+            if (document.getElementById('svc_siding').checked) {
+                const stories = document.querySelector('input[name="siding_stories"]:checked').value;
+                const base = { 1: 250, 2: 350, 3: 450 }[stories] || 250;
+                const cond = document.querySelector('input[name="siding_cond"]:checked').value;
+                const condAdd = cond === 'poor' ? 250 : 150;
+                let sidPrice = base + condAdd;
+                document.getElementById('price_siding').textContent = '$' + sidPrice.toFixed(2);
+                subtotal += sidPrice;
+            } else { document.getElementById('price_siding').textContent = '$0.00' }
+
+            // GARDEN
+            if (document.getElementById('svc_garden').checked) {
+                let gardenPrice = 0;
+                const mulch = parseFloat(document.getElementById('garden_mulch').value) || 0;
+                gardenPrice += mulch * 185;
+                const weeding = document.getElementById('garden_weeding').value;
+                if (weeding === 'front') gardenPrice += 250 + 65;
+                else if (weeding === 'back') gardenPrice += 450 + 65;
+                const overgrowth = parseFloat(document.getElementById('garden_overgrowth').value) || 0;
+                gardenPrice += overgrowth * 85;
+                const edging = parseFloat(document.getElementById('garden_edging').value) || 0;
+                gardenPrice += edging * 2.50;
+                document.getElementById('price_garden').textContent = '$' + gardenPrice.toFixed(2);
+                subtotal += gardenPrice;
+            } else { document.getElementById('price_garden').textContent = '$0.00' }
+
+            // BUNDLE DISCOUNT
+            const svcCount = document.querySelectorAll('.service-check input:checked').length;
+            const discount = svcCount > 1 ? 50 : 0;
+
+            const finalSubtotal = subtotal - discount;
+            const hst = finalSubtotal * 0.13;
+            const total = finalSubtotal + hst;
+
+            document.getElementById('footerSubtotal').textContent = '$' + finalSubtotal.toFixed(2);
+            document.getElementById('footerHST').textContent = '$' + hst.toFixed(2);
+            document.getElementById('footerTotal').textContent = '$' + total.toFixed(2);
+
+            saveDraft();
+        }
+
+        // PHOTO UPLOAD
+        const uploadZone = document.getElementById('uploadZone');
+        const photoInput = document.getElementById('photoInput');
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover') });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files) });
+        photoInput.addEventListener('change', e => handleFiles(e.target.files));
+
+        function handleFiles(files) {
+            const prev = document.getElementById('photoPreviews');
+            Array.from(files).forEach(f => {
+                if (!f.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = e => { const img = document.createElement('img'); img.src = e.target.result; prev.appendChild(img) };
+                reader.readAsDataURL(f);
+            });
+        }
+
+        // SIGNATURE PAD (enhanced)
+        const canvas = document.getElementById('sigCanvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let sigHistory = [];
+        let currentStroke = [];
+        let hasSigned = false;
+
+        function resizeCanvas() {
+            const saved = canvas.toDataURL();
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width; canvas.height = 180;
+            ctx.strokeStyle = '#1a2a4a';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            // Restore drawing after resize
+            if (hasSigned) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0);
+                img.src = saved;
+            }
+        }
+        resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
+            const y = (e.clientY || e.touches?.[0]?.clientY || 0) - rect.top;
+            return { x, y };
+        }
+
+        function startDraw(e) {
+            e.preventDefault();
+            drawing = true;
+            const pos = getPos(e);
+            currentStroke = [pos];
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            canvas.classList.add('signing');
+            document.getElementById('sigPlaceholder').classList.add('hidden');
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            currentStroke.push(pos);
+            // Smooth Bezier curves
+            if (currentStroke.length > 2) {
+                const last = currentStroke.length - 1;
+                const cp = currentStroke[last - 1];
+                const ep = { x: (cp.x + pos.x) / 2, y: (cp.y + pos.y) / 2 };
+                ctx.quadraticCurveTo(cp.x, cp.y, ep.x, ep.y);
+                ctx.stroke();
+            } else {
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            }
+        }
+
+        function endDraw() {
+            if (!drawing) return;
+            drawing = false;
+            canvas.classList.remove('signing');
+            if (currentStroke.length > 1) {
+                sigHistory.push(canvas.toDataURL());
+                hasSigned = true;
+                document.getElementById('sigStatus').textContent = '✓ Signature captured';
+                document.getElementById('sigStatus').style.color = '#2ecc71';
+            }
+        }
+
+        canvas.addEventListener('pointerdown', startDraw);
+        canvas.addEventListener('pointermove', draw);
+        canvas.addEventListener('pointerup', endDraw);
+        canvas.addEventListener('pointerleave', endDraw);
+        // Touch support
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', endDraw);
+
+        document.getElementById('clearSig').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            sigHistory = []; hasSigned = false;
+            document.getElementById('sigPlaceholder').classList.remove('hidden');
+            document.getElementById('sigStatus').textContent = '';
+        });
+
+        document.getElementById('undoSig').addEventListener('click', () => {
+            if (sigHistory.length > 0) {
+                sigHistory.pop();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (sigHistory.length > 0) {
+                    const img = new Image();
+                    img.onload = () => ctx.drawImage(img, 0, 0);
+                    img.src = sigHistory[sigHistory.length - 1];
+                } else {
+                    hasSigned = false;
+                    document.getElementById('sigPlaceholder').classList.remove('hidden');
+                    document.getElementById('sigStatus').textContent = '';
+                }
+            }
+        });
+
+        // PAYMENT COLLECTION
+        function getTotal() {
+            const txt = document.getElementById('footerTotal').textContent || '$0.00';
+            return parseFloat(txt.replace(/[$,]/g, '')) || 0;
+        }
+
+        function updatePaymentButton() {
+            const method = document.getElementById('paymentMethod').value;
+            const btn = document.getElementById('collectPayBtn');
+            const hint = document.getElementById('paymentHint');
+            if (method === 'card') {
+                btn.innerHTML = '💳 Send Payment Link';
+                hint.textContent = 'Client receives a secure Stripe payment link via email & text';
+            } else if (method === 'cash') {
+                btn.innerHTML = '💵 Record Cash Payment';
+                hint.textContent = 'Mark this estimate as paid by cash';
+            } else if (method === 'cheque') {
+                btn.innerHTML = '📝 Record Cheque Payment';
+                hint.textContent = 'Mark this estimate as paid by cheque';
+            } else if (method === 'etransfer') {
+                btn.innerHTML = '📧 Record E-Transfer';
+                hint.textContent = 'Mark this estimate as paid by e-transfer';
+            }
+        }
+
+        function updatePaymentAmount() {
+            const type = document.getElementById('paymentType').value;
+            const preview = document.getElementById('paymentPreview');
+            const customField = document.getElementById('customAmountField');
+            const methodField = document.getElementById('payMethodField');
+
+            if (type === 'none') {
+                preview.style.display = 'none';
+                customField.style.display = 'none';
+                methodField.style.display = 'none';
+                return;
+            }
+
+            preview.style.display = 'block';
+            methodField.style.display = 'block';
+            customField.style.display = type === 'custom' ? 'block' : 'none';
+
+            const total = getTotal();
+            let amount = 0;
+            if (type === 'deposit') amount = total * 0.25;
+            else if (type === 'full') amount = total;
+            else if (type === 'custom') amount = parseFloat(document.getElementById('customPayAmount').value) || 0;
+
+            document.getElementById('payAmountDisplay').textContent = '$' + amount.toFixed(2);
+            updatePaymentButton();
+        }
+
+        // Listen for custom amount changes
+        const customAmountInput = document.getElementById('customPayAmount');
+        if (customAmountInput) customAmountInput.addEventListener('input', updatePaymentAmount);
+
+        async function collectPayment() {
+            const type = document.getElementById('paymentType').value;
+            if (type === 'none') return;
+
+            const method = document.getElementById('paymentMethod').value;
+            const total = getTotal();
+            let amount = 0;
+            if (type === 'deposit') amount = total * 0.25;
+            else if (type === 'full') amount = total;
+            else if (type === 'custom') amount = parseFloat(document.getElementById('customPayAmount').value) || 0;
+
+            if (amount < 0.50) { alert('Amount must be at least $0.50'); return; }
+
+            const clientName = document.getElementById('clientName').value;
+            const clientEmail = document.getElementById('clientEmail').value;
+
+            const btn = document.getElementById('collectPayBtn');
+            btn.disabled = true;
+
+            if (method === 'card') {
+                // Stripe checkout — link sent directly to client, never shown to rep
+                if (!clientEmail) { alert('Client email is required for card payment'); btn.disabled = false; return; }
+                const clientPhone = document.getElementById('clientPhone').value;
+                btn.textContent = '⏳ Sending to client...';
+                try {
+                    const serviceDesc = document.getElementById('clientAddress').value
+                        ? ('Services at ' + document.getElementById('clientAddress').value)
+                        : 'Exterior Services';
+                    const r = await fetch('/api/payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({ clientName, clientEmail, clientPhone, amount, description: serviceDesc, paymentType: type })
+                    });
+                    const d = await r.json();
+                    if (d.success) {
+                        let sentVia = [];
+                        if (d.emailSent) sentVia.push('email');
+                        if (d.smsSent) sentVia.push('text');
+                        const via = sentVia.length > 0 ? sentVia.join(' & ') : 'secure link';
+                        btn.textContent = '✅ Payment link sent to ' + clientName + ' via ' + via;
+                        btn.style.background = '#27ae60';
+                        btn.style.fontSize = '.8rem';
+                    } else {
+                        alert(d.error || 'Failed to send payment link');
+                        btn.innerHTML = '💳 Send Payment Link'; btn.disabled = false;
+                    }
+                } catch (e) {
+                    alert('Payment error: ' + e.message);
+                    btn.innerHTML = '💳 Send Payment Link'; btn.disabled = false;
+                }
+            } else {
+                // Cash / Cheque / E-transfer — record directly
+                const methodLabels = { cash: 'Cash', cheque: 'Cheque', etransfer: 'E-Transfer' };
+                const methodLabel = methodLabels[method];
+                const payStatus = type === 'deposit' ? 'Deposit' : 'Paid';
+
+                btn.textContent = '⏳ Recording...';
+
+                // Store payment info locally (will be submitted with the estimate)
+                window._paymentInfo = { paymentStatus: payStatus, paymentMethod: methodLabel, paymentAmount: amount };
+
+                const statusText = payStatus === 'Deposit' ? `${methodLabel} deposit of $${amount.toFixed(2)} recorded` : `${methodLabel} payment of $${amount.toFixed(2)} recorded`;
+                btn.textContent = '✅ ' + statusText;
+                btn.style.background = '#27ae60';
+                document.getElementById('paymentHint').textContent = 'Payment will be saved when you submit the estimate';
+            }
+        }
+
+        // Check for payment success on page load
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('payment') === 'success') {
+            setTimeout(() => { alert('✅ Payment successful! The client has been charged.'); }, 500);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+
+
+        // SAVE/LOAD DRAFT
+        function saveDraft() {
+            try {
+                const data = {
+                    clientName: document.getElementById('clientName').value,
+                    clientPhone: document.getElementById('clientPhone').value,
+                    clientEmail: document.getElementById('clientEmail').value,
+                    clientAddress: document.getElementById('clientAddress').value,
+                    salesRep: document.getElementById('salesRep').value,
+                    notes: document.getElementById('estNotes').value,
+                    estimateNumber
+                };
+                localStorage.setItem('estimate_draft', JSON.stringify(data));
+                document.getElementById('draftIndicator').textContent = 'Draft saved at ' + new Date().toLocaleTimeString();
+            } catch (e) { }
+        }
+
+        function loadDraft() {
+            try {
+                const d = JSON.parse(localStorage.getItem('estimate_draft'));
+                if (!d) return;
+                if (d.clientName) document.getElementById('clientName').value = d.clientName;
+                if (d.clientPhone) document.getElementById('clientPhone').value = d.clientPhone;
+                if (d.clientEmail) document.getElementById('clientEmail').value = d.clientEmail;
+                if (d.clientAddress) document.getElementById('clientAddress').value = d.clientAddress;
+                if (d.salesRep) document.getElementById('salesRep').value = d.salesRep;
+                if (d.notes) document.getElementById('estNotes').value = d.notes;
+                if (d.estimateNumber) { estimateNumber = d.estimateNumber; document.getElementById('estimateId').textContent = 'Estimate #' + estimateNumber }
+            } catch (e) { }
+        }
+
+        function clearForm() {
+            document.querySelectorAll('.service-check input').forEach(c => { c.checked = false });
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('input[type="number"],input[type="text"],input[type="email"],input[type="tel"],textarea').forEach(i => i.value = '');
+            document.querySelectorAll('.legal-item input').forEach(c => c.checked = false);
+            document.querySelectorAll('.hazard-item').forEach(h => { h.classList.remove('checked'); h.querySelector('input').checked = false });
+            document.getElementById('photoPreviews').innerHTML = '';
+            document.getElementById('bundleBadge').classList.remove('show');
+            document.getElementById('discountItem').style.display = 'none';
+            document.getElementById('submitMsg').className = 'msg'; document.getElementById('submitMsg').style.display = 'none';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            localStorage.removeItem('estimate_draft');
+            calcAll();
+        }
+
+        // SUBMIT
+        async function submitEstimate() {
+            // Validate required fields
+            const name = document.getElementById('clientName').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+            const email = document.getElementById('clientEmail').value.trim();
+            const address = document.getElementById('clientAddress').value.trim();
+            const rep = document.getElementById('salesRep').value.trim();
+            const msg = document.getElementById('submitMsg');
+
+            if (!name || !phone || !email || !address || !rep) {
+                msg.className = 'msg error'; msg.textContent = 'Please fill in Client Name, Phone, Email, Address, and Sales Rep.'; msg.style.display = 'block'; return;
+            }
+
+            // Check legal
+            const l1 = document.getElementById('legal_cooling').checked;
+            const l2 = document.getElementById('legal_wsib').checked;
+            const l3 = document.getElementById('legal_deposit').checked;
+            if (!l1 || !l2 || !l3) {
+                msg.className = 'msg error'; msg.textContent = 'All legal checkpoints must be completed before submitting.'; msg.style.display = 'block';
+                if (!l1) document.getElementById('legal1wrap').classList.add('error');
+                if (!l2) document.getElementById('legal2wrap').classList.add('error');
+                if (!l3) document.getElementById('legal3wrap').classList.add('error');
+                return;
+            }
+
+            const btn = document.getElementById('submitEstBtn'); btn.disabled = true; btn.textContent = 'Submitting...';
+
+            // Build services array
+            const services = [];
+            const svcNames = { deck: 'Deck Restoration', gutter: 'Gutter Cleaning', interlock: 'Interlock Restoration', window: 'Window Cleaning', siding: 'Siding (Soft Wash)', garden: 'Garden Maintenance' };
+            ['deck', 'gutter', 'interlock', 'window', 'siding', 'garden'].forEach(s => {
+                if (document.getElementById('svc_' + s).checked) {
+                    services.push({ name: svcNames[s], price: document.getElementById('price_' + s).textContent });
+                }
+            });
+
+            const svcCount = services.length;
+            const discount = svcCount > 1 ? 50 : 0;
+
+            // Survey data
+            const hazards = [];
+            document.querySelectorAll('.hazard-item.checked input').forEach(h => hazards.push(h.value));
+
+            const estimate = {
+                clientName: name, phone,
+                email: document.getElementById('clientEmail').value,
+                address,
+                serviceType: services.map(s => s.name).join(', '),
+                estimatedValue: document.getElementById('footerTotal').textContent.replace('$', ''),
+                notes: document.getElementById('estNotes').value,
+                salesRep: rep,
+                estimateNumber,
+                services,
+                bundleDiscount: discount,
+                subtotal: document.getElementById('footerSubtotal').textContent,
+                hst: document.getElementById('footerHST').textContent,
+                total: document.getElementById('footerTotal').textContent,
+                paymentStatus: window._paymentInfo?.paymentStatus || 'Unpaid',
+                paymentMethod: window._paymentInfo?.paymentMethod || '',
+                paymentAmount: window._paymentInfo?.paymentAmount || 0,
+                survey: {
+                    addressType: document.getElementById('addressType').value,
+                    visitDate: document.getElementById('visitDate').value,
+                    waterAccess: document.querySelector('input[name="water"]:checked')?.value,
+                    powerAccess: document.querySelector('input[name="power"]:checked')?.value,
+                    hazards
+                },
+                legal: { cooling: l1, wsib: l2, deposit: l3 },
+                hasSignature: !isCanvasBlank()
+            };
+
+            // Capture signature (client signed on canvas)
+            const signatureData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
+
+            try {
+                const r = await fetch(API_BASE + '/leads', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken }, body: JSON.stringify(estimate) });
+                if (r.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired. Please log in again.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return }
+                const d = await r.json();
+                if (d.success) {
+                    msg.className = 'msg success'; msg.textContent = '✅ Estimate saved! Sending documents to ' + email + '...'; msg.style.display = 'block';
+
+                    // Send invoice + contract in parallel
+                    const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
+                    const [invRes, conRes] = await Promise.allSettled([
+                        fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate }) }),
+                        fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }),
+                    ]);
+
+                    const invData = invRes.status === 'fulfilled' ? await invRes.value.json().catch(() => ({})) : {};
+                    const conData = conRes.status === 'fulfilled' ? await conRes.value.json().catch(() => ({})) : {};
+
+                    const sentParts = [];
+                    if (invData.emailSent) sentParts.push('estimate');
+                    if (conData.emailSent) sentParts.push('signed contract');
+
+                    if (sentParts.length > 0) {
+                        msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Emailed ' + sentParts.join(' & ') + ' to ' + email;
+                    } else {
+                        msg.textContent = '✅ Estimate #' + estimateNumber + ' saved! ⚠️ Email delivery failed — check Gmail settings.';
+                    }
+
+                    localStorage.removeItem('estimate_draft');
+                } else { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to submit.'; msg.style.display = 'block' }
+            } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
+            finally { btn.disabled = false; btn.textContent = 'Submit Estimate' }
+        }
+
+        function isCanvasBlank() {
+            const blank = document.createElement('canvas'); blank.width = canvas.width; blank.height = canvas.height;
+            return canvas.toDataURL() === blank.toDataURL();
+        }
+
+        // PDF EXPORT
+        function exportPDF() {
+            const name = document.getElementById('clientName').value || 'Client';
+            const services = [];
+            const svcNames = { deck: 'Deck Restoration', gutter: 'Gutter Cleaning', interlock: 'Interlock Restoration', window: 'Window Cleaning', siding: 'Siding (Soft Wash)', garden: 'Garden Maintenance' };
+            ['deck', 'gutter', 'interlock', 'window', 'siding', 'garden'].forEach(s => {
+                if (document.getElementById('svc_' + s).checked) services.push(svcNames[s] + ': ' + document.getElementById('price_' + s).textContent);
+            });
+
+            const svcCount = document.querySelectorAll('.service-check input:checked').length;
+            const discount = svcCount > 1 ? 'Bundle Discount: ($50.00)\n' : '';
+
+            const text = `
+CORE EXTERIORS — ESTIMATE
+================================
+Estimate #: ${estimateNumber}
+Date: ${new Date().toLocaleDateString('en-CA')}
+
+CLIENT
+${name}
+${document.getElementById('clientPhone').value}
+${document.getElementById('clientEmail').value}
+${document.getElementById('clientAddress').value}
+
+SERVICES
+${services.join('\n')}
+${discount}
+Subtotal: ${document.getElementById('footerSubtotal').textContent}
+HST (13%): ${document.getElementById('footerHST').textContent}
+TOTAL: ${document.getElementById('footerTotal').textContent}
+
+Sales Rep: ${document.getElementById('salesRep').value}
+
+================================
+Core Exteriors
+203 Cambridge St, London, ON, N6H 1N6
+606 616 2026
+corexteriors.ca
+    `.trim();
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url;
+            a.download = 'CoreExteriors_' + estimateNumber.replace(/ /g, '_') + '.txt';
+            a.click(); URL.revokeObjectURL(url);
+        }
+
+        // Auto save on input changes
+        document.querySelectorAll('input,select,textarea').forEach(el => {
+            el.addEventListener('change', saveDraft);
+        });
+    </script>
+</body>
+
+</html>
