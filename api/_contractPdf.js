@@ -1,6 +1,8 @@
 // Generates a professional service agreement PDF from scratch.
 // The _ prefix tells Vercel not to expose this as an API route.
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+const path = require('path');
+const fs = require('fs');
 
 async function generateContractPDF(est, signatureData) {
     const doc = await PDFDocument.create();
@@ -74,7 +76,7 @@ async function generateContractPDF(est, signatureData) {
     services.forEach((svc, i) => {
         const bgColor = i % 2 === 0 ? softBg : white;
         page.drawRectangle({ x: 45, y: y - 10, width: width - 90, height: 20, color: bgColor });
-        page.drawText('✓  ' + (svc.name || svc), { x: 55, y: y - 5, size: 10, font, color: black });
+        page.drawText('- ' + (svc.name || svc), { x: 55, y: y - 5, size: 10, font, color: black });
         if (svc.price) {
             page.drawText(svc.price, { x: width - 130, y: y - 5, size: 10, font, color: black });
         }
@@ -120,7 +122,7 @@ async function generateContractPDF(est, signatureData) {
 
     const terms = [
         'This agreement is between the Client and Core Exteriors Ltd. for the services described above.',
-        'A deposit of 20% is due at signing. The remaining balance is due upon completion of work.',
+        'A deposit of 25% is due at signing. The remaining balance is due upon completion of work.',
         'The Client has a 10-day cooling off period from the date of signing, as per Ontario Consumer Protection Act.',
         'Core Exteriors is fully insured ($2M liability) and WSIB compliant.',
         'Work will be completed in a workmanlike manner and in accordance with good trade practices.',
@@ -180,6 +182,17 @@ async function generateContractPDF(est, signatureData) {
         { x: 65, y: 14, size: 7.5, font, color: rgb(0.6, 0.7, 0.8) }
     );
     page.drawRectangle({ x: 0, y: 35, width, height: 3, color: gold });
+
+    // Merge with CONTRACT.pdf template
+    try {
+        const templatePath = path.join(__dirname, 'CONTRACT.pdf');
+        const templateBytes = fs.readFileSync(templatePath);
+        const templateDoc = await PDFDocument.load(templateBytes);
+        const copiedPages = await doc.copyPages(templateDoc, templateDoc.getPageIndices());
+        copiedPages.forEach(p => doc.addPage(p));
+    } catch (_) {
+        // If template not found, just send the generated page
+    }
 
     return await doc.save();
 }

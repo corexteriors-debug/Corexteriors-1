@@ -74,7 +74,7 @@ async function sendContractEmail(est, pdfBytes) {
       </tr>
     </table>
     <div style="background:#fff8e8;border:1px solid #F5B800;border-radius:8px;padding:14px;font-size:13px;color:#7a5500;margin:16px 0">
-      <strong>Reminder:</strong> A 20% deposit is due at signing. Your 10-day cooling off period is in effect from today.
+      <strong>Reminder:</strong> A 25% deposit is due at signing. Your 10-day cooling off period is in effect from today.
     </div>
     <p>Questions? Reply to this email or call us at <strong>606-616-2026</strong>.</p>
     <p style="margin-top:16px">Best regards,<br><strong>${repName}</strong><br>Core Exteriors</p>
