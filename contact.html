@@ -316,6 +316,11 @@
             contactForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
+                const submitBtn = contactForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Sending...';
+                submitBtn.disabled = true;
+
                 const formData = new FormData(contactForm);
                 const leadData = {
                     name: `${formData.get('firstName')} ${formData.get('lastName')}`,
@@ -323,19 +328,30 @@
                     phone: formData.get('phone'),
                     address: formData.get('address'),
                     service: formData.get('service'),
-                    message: formData.get('message'),
-                    source: 'contact.html'
+                    message: formData.get('message')
                 };
 
                 try {
-                    if (window.crmService) {
-                        await window.crmService.saveLead(leadData);
+                    const response = await fetch('/api/contact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(leadData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        alert('Thank you for your inquiry! We\'ll get back to you within 24 hours. Check your email for a confirmation.');
+                        contactForm.reset();
+                    } else {
+                        throw new Error(result.error || 'Something went wrong');
                     }
-                    alert('Thank you for your inquiry! We will contact you within 24 hours.');
-                    contactForm.reset();
                 } catch (error) {
-                    console.error('Error saving lead:', error);
-                    alert('There was an error sending your request. Please try again or call us directly.');
+                    console.error('Error submitting form:', error);
+                    alert('There was an error sending your request. Please try again or call us directly at 606-616-2026.');
+                } finally {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
                 }
             });
         }
