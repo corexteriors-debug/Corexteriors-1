@@ -20,8 +20,23 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: 'Estimate with client email required' });
         }
 
-        const pdfBytes = await generateContractPDF(estimate, signatureData);
-        const emailSent = await sendContractEmail(estimate, pdfBytes);
+        let pdfBytes;
+        try {
+            pdfBytes = await generateContractPDF(estimate, signatureData);
+            console.log('Contract PDF generated, size:', pdfBytes.length);
+        } catch (pdfErr) {
+            console.error('PDF generation error:', pdfErr.message);
+            return res.status(500).json({ error: 'PDF generation failed: ' + pdfErr.message });
+        }
+
+        let emailSent;
+        try {
+            emailSent = await sendContractEmail(estimate, pdfBytes);
+            console.log('Contract email sent:', emailSent);
+        } catch (emailErr) {
+            console.error('Email send error:', emailErr.message);
+            return res.status(500).json({ error: 'Email failed: ' + emailErr.message });
+        }
 
         return res.status(200).json({ success: true, emailSent });
     } catch (error) {

@@ -1880,7 +1880,9 @@
                     if (sentParts.length > 0) {
                         msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Emailed ' + sentParts.join(' & ') + ' to ' + email;
                     } else {
-                        msg.textContent = '✅ Estimate #' + estimateNumber + ' saved! ⚠️ Email delivery failed — check Gmail settings.';
+                        const invErr = invData.error ? ' Invoice: ' + invData.error : '';
+                        const conErr = conData.error ? ' Contract: ' + conData.error : '';
+                        msg.textContent = '✅ Estimate #' + estimateNumber + ' saved! ⚠️ Email failed —' + invErr + conErr;
                     }
 
                     localStorage.removeItem('estimate_draft');
