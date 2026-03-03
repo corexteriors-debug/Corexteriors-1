@@ -45,3 +45,5 @@ out/
 
 # Sensitive scripts with hardcoded credentials
 crm/scripts/setup-google-env.js
+.vercel
+.env*.local
