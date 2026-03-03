@@ -1,134 +1,203 @@
-// Fills the real CONTRACT.pdf template with estimate data and an optional signature image.
+// Generates a professional service agreement PDF from scratch.
 // The _ prefix tells Vercel not to expose this as an API route.
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
-const fs = require('fs');
-const path = require('path');
 
 async function generateContractPDF(est, signatureData) {
-    // Load the real CONTRACT.pdf template
-    const templatePath = path.join(__dirname, 'CONTRACT.pdf');
-    const templateBytes = fs.readFileSync(templatePath);
-    const doc = await PDFDocument.load(templateBytes);
-
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([612, 792]); // Letter size
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const { width, height } = page.getSize();
 
-    const page = doc.getPages()[0];
-    const white = rgb(1, 1, 1);
+    // Colors
+    const darkBlue = rgb(0.04, 0.09, 0.16);
+    const gold = rgb(0.96, 0.72, 0.0);
+    const blue = rgb(0.2, 0.4, 0.7);
+    const green = rgb(0.18, 0.68, 0.34);
     const black = rgb(0, 0, 0);
-    const darkBlue = rgb(0.1, 0.2, 0.5);
-    const grey = rgb(0.35, 0.35, 0.35);
+    const gray = rgb(0.4, 0.4, 0.4);
+    const lightGray = rgb(0.85, 0.85, 0.85);
+    const white = rgb(1, 1, 1);
+    const softBg = rgb(0.96, 0.97, 0.98);
 
     const dateStr = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
-
-    // ─── helpers ────────────────────────────────────────────────────────────
-    // erase: white rectangle over the blank underscores only
-    function erase(x, y, w, h) {
-        page.drawRectangle({ x, y, width: w, height: h, color: white });
-    }
-    // write: text baseline at exact PDF y coordinate
-    function write(text, x, y, size, f, color) {
-        if (!text) return;
-        page.drawText(String(text), { x, y, size: size || 10, font: f || font, color: color || black, maxWidth: 250 });
-    }
-
-    // ─── CLIENT NAME ─────────────────────────────────────────────────────────
-    // Blank at y=590 x=116 (extracted from PDF streams)
-    erase(116, 585, 182, 9);
-    write(est.clientName || '', 116, 590, 10, bold);
-
-    // ─── DATE ────────────────────────────────────────────────────────────────
-    // Blank at y=573 x=76
-    erase(76, 568, 218, 9);
-    write(dateStr, 76, 573, 9);
-
-    // ─── SERVICE ADDRESS ─────────────────────────────────────────────────────
-    // Blank at y=575 x=312 (line below "Service Address:" label at y=590)
-    erase(312, 570, 248, 9);
+    const contractNum = est.estimateNumber || 'CE-' + Date.now().toString(36).toUpperCase();
+    const repName = est.salesRep || 'Core Exteriors Team';
+    const clientName = est.clientName || 'Valued Customer';
     const address = est.address || est.clientAddress || '';
-    write(address, 312, 575, 9);
+    const phone = est.phone || '';
+    const email = est.email || '';
 
-    // ─── SERVICES ────────────────────────────────────────────────────────────
-    // Erase the full checkbox/service area between y=479 and y=533
-    erase(44, 479, 520, 54);
+    // ─── HEADER BAR ─────────────────────────────────────────────────────────
+    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: darkBlue });
+    page.drawText('CORE EXTERIORS', { x: 50, y: height - 38, size: 22, font: bold, color: white });
+    page.drawText('Professional Exterior Services — London, Ontario', { x: 50, y: height - 56, size: 9, font, color: rgb(0.6, 0.7, 0.8) });
+    // Gold accent line
+    page.drawRectangle({ x: 0, y: height - 84, width, height: 4, color: gold });
 
+    // Contract title & number on right
+    page.drawText('SERVICE AGREEMENT', { x: width - 205, y: height - 38, size: 14, font: bold, color: gold });
+    page.drawText(contractNum, { x: width - 205, y: height - 55, size: 9, font, color: rgb(0.6, 0.7, 0.8) });
+
+    let y = height - 110;
+
+    // ─── DATE LINE ──────────────────────────────────────────────────────────
+    page.drawText('Date: ' + dateStr, { x: 50, y, size: 9, font, color: gray });
+    page.drawText('Sales Rep: ' + repName, { x: 350, y, size: 9, font, color: gray });
+    y -= 25;
+
+    // ─── CLIENT INFORMATION BOX ─────────────────────────────────────────────
+    page.drawRectangle({ x: 45, y: y - 65, width: width - 90, height: 70, color: softBg, borderColor: lightGray, borderWidth: 1 });
+    page.drawText('CLIENT INFORMATION', { x: 55, y: y - 5, size: 8, font: bold, color: blue });
+    y -= 20;
+    page.drawText(clientName, { x: 55, y, size: 12, font: bold, color: black });
+    y -= 15;
+    const infoLine = [address, phone, email].filter(Boolean).join('  |  ');
+    page.drawText(infoLine, { x: 55, y, size: 9, font, color: gray });
+    y -= 40;
+
+    // ─── SERVICES TABLE ─────────────────────────────────────────────────────
+    page.drawText('SERVICES', { x: 50, y, size: 9, font: bold, color: blue });
+    y -= 15;
+
+    // Table header
+    page.drawRectangle({ x: 45, y: y - 12, width: width - 90, height: 20, color: darkBlue });
+    page.drawText('SERVICE DESCRIPTION', { x: 55, y: y - 7, size: 9, font: bold, color: white });
+    page.drawText('AMOUNT', { x: width - 130, y: y - 7, size: 9, font: bold, color: white });
+    y -= 28;
+
+    // Service rows
     const services = Array.isArray(est.services) && est.services.length > 0
         ? est.services
-        : (est.serviceType || '').split(', ').filter(Boolean).map(s => ({ name: s }));
+        : (est.serviceType || '').split(', ').filter(Boolean).map(s => ({ name: s, price: '' }));
 
-    // Two-column layout; left col x=48, right col x=312
-    const half = Math.ceil(services.length / 2);
     services.forEach((svc, i) => {
-        const col = i < half ? 0 : 1;
-        const row = col === 0 ? i : i - half;
-        const x = col === 0 ? 48 : 312;
-        const y = 524 - (row * 13);
-        write(svc.name || svc, x, y, 10);
+        const bgColor = i % 2 === 0 ? softBg : white;
+        page.drawRectangle({ x: 45, y: y - 10, width: width - 90, height: 20, color: bgColor });
+        page.drawText('✓  ' + (svc.name || svc), { x: 55, y: y - 5, size: 10, font, color: black });
+        if (svc.price) {
+            page.drawText(svc.price, { x: width - 130, y: y - 5, size: 10, font, color: black });
+        }
+        y -= 20;
     });
 
-    // ─── PRICING ─────────────────────────────────────────────────────────────
-    // "Contract Price: $_____" is one text object at y=459 x=45.
-    // "Contract Price: $" in Helvetica 11pt = 81pt → underscores start at x=126
-    erase(126, 454, 170, 9);
-    const subtotalNum = (est.subtotal || '$0.00').replace('$', '').trim();
-    write(subtotalNum, 126, 459, 10, bold);
+    y -= 10;
 
-    // "HST (13%): $_____" at y=443 x=45.
-    // "HST (13%): $" in Helvetica 11pt = 63pt → underscores start at x=108
-    erase(108, 438, 170, 9);
-    const hstNum = (est.hst || '$0.00').replace('$', '').trim();
-    write(hstNum, 108, 443, 10);
+    // ─── PRICING SUMMARY ────────────────────────────────────────────────────
+    page.drawLine({ start: { x: 350, y }, end: { x: width - 45, y }, thickness: 1, color: lightGray });
+    y -= 18;
 
-    // "Total Due: $" label ends at x=108; blank text starts separately at x=108 y=426
-    erase(108, 421, 170, 9);
-    const totalNum = (est.total || '$0.00').replace('$', '').trim();
-    write(totalNum, 108, 426, 10, bold);
+    // Bundle discount
+    if (est.bundleDiscount && est.bundleDiscount > 0) {
+        page.drawText('Bundle Discount:', { x: 350, y, size: 10, font, color: gray });
+        page.drawText('($' + Number(est.bundleDiscount).toFixed(2) + ')', { x: width - 130, y, size: 10, font, color: rgb(0.9, 0.5, 0.1) });
+        y -= 18;
+    }
 
-    // ─── TIMELINE ────────────────────────────────────────────────────────────
-    // "Start Date: _____" at y=459 x=312.
-    // "Start Date: " in Helvetica 11pt = 56pt → underscores start at x=368
-    erase(368, 454, 190, 9);
-    const visitDate = (est.survey && est.survey.visitDate) ? est.survey.visitDate : 'TBD';
-    write(visitDate, 368, 459, 9);
+    // Subtotal
+    page.drawText('Subtotal:', { x: 350, y, size: 10, font, color: gray });
+    page.drawText(est.subtotal || '$0.00', { x: width - 130, y, size: 10, font, color: black });
+    y -= 18;
 
-    // "Completion: _____" at y=443 x=312.
-    // "Completion: " in Helvetica 11pt = 61pt → underscores start at x=373
-    erase(373, 438, 185, 9);
-    write(est.completionDate || 'Upon completion', 373, 443, 9);
+    // HST
+    page.drawText('HST (13%):', { x: 350, y, size: 10, font, color: gray });
+    page.drawText(est.hst || '$0.00', { x: width - 130, y, size: 10, font, color: black });
+    y -= 5;
 
-    // ─── CLIENT SIGNATURE ────────────────────────────────────────────────────
-    // Blank at y=266 x=45
-    erase(45, 261, 222, 9);
+    page.drawLine({ start: { x: 350, y }, end: { x: width - 45, y }, thickness: 1.5, color: blue });
+    y -= 20;
 
+    // Total
+    page.drawText('TOTAL:', { x: 350, y, size: 13, font: bold, color: darkBlue });
+    page.drawText(est.total || '$0.00', { x: width - 130, y, size: 14, font: bold, color: green });
+    y -= 35;
+
+    // ─── TERMS & CONDITIONS ─────────────────────────────────────────────────
+    page.drawLine({ start: { x: 45, y }, end: { x: width - 45, y }, thickness: 1, color: lightGray });
+    y -= 18;
+    page.drawText('TERMS & CONDITIONS', { x: 50, y, size: 9, font: bold, color: blue });
+    y -= 16;
+
+    const terms = [
+        'This agreement is between the Client and Core Exteriors Ltd. for the services described above.',
+        'A deposit of 20% is due at signing. The remaining balance is due upon completion of work.',
+        'The Client has a 10-day cooling off period from the date of signing, as per Ontario Consumer Protection Act.',
+        'Core Exteriors is fully insured ($2M liability) and WSIB compliant.',
+        'Work will be completed in a workmanlike manner and in accordance with good trade practices.',
+        'Core Exteriors will provide all materials, equipment, and labour necessary for the described services.',
+        'This estimate is valid for 30 days from the date shown above.',
+        'Cancellations after the cooling off period will forfeit the deposit unless mutually agreed otherwise.',
+    ];
+
+    terms.forEach(t => {
+        const lines = wrapText('• ' + t, 90);
+        lines.forEach(line => {
+            page.drawText(line, { x: 55, y, size: 7.5, font, color: gray });
+            y -= 11;
+        });
+        y -= 2;
+    });
+
+    y -= 8;
+
+    // ─── SIGNATURES ─────────────────────────────────────────────────────────
+    page.drawLine({ start: { x: 45, y }, end: { x: width - 45, y }, thickness: 1, color: lightGray });
+    y -= 18;
+    page.drawText('SIGNATURES', { x: 50, y, size: 9, font: bold, color: blue });
+    y -= 25;
+
+    // Client signature (left side)
+    page.drawText('CLIENT', { x: 55, y, size: 7, font: bold, color: gray });
+    y -= 5;
+
+    // Embed client signature image if available
     if (signatureData && signatureData.startsWith('data:image/png;base64,')) {
         try {
             const pngBytes = Buffer.from(signatureData.replace('data:image/png;base64,', ''), 'base64');
             const sigImg = await doc.embedPng(pngBytes);
-            const dims = sigImg.scaleToFit(210, 20);
-            page.drawImage(sigImg, { x: 46, y: 248, width: dims.width, height: dims.height });
+            const dims = sigImg.scaleToFit(200, 35);
+            page.drawImage(sigImg, { x: 55, y: y - 35, width: dims.width, height: dims.height });
         } catch (_) {
-            write('(Signed digitally)', 48, 266, 9, font, grey);
+            page.drawText('(Signed digitally)', { x: 55, y: y - 20, size: 9, font, color: gray });
         }
     }
 
-    // "Date: __________" at y=242 x=45 — "Date: " = 29pt → blanks start at x=74
-    erase(74, 237, 130, 9);
-    write(dateStr, 74, 242, 9);
+    page.drawLine({ start: { x: 50, y: y - 40 }, end: { x: 260, y: y - 40 }, thickness: 1, color: black });
+    page.drawText(clientName, { x: 55, y: y - 52, size: 9, font, color: black });
+    page.drawText('Date: ' + dateStr, { x: 55, y: y - 64, size: 8, font, color: gray });
 
-    // ─── CONTRACTOR SIGNATURE ────────────────────────────────────────────────
-    // Blank at y=266 x=312
-    erase(312, 261, 224, 9);
-    const repName = est.salesRep || 'Core Exteriors';
-    write(repName, 314, 266, 13, bold, darkBlue);
+    // Contractor signature (right side)
+    page.drawText('CONTRACTOR', { x: 335, y: y + 5, size: 7, font: bold, color: gray });
+    page.drawText(repName, { x: 335, y: y - 18, size: 13, font: bold, color: darkBlue });
+    page.drawLine({ start: { x: 330, y: y - 40 }, end: { x: width - 50, y: y - 40 }, thickness: 1, color: black });
+    page.drawText(repName + ' — Core Exteriors Ltd.', { x: 335, y: y - 52, size: 8, font, color: gray });
+    page.drawText('Date: ' + dateStr, { x: 335, y: y - 64, size: 8, font, color: gray });
 
-    // Contractor name/title printed below (between sig and date lines)
-    write(repName + ' - Core Exteriors Ltd.', 314, 253, 8, font, grey);
-
-    // "Date: __________" at y=242 x=312 — blanks start at x=341
-    erase(341, 237, 130, 9);
-    write(dateStr, 341, 242, 9);
+    // ─── FOOTER BAR ─────────────────────────────────────────────────────────
+    page.drawRectangle({ x: 0, y: 0, width, height: 35, color: darkBlue });
+    page.drawText(
+        'Core Exteriors Ltd.  |  203 Cambridge St, London, ON, N6H 1N6  |  606-616-2026  |  corexteriors.ca',
+        { x: 65, y: 14, size: 7.5, font, color: rgb(0.6, 0.7, 0.8) }
+    );
+    page.drawRectangle({ x: 0, y: 35, width, height: 3, color: gold });
 
     return await doc.save();
+}
+
+function wrapText(text, maxChars) {
+    const words = text.split(' ');
+    const lines = [];
+    let current = '';
+    words.forEach(w => {
+        if ((current + ' ' + w).length > maxChars) {
+            lines.push(current.trim());
+            current = w;
+        } else {
+            current += ' ' + w;
+        }
+    });
+    if (current.trim()) lines.push(current.trim());
+    return lines;
 }
 
 module.exports = { generateContractPDF };
