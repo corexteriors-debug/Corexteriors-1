@@ -102,6 +102,7 @@ module.exports = async (req, res) => {
                 sales_visit: '7',   // Peacock (blue) — rep going to sell
                 job: '10',          // Basil (green) — work being done
                 unavailable: '8',   // Graphite — blocked off
+                available: '2',     // Sage (light green) — rep available
             };
 
             const event = await cal.events.insert({

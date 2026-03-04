@@ -1278,22 +1278,28 @@
                 <button class="submit-btn" id="submitEstBtn" onclick="submitEstimate()">Submit Estimate</button>
             </div>
             <div style="text-align:right;padding:.5rem 1rem .25rem">
-                <button onclick="openAvailModal()" style="background:none;border:none;color:rgba(255,255,255,.3);font-size:.75rem;cursor:pointer;text-decoration:underline">🚫 Mark myself unavailable on a day</button>
+                <button onclick="openAvailModal()" style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:#2ecc71;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">📅 Set My Availability</button>
             </div>
         </div>
     </div>
 
-    <!-- AVAILABILITY BLOCK MODAL -->
-    <div id="availModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center">
-        <div style="background:#0f1f38;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:2rem;width:100%;max-width:380px;margin:1rem">
-            <h3 style="margin:0 0 .5rem;color:#fff">🚫 Mark Yourself Unavailable</h3>
-            <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:1.25rem">Blocks the day on the team calendar so admin knows you're not available.</p>
-            <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Date</label>
-            <input id="availDate" type="date" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;margin-bottom:.75rem;font-size:.9rem">
-            <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Reason (optional)</label>
-            <input id="availReason" type="text" placeholder="e.g. Day off, sick, personal..." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;margin-bottom:1rem;font-size:.9rem">
+    <!-- AVAILABILITY MODAL -->
+    <div id="availModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1.5rem 1rem">
+        <div style="background:#0f1f38;border:1px solid rgba(46,204,113,.25);border-radius:16px;padding:1.75rem;width:100%;max-width:480px;margin:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
+                <h3 style="margin:0;color:#fff">📅 Set My Availability</h3>
+                <button onclick="document.getElementById('availModal').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:1.2rem;cursor:pointer">✕</button>
+            </div>
+            <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:1.25rem">Add the dates and times you're available to work. Admin will see these on the calendar.</p>
+
+            <!-- Slots list -->
+            <div id="availSlots" style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:.75rem"></div>
+
+            <!-- Add slot button -->
+            <button onclick="addAvailSlot()" style="width:100%;background:rgba(46,204,113,.08);border:1px dashed rgba(46,204,113,.3);color:#2ecc71;padding:.6rem;border-radius:8px;cursor:pointer;font-size:.85rem;margin-bottom:1rem">+ Add Another Date</button>
+
             <div style="display:flex;gap:.75rem">
-                <button id="availSubmitBtn" onclick="submitAvailability()" style="flex:1;background:#e74c3c;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Block Day</button>
+                <button id="availSubmitBtn" onclick="submitAvailability()" style="flex:1;background:#2ecc71;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Save Availability</button>
                 <button onclick="document.getElementById('availModal').style.display='none'" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:.75rem 1.25rem;border-radius:10px;cursor:pointer">Cancel</button>
             </div>
             <div id="availMsg" style="display:none;margin-top:.75rem;padding:.6rem .9rem;border-radius:8px;font-size:.85rem"></div>
@@ -1968,48 +1974,83 @@ corexteriors.ca
             el.addEventListener('change', saveDraft);
         });
 
-        // ── AVAILABILITY BLOCKING ──────────────────────────────────────────
+        // ── AVAILABILITY ───────────────────────────────────────────────────
         function openAvailModal() {
-            document.getElementById('availDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('availReason').value = '';
+            document.getElementById('availSlots').innerHTML = '';
             document.getElementById('availMsg').style.display = 'none';
+            addAvailSlot(); // start with one slot
             document.getElementById('availModal').style.display = 'flex';
         }
 
-        async function submitAvailability() {
-            const date = document.getElementById('availDate').value;
-            const reason = document.getElementById('availReason').value.trim();
-            const rep = repName || document.getElementById('salesRep')?.value?.trim() || 'Rep';
-            const msgEl = document.getElementById('availMsg');
+        function addAvailSlot() {
+            const today = new Date().toISOString().split('T')[0];
+            const id = 'slot_' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.style.cssText = 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.75rem;position:relative';
+            div.innerHTML = `
+                <button onclick="document.getElementById('${id}').remove()" style="position:absolute;top:.5rem;right:.6rem;background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:.95rem">✕</button>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;align-items:end">
+                    <div>
+                        <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:.25rem">Date</div>
+                        <input type="date" class="avail-date" value="${today}" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.5rem .6rem;font-size:.82rem">
+                    </div>
+                    <div>
+                        <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:.25rem">From</div>
+                        <input type="time" class="avail-start" value="08:00" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.5rem .6rem;font-size:.82rem">
+                    </div>
+                    <div>
+                        <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-bottom:.25rem">To</div>
+                        <input type="time" class="avail-end" value="17:00" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.5rem .6rem;font-size:.82rem">
+                    </div>
+                </div>`;
+            document.getElementById('availSlots').appendChild(div);
+        }
 
-            if (!date) { showAvailMsg('Please select a date', 'error'); return; }
+        async function submitAvailability() {
+            const rep = repName || document.getElementById('salesRep')?.value?.trim() || 'Rep';
+            const slots = document.querySelectorAll('#availSlots > div');
+
+            if (slots.length === 0) { showAvailMsg('Add at least one date', 'error'); return; }
+
+            const entries = [];
+            for (const slot of slots) {
+                const date = slot.querySelector('.avail-date').value;
+                const start = slot.querySelector('.avail-start').value;
+                const end = slot.querySelector('.avail-end').value;
+                if (!date) { showAvailMsg('Fill in all dates', 'error'); return; }
+                entries.push({ date, start, end });
+            }
 
             const btn = document.getElementById('availSubmitBtn');
             btn.disabled = true; btn.textContent = 'Saving...';
 
+            let saved = 0;
             try {
-                const r = await fetch(API_BASE + '/calendar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({
-                        title: '🚫 UNAVAILABLE — ' + rep,
-                        description: reason || 'Not available',
-                        date, allDay: true,
-                        repName: rep,
-                        eventType: 'unavailable',
-                    }),
-                });
-                const d = await r.json();
-                if (d.success) {
-                    showAvailMsg('Blocked! Admin will see you\'re unavailable on ' + date, 'success');
-                    setTimeout(() => { document.getElementById('availModal').style.display = 'none'; }, 2000);
-                } else {
-                    showAvailMsg(d.error || 'Failed to block day', 'error');
+                for (const e of entries) {
+                    const r = await fetch(API_BASE + '/calendar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({
+                            title: '✅ AVAILABLE — ' + rep,
+                            description: `${rep} is available ${e.start}–${e.end}`,
+                            date: e.date,
+                            startTime: e.start,
+                            endTime: e.end,
+                            allDay: false,
+                            repName: rep,
+                            eventType: 'available',
+                        }),
+                    });
+                    const d = await r.json();
+                    if (d.success) saved++;
                 }
+                showAvailMsg('✅ ' + saved + ' slot' + (saved !== 1 ? 's' : '') + ' added to the calendar!', 'success');
+                setTimeout(() => { document.getElementById('availModal').style.display = 'none'; }, 2000);
             } catch (e) {
                 showAvailMsg('Connection error. Try again.', 'error');
             } finally {
-                btn.disabled = false; btn.textContent = 'Block Day';
+                btn.disabled = false; btn.textContent = 'Save Availability';
             }
         }
 

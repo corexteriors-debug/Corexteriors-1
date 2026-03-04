@@ -1657,8 +1657,8 @@
                     byDay[day].push(e);
                 });
 
-                const typeColors = { sales_visit: '#3498db', job: '#2ecc71', unavailable: '#95a5a6', other: '#e67e22' };
-                const typeLabels = { sales_visit: 'Sales Visit', job: 'Job', unavailable: 'Unavailable', other: 'Event' };
+                const typeColors = { sales_visit: '#3498db', job: '#2ecc71', unavailable: '#95a5a6', available: '#a8e6cf', other: '#e67e22' };
+                const typeLabels = { sales_visit: 'Sales Visit', job: 'Job', unavailable: 'Unavailable', available: 'Available', other: 'Event' };
 
                 container.innerHTML = Object.entries(byDay).map(([day, evts]) => {
                     const label = new Date(day + 'T12:00:00').toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
