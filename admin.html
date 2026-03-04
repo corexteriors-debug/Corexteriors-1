@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Core Exteriors</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 50%, #0d1f3c 100%);
+            min-height: 100vh;
+            color: #fff
+        }
+
+        /* LOGIN */
+        .portal-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+        }
+
+        .login-card h1 {
+            font-size: 1.8rem;
+            margin-bottom: .5rem
+        }
+
+        .login-card .subtitle {
+            color: rgba(255, 255, 255, .5);
+            margin-bottom: 2rem;
+            font-size: .95rem
+        }
+
+        .login-card input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color .3s
+        }
+
+        .login-card input:focus {
+            border-color: #e67e22
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform .2s, box-shadow .2s;
+            font-family: 'Inter', sans-serif
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, .4)
+        }
+
+        .login-error {
+            color: #e74c3c;
+            margin-top: 1rem;
+            font-size: .9rem;
+            display: none
+        }
+
+        /* DASHBOARD */
+        .dashboard-wrapper {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 50%, #0d1f3c 100%);
+            padding: 1.5rem;
+            display: none
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.8rem
+        }
+
+        .header-actions {
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: .85rem;
+            font-weight: 500;
+            transition: all .2s
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff
+        }
+
+        .btn-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, .3)
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, .1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .2)
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, .2)
+        }
+
+        .btn-danger {
+            background: rgba(231, 76, 60, .15);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, .3)
+        }
+
+        .btn-danger:hover {
+            background: rgba(231, 76, 60, .3)
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff
+        }
+
+        .btn-blue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, .3)
+        }
+
+        .btn-orange {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: #fff
+        }
+
+        .btn-orange:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(230, 126, 34, .3)
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: .8rem
+        }
+
+        /* TABS */
+        .tab-bar {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap
+        }
+
+        .tab-btn {
+            padding: 10px 22px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            color: rgba(255, 255, 255, .6);
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: .9rem;
+            font-weight: 500;
+            transition: all .2s
+        }
+
+        .tab-btn.active {
+            background: rgba(230, 126, 34, .15);
+            border-color: rgba(230, 126, 34, .4);
+            color: #e67e22
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, .1)
+        }
+
+        .tab-content {
+            display: none
+        }
+
+        .tab-content.active {
+            display: block
+        }
+
+        /* STATS ROW */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+            gap: .75rem;
+            margin-bottom: 1.5rem
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 14px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: transform .2s
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px)
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, .5);
+            font-size: .8rem;
+            margin-top: .25rem
+        }
+
+        .stat-card.new .stat-value {
+            color: #3498db
+        }
+
+        .stat-card.contacted .stat-value {
+            color: #f39c12
+        }
+
+        .stat-card.closed .stat-value {
+            color: #2ecc71
+        }
+
+        .stat-card.total .stat-value {
+            color: #fff
+        }
+
+        .stat-card.revenue .stat-value {
+            color: #e67e22
+        }
+
+        .stat-card.paid .stat-value {
+            color: #2ecc71
+        }
+
+        .stat-card.conversion .stat-value {
+            color: #9b59b6
+        }
+
+        /* CHARTS */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 16px;
+            padding: 1.5rem
+        }
+
+        .chart-card h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, .7)
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 200px
+        }
+
+        @media(max-width:768px) {
+            .charts-row {
+                grid-template-columns: 1fr
+            }
+        }
+
+        /* SEARCH & FILTER BAR */
+        .filter-bar {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 14px
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: .85rem;
+            outline: none
+        }
+
+        .filter-bar input {
+            flex: 1;
+            min-width: 200px
+        }
+
+        .filter-bar input::placeholder {
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .filter-bar select option {
+            background: #1a2a4a
+        }
+
+        /* TABLE CARD */
+        .table-card {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+        }
+
+        .table-title {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .table-title h2 {
+            font-size: 1.1rem
+        }
+
+        .table-scroll {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        th {
+            padding: .85rem 1rem;
+            text-align: left;
+            color: rgba(255, 255, 255, .5);
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+            white-space: nowrap
+        }
+
+        td {
+            padding: .85rem 1rem;
+            color: rgba(255, 255, 255, .85);
+            font-size: .85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .04)
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, .03)
+        }
+
+        /* STATUS BADGE */
+        .badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            transition: transform .2s;
+            display: inline-block
+        }
+
+        .badge:hover {
+            transform: scale(1.05)
+        }
+
+        .badge-New {
+            background: rgba(52, 152, 219, .2);
+            color: #3498db
+        }
+
+        .badge-Contacted {
+            background: rgba(243, 156, 18, .2);
+            color: #f39c12
+        }
+
+        .badge-Quoted {
+            background: rgba(155, 89, 182, .2);
+            color: #9b59b6
+        }
+
+        .badge-Closed {
+            background: rgba(46, 204, 113, .2);
+            color: #2ecc71
+        }
+
+        .badge-Lost {
+            background: rgba(231, 76, 60, .2);
+            color: #e74c3c
+        }
+
+        /* PAYMENT BADGE */
+        .pay-badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .7rem;
+            font-weight: 600;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+            font-family: 'Inter', sans-serif
+        }
+
+        .pay-Unpaid {
+            background: rgba(231, 76, 60, .15);
+            color: #e74c3c
+        }
+
+        .pay-Deposit {
+            background: rgba(243, 156, 18, .15);
+            color: #f39c12
+        }
+
+        .pay-Paid {
+            background: rgba(46, 204, 113, .15);
+            color: #2ecc71
+        }
+
+        /* DROPDOWN */
+        .dropdown {
+            position: relative;
+            display: inline-block
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #1a2a4a;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 10px;
+            padding: .4rem;
+            z-index: 200;
+            min-width: 160px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .5)
+        }
+
+        .dropdown-menu.show {
+            display: block
+        }
+
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            padding: 7px 12px;
+            border: none;
+            background: none;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: .82rem;
+            cursor: pointer;
+            border-radius: 6px;
+            text-align: left;
+            transition: background .2s
+        }
+
+        .dropdown-menu button:hover {
+            background: rgba(255, 255, 255, .1)
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: rgba(255, 255, 255, .4)
+        }
+
+        .empty-state h3 {
+            margin-bottom: .5rem;
+            color: rgba(255, 255, 255, .5)
+        }
+
+        .loading {
+            padding: 3rem;
+            text-align: center;
+            color: rgba(255, 255, 255, .4)
+        }
+
+        /* MATERIALS CALCULATOR */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem
+        }
+
+        .calc-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 14px;
+            padding: 1.25rem
+        }
+
+        .calc-card h4 {
+            margin-bottom: .75rem;
+            color: rgba(255, 255, 255, .7);
+            font-size: .95rem
+        }
+
+        .calc-card label {
+            display: block;
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .5);
+            margin-bottom: .3rem;
+            margin-top: .5rem
+        }
+
+        .calc-card input,
+        .calc-card select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .06);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: .85rem;
+            outline: none
+        }
+
+        .calc-result {
+            margin-top: .75rem;
+            padding: .75rem;
+            background: rgba(230, 126, 34, .1);
+            border: 1px solid rgba(230, 126, 34, .2);
+            border-radius: 10px;
+            font-size: .85rem;
+            color: #e67e22
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            z-index: 500;
+            align-items: center;
+            justify-content: center
+        }
+
+        .modal-overlay.show {
+            display: flex
+        }
+
+        .modal {
+            background: #1a2a4a;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, .5)
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem
+        }
+
+        .modal label {
+            display: block;
+            font-size: .85rem;
+            color: rgba(255, 255, 255, .5);
+            margin-bottom: .3rem;
+            margin-top: .75rem
+        }
+
+        .modal input,
+        .modal select,
+        .modal textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: .9rem;
+            outline: none
+        }
+
+        .modal textarea {
+            height: 80px;
+            resize: vertical
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: .5rem;
+            margin-top: 1.25rem;
+            justify-content: flex-end
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: .9rem;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all .3s;
+            font-family: 'Inter', sans-serif
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1
+        }
+
+        .toast-success {
+            background: #27ae60;
+            color: #fff
+        }
+
+        .toast-error {
+            background: #e74c3c;
+            color: #fff
+        }
+
+        .toast-info {
+            background: #3498db;
+            color: #fff
+        }
+
+        @media (max-width:768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            td,
+            th {
+                padding: .6rem;
+                font-size: .78rem
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOGIN -->
+    <div class="portal-wrapper" id="loginScreen">
+        <div class="login-card">
+            <h1>🔐 Admin Dashboard</h1>
+            <p class="subtitle">Core Exteriors — Manager Access</p>
+            <form id="loginForm">
+                <input type="password" id="adminPassword" placeholder="Enter admin password" autocomplete="off"
+                    required>
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
+            <p class="login-error" id="loginError">Invalid password. Please try again.</p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard-wrapper" id="dashboardScreen">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>📊 Admin Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn btn-green" id="exportBtn">📥 Export CSV</button>
+                    <button class="btn btn-blue" id="followupBtn">📧 Send Follow ups</button>
+                    <button class="btn btn-outline" id="refreshBtn">🔄 Refresh</button>
+                    <button class="btn btn-danger" id="logoutBtn">Sign Out</button>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+                <button class="tab-btn" data-tab="leads">📋 Leads</button>
+                <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
+                <button class="tab-btn" data-tab="materials">🧮 Materials</button>
+            </div>
+
+            <!-- ========== TAB: OVERVIEW ========== -->
+            <div class="tab-content active" id="tab-overview">
+                <!-- Stats -->
+                <div class="stats-row" id="statsRow">
+                    <div class="stat-card total">
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-label">Total Leads</div>
+                    </div>
+                    <div class="stat-card new">
+                        <div class="stat-value" id="statNew">0</div>
+                        <div class="stat-label">New</div>
+                    </div>
+                    <div class="stat-card contacted">
+                        <div class="stat-value" id="statContacted">0</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                    <div class="stat-card closed">
+                        <div class="stat-value" id="statClosed">0</div>
+                        <div class="stat-label">Closed Won</div>
+                    </div>
+                    <div class="stat-card revenue">
+                        <div class="stat-value" id="statPipeline">$0</div>
+                        <div class="stat-label">Pipeline Value</div>
+                    </div>
+                    <div class="stat-card paid">
+                        <div class="stat-value" id="statCollected">$0</div>
+                        <div class="stat-label">Collected</div>
+                    </div>
+                    <div class="stat-card conversion">
+                        <div class="stat-value" id="statConversion">0%</div>
+                        <div class="stat-label">Close Rate</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <h3>📈 Revenue by Month</h3>
+                        <canvas id="revenueChart" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>🛠️ Services Breakdown</h3>
+                        <canvas id="servicesChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conversion Funnel -->
+                <div class="chart-card" style="margin-bottom:1.5rem">
+                    <h3>📊 Conversion Funnel</h3>
+                    <div id="funnelContainer"
+                        style="display:flex;gap:.5rem;align-items:flex-end;height:160px;padding-top:1rem"></div>
+                </div>
+            </div>
+
+            <!-- ========== TAB: LEADS ========== -->
+            <div class="tab-content" id="tab-leads">
+                <!-- Search & Filter -->
+                <div class="filter-bar">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by name, phone, address...">
+                    <select id="statusFilter">
+                        <option value="all">All Statuses</option>
+                        <option value="New">New</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Quoted">Quoted</option>
+                        <option value="Closed">Closed</option>
+                        <option value="Lost">Lost</option>
+                    </select>
+                    <select id="payFilter">
+                        <option value="all">All Payments</option>
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Deposit">Deposit Paid</option>
+                        <option value="Paid">Paid in Full</option>
+                    </select>
+                    <select id="repFilter">
+                        <option value="all">All Reps</option>
+                    </select>
+                    <select id="dateFilter">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                    </select>
+                </div>
+
+                <!-- Table -->
+                <div class="table-card">
+                    <div class="table-title">
+                        <h2>All Leads <span id="leadCount"
+                                style="color:rgba(255,255,255,.3);font-weight:400;font-size:.85rem"></span></h2>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Client</th>
+                                    <th>Phone</th>
+                                    <th>Service</th>
+                                    <th>Value</th>
+                                    <th>Rep</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Job</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leadsBody">
+                                <tr>
+                                    <td colspan="9" class="loading">Loading leads...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== TAB: CALENDAR ========== -->
+            <div class="tab-content" id="tab-calendar">
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
+                        <h2>📅 Upcoming Schedule</h2>
+                        <div style="display:flex;gap:.5rem">
+                            <button onclick="loadCalendarEvents()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
+                            <button onclick="openBlockModal()" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🚫 Block Day</button>
+                        </div>
+                    </div>
+                    <div id="calendarEventsList" style="padding:1rem">
+                        <div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Click Refresh to load events</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== TAB: MATERIALS ========== -->
+            <div class="tab-content" id="tab-materials">
+                <div class="chart-card" style="margin-bottom:1rem">
+                    <h3>🧮 Materials Estimator</h3>
+                    <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:1rem">Rough estimates — adjust
+                        quantities as needed for each job.</p>
+                </div>
+                <div class="calc-grid">
+                    <!-- Deck -->
+                    <div class="calc-card">
+                        <h4>🪵 Deck Restoration</h4>
+                        <label>Deck Area (sqft)</label>
+                        <input type="number" id="matDeckSqft" oninput="calcMaterials()">
+                        <label>Condition (0=rotten, 5=excellent)</label>
+                        <input type="range" id="matDeckCond" min="0" max="5" value="3" oninput="calcMaterials()">
+                        <div class="calc-result" id="matDeckResult">Enter square footage to estimate</div>
+                    </div>
+                    <!-- Interlock -->
+                    <div class="calc-card">
+                        <h4>🧱 Interlock</h4>
+                        <label>Area (sqft)</label>
+                        <input type="number" id="matInterlockSqft" oninput="calcMaterials()">
+                        <label>Sealing?</label>
+                        <select id="matInterlockSeal" onchange="calcMaterials()">
+                            <option value="no">No</option>
+                            <option value="yes">Yes</option>
+                        </select>
+                        <div class="calc-result" id="matInterlockResult">Enter area to estimate</div>
+                    </div>
+                    <!-- Garden -->
+                    <div class="calc-card">
+                        <h4>🌿 Garden / Mulch</h4>
+                        <label>Mulch Area (sqft)</label>
+                        <input type="number" id="matGardenSqft" oninput="calcMaterials()">
+                        <label>Mulch Depth (inches)</label>
+                        <input type="number" id="matGardenDepth" value="3" oninput="calcMaterials()">
+                        <div class="calc-result" id="matGardenResult">Enter area to estimate</div>
+                    </div>
+                    <!-- Siding -->
+                    <div class="calc-card">
+                        <h4>🏡 Siding Wash</h4>
+                        <label>Stories</label>
+                        <select id="matSidingStories" onchange="calcMaterials()">
+                            <option value="1">1 Story</option>
+                            <option value="2">2 Stories</option>
+                            <option value="3">3 Stories</option>
+                        </select>
+                        <label>House Perimeter (ft)</label>
+                        <input type="number" id="matSidingPerimeter" oninput="calcMaterials()">
+                        <div class="calc-result" id="matSidingResult">Enter perimeter to estimate</div>
+                    </div>
+                    <!-- Stain -->
+                    <div class="calc-card">
+                        <h4>🎨 Stain / Sealer</h4>
+                        <label>Surface Area (sqft)</label>
+                        <input type="number" id="matStainSqft" oninput="calcMaterials()">
+                        <label>Coats</label>
+                        <select id="matStainCoats" onchange="calcMaterials()">
+                            <option value="1">1 Coat</option>
+                            <option value="2">2 Coats</option>
+                        </select>
+                        <div class="calc-result" id="matStainResult">Enter area to estimate</div>
+                    </div>
+                    <!-- Polymeric Sand -->
+                    <div class="calc-card">
+                        <h4>⏳ Polymeric Sand</h4>
+                        <label>Interlock Area (sqft)</label>
+                        <input type="number" id="matSandSqft" oninput="calcMaterials()">
+                        <label>Joint Width</label>
+                        <select id="matSandWidth" onchange="calcMaterials()">
+                            <option value="narrow">Narrow (< 1/4")</option>
+                            <option value="standard">Standard (1/4" - 1/2")</option>
+                            <option value="wide">Wide (> 1/2")</option>
+                        </select>
+                        <div class="calc-result" id="matSandResult">Enter area to estimate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- SCHEDULE JOB MODAL -->
+    <div id="scheduleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:#1a2a4a;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:2rem;width:100%;max-width:420px;margin:1rem">
+            <h3 style="margin:0 0 .25rem;color:#fff">📅 Schedule Job</h3>
+            <div style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:1.25rem">
+                <strong id="scheduleClientName" style="color:rgba(255,255,255,.8)"></strong><br>
+                <span id="scheduleAddress" style="font-size:.8rem"></span>
+            </div>
+            <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Job Date</label>
+            <input id="scheduleDate" type="date" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;margin-bottom:.75rem;font-size:.9rem">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                <div>
+                    <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Start Time</label>
+                    <input id="scheduleStart" type="time" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;font-size:.9rem">
+                </div>
+                <div>
+                    <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">End Time</label>
+                    <input id="scheduleEnd" type="time" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;font-size:.9rem">
+                </div>
+            </div>
+            <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Notes (optional)</label>
+            <textarea id="scheduleNotes" rows="2" placeholder="e.g. bring ladder, gate code 1234..." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;margin-bottom:1rem;font-size:.85rem;resize:none"></textarea>
+            <div style="display:flex;gap:.75rem">
+                <button id="scheduleSubmitBtn" onclick="submitScheduleJob()" style="flex:1;background:#2ecc71;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Schedule Job</button>
+                <button onclick="closeScheduleModal()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:.75rem 1.25rem;border-radius:10px;cursor:pointer">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BLOCK DAY MODAL -->
+    <div id="blockModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:#1a2a4a;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:2rem;width:100%;max-width:380px;margin:1rem">
+            <h3 style="margin:0 0 1.25rem;color:#fff">🚫 Block Day (Unavailable)</h3>
+            <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Date</label>
+            <input id="blockDate" type="date" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;margin-bottom:.75rem;font-size:.9rem">
+            <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Rep Name</label>
+            <input id="blockRep" type="text" placeholder="e.g. Mike" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;margin-bottom:.75rem;font-size:.9rem">
+            <label style="display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Reason (optional)</label>
+            <input id="blockReason" type="text" placeholder="e.g. Day off, sick, training..." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:.6rem .9rem;margin-bottom:1rem;font-size:.9rem">
+            <div style="display:flex;gap:.75rem">
+                <button id="blockSubmitBtn" onclick="submitBlockDay()" style="flex:1;background:#e74c3c;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Block Day</button>
+                <button onclick="closeBlockModal()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:.75rem 1.25rem;border-radius:10px;cursor:pointer">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let authToken = localStorage.getItem('admin_token') || '';
+        let allLeads = [];
+
+        if (authToken) showDashboard();
+
+        // LOGIN
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pw = document.getElementById('adminPassword').value;
+            const err = document.getElementById('loginError'); err.style.display = 'none';
+            try {
+                const r = await fetch(`${API_BASE}/auth`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw, role: 'admin' }) });
+                const d = await r.json();
+                if (d.success) { authToken = d.token; localStorage.setItem('admin_token', authToken); showDashboard() }
+                else { err.style.display = 'block' }
+            } catch (e) { err.textContent = 'Connection error.'; err.style.display = 'block' }
+        });
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block';
+            loadLeads();
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            authToken = ''; localStorage.removeItem('admin_token');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboardScreen').style.display = 'none';
+        });
+
+        // TABS
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // LOAD LEADS
+        async function loadLeads() {
+            try {
+                const r = await fetch(`${API_BASE}/leads`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                if (r.status === 401) { localStorage.removeItem('admin_token'); location.reload(); return }
+                const d = await r.json();
+                allLeads = d.leads || [];
+                updateStats();
+                renderLeads();
+                renderCharts();
+                buildRepFilter();
+            } catch (e) {
+                document.getElementById('leadsBody').innerHTML = '<tr><td colspan="9" class="empty-state">Failed to load. Please refresh.</td></tr>';
+            }
+        }
+
+        // STATS
+        function updateStats() {
+            const total = allLeads.length;
+            const newC = allLeads.filter(l => l.status === 'New').length;
+            const inProg = allLeads.filter(l => l.status === 'Contacted' || l.status === 'Quoted').length;
+            const closed = allLeads.filter(l => l.status === 'Closed').length;
+            const lost = allLeads.filter(l => l.status === 'Lost').length;
+
+            const pipeline = allLeads.reduce((s, l) => {
+                const v = parseFloat(String(l.total || l.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
+                return s + v;
+            }, 0);
+
+            const collected = allLeads.filter(l => l.paymentStatus === 'Paid' || l.paymentStatus === 'Deposit').reduce((s, l) => {
+                const v = parseFloat(String(l.total || l.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
+                return s + (l.paymentStatus === 'Deposit' ? v * 0.25 : v);
+            }, 0);
+
+            const closeRate = total > 0 ? Math.round((closed / (total - lost || 1)) * 100) : 0;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statNew').textContent = newC;
+            document.getElementById('statContacted').textContent = inProg;
+            document.getElementById('statClosed').textContent = closed;
+            document.getElementById('statPipeline').textContent = '$' + pipeline.toLocaleString(undefined, { maximumFractionDigits: 0 });
+            document.getElementById('statCollected').textContent = '$' + collected.toLocaleString(undefined, { maximumFractionDigits: 0 });
+            document.getElementById('statConversion').textContent = closeRate + '%';
+        }
+
+        // BUILD REP FILTER
+        function buildRepFilter() {
+            const reps = [...new Set(allLeads.map(l => l.salesRep).filter(Boolean))];
+            const sel = document.getElementById('repFilter');
+            sel.innerHTML = '<option value="all">All Reps</option>';
+            reps.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o) });
+        }
+
+        // RENDER LEADS TABLE
+        function renderLeads() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const statusF = document.getElementById('statusFilter').value;
+            const payF = document.getElementById('payFilter').value;
+            const repF = document.getElementById('repFilter').value;
+            const dateF = document.getElementById('dateFilter').value;
+            const now = Date.now();
+
+            let filtered = allLeads.filter(l => {
+                if (statusF !== 'all' && l.status !== statusF) return false;
+                if (payF !== 'all' && (l.paymentStatus || 'Unpaid') !== payF) return false;
+                if (repF !== 'all' && l.salesRep !== repF) return false;
+                if (search) {
+                    const s = (l.clientName + ' ' + l.phone + ' ' + l.address + ' ' + l.email + ' ' + l.serviceType + ' ' + l.estimateNumber).toLowerCase();
+                    if (!s.includes(search)) return false;
+                }
+                if (dateF !== 'all') {
+                    const created = new Date(l.createdAt).getTime();
+                    const days = { today: 1, '7d': 7, '30d': 30, '90d': 90 }[dateF];
+                    if (now - created > days * 86400000) return false;
+                }
+                return true;
+            });
+
+            document.getElementById('leadCount').textContent = `(${filtered.length} of ${allLeads.length})`;
+            const tbody = document.getElementById('leadsBody');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><h3>No leads found</h3><p>Try adjusting your filters.</p></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(lead => {
+                const date = new Date(lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+                const val = lead.total || (lead.estimatedValue ? '$' + parseFloat(lead.estimatedValue).toLocaleString() : '—');
+                const payStatus = lead.paymentStatus || 'Unpaid';
+                const payMethod = lead.paymentMethod || '';
+                const payLabel = payStatus === 'Deposit' ? 'Deposit' : payStatus;
+
+                return `
+                    <tr>
+                        <td>${date}</td>
+                        <td>
+                            <strong>${esc(lead.clientName)}</strong>
+                            ${lead.email ? '<br><span style="color:rgba(255,255,255,.4);font-size:.75rem">' + esc(lead.email) + '</span>' : ''}
+                            ${lead.address ? '<br><span style="color:rgba(255,255,255,.35);font-size:.75rem">' + esc(lead.address) + '</span>' : ''}
+                        </td>
+                        <td><a href="tel:${esc(lead.phone)}" style="color:#3498db;text-decoration:none">${esc(lead.phone)}</a></td>
+                        <td style="max-width:150px">${esc(lead.serviceType)}</td>
+                        <td><strong>${val}</strong></td>
+                        <td>${esc(lead.salesRep || '—')}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="badge badge-${lead.status}" onclick="toggleDrop('status-${lead.id}')">${lead.status}</button>
+                                <div class="dropdown-menu" id="status-${lead.id}">
+                                    <button onclick="setStatus('${lead.id}','New')">🔵 New</button>
+                                    <button onclick="setStatus('${lead.id}','Contacted')">🟡 Contacted</button>
+                                    <button onclick="setStatus('${lead.id}','Quoted')">🟣 Quoted</button>
+                                    <button onclick="setStatus('${lead.id}','Closed')">🟢 Closed</button>
+                                    <button onclick="setStatus('${lead.id}','Lost')">🔴 Lost</button>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="pay-badge pay-${payStatus}" onclick="toggleDrop('pay-${lead.id}')">${payLabel}${payMethod ? ' (' + payMethod + ')' : ''}</button>
+                                <div class="dropdown-menu" id="pay-${lead.id}">
+                                    <button onclick="setPayment('${lead.id}','Unpaid','')">❌ Unpaid</button>
+                                    <button onclick="setPayment('${lead.id}','Deposit','Cash')">💵 Deposit (Cash)</button>
+                                    <button onclick="setPayment('${lead.id}','Deposit','E-transfer')">📲 Deposit (E-transfer)</button>
+                                    <button onclick="setPayment('${lead.id}','Deposit','Credit Card')">💳 Deposit (Card)</button>
+                                    <button onclick="setPayment('${lead.id}','Deposit','Cheque')">📝 Deposit (Cheque)</button>
+                                    <button onclick="setPayment('${lead.id}','Paid','Cash')">✅ Paid (Cash)</button>
+                                    <button onclick="setPayment('${lead.id}','Paid','E-transfer')">✅ Paid (E-transfer)</button>
+                                    <button onclick="setPayment('${lead.id}','Paid','Credit Card')">✅ Paid (Card)</button>
+                                    <button onclick="setPayment('${lead.id}','Paid','Cheque')">✅ Paid (Cheque)</button>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <button onclick="openScheduleModal('${lead.id}','${esc(lead.clientName)}','${esc(lead.address)}')" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;white-space:nowrap">${lead.jobEventId ? '📅 Rescheduled' : '📅 Schedule'}</button>
+                        </td>
+                    </tr>
+                    ${lead.notes ? `<tr><td colspan="10" style="padding:.2rem 1rem .8rem;color:rgba(255,255,255,.35);font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.06)">📝 ${esc(lead.notes)}</td></tr>` : ''}
+                `;
+            }).join('');
+        }
+
+        // DROPDOWN TOGGLE
+        function toggleDrop(id) {
+            document.querySelectorAll('.dropdown-menu').forEach(m => { if (m.id !== id) m.classList.remove('show') });
+            document.getElementById(id).classList.toggle('show');
+        }
+        document.addEventListener('click', e => { if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')) });
+
+        // STATUS UPDATE
+        async function setStatus(id, status) {
+            try {
+                const r = await fetch(`${API_BASE}/leads`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, status }) });
+                if (r.ok) { const l = allLeads.find(x => x.id === id); if (l) l.status = status; updateStats(); renderLeads(); renderCharts(); toast('Status updated', 'success') }
+            } catch (e) { toast('Failed to update', 'error') }
+        }
+
+        // PAYMENT UPDATE
+        async function setPayment(id, paymentStatus, paymentMethod) {
+            try {
+                const r = await fetch(`${API_BASE}/leads`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, paymentStatus, paymentMethod }) });
+                if (r.ok) {
+                    const l = allLeads.find(x => x.id === id);
+                    if (l) { l.paymentStatus = paymentStatus; l.paymentMethod = paymentMethod }
+                    updateStats(); renderLeads(); toast('Payment updated', 'success');
+                }
+            } catch (e) { toast('Failed to update', 'error') }
+        }
+
+        // FILTERS
+        document.getElementById('searchInput').addEventListener('input', renderLeads);
+        document.getElementById('statusFilter').addEventListener('change', renderLeads);
+        document.getElementById('payFilter').addEventListener('change', renderLeads);
+        document.getElementById('repFilter').addEventListener('change', renderLeads);
+        document.getElementById('dateFilter').addEventListener('change', renderLeads);
+
+        // REFRESH
+        document.getElementById('refreshBtn').addEventListener('click', loadLeads);
+
+        // CHARTS
+        function renderCharts() {
+            renderRevenueChart();
+            renderServicesChart();
+            renderFunnel();
+        }
+
+        function renderRevenueChart() {
+            const canvas = document.getElementById('revenueChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth - 48;
+            canvas.height = 200;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Group by month
+            const months = {};
+            allLeads.forEach(l => {
+                const d = new Date(l.createdAt);
+                const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                const val = parseFloat(String(l.total || l.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
+                months[key] = (months[key] || 0) + val;
+            });
+
+            const sorted = Object.entries(months).sort((a, b) => a[0].localeCompare(b[0])).slice(-6);
+            if (sorted.length === 0) { ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.font = '14px Inter'; ctx.fillText('No data yet', canvas.width / 2 - 35, 100); return }
+
+            const maxVal = Math.max(...sorted.map(s => s[1]), 1);
+            const barW = Math.min(60, (canvas.width - 60) / sorted.length - 10);
+            const startX = 50;
+
+            sorted.forEach(([month, val], i) => {
+                const h = (val / maxVal) * 160;
+                const x = startX + i * (barW + 15);
+                const y = 180 - h;
+
+                const grad = ctx.createLinearGradient(x, y, x, 180);
+                grad.addColorStop(0, '#e67e22');
+                grad.addColorStop(1, '#d35400');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(x, y, barW, h, 4);
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(255,255,255,.5)';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(month.split('-')[1] + '/' + month.split('-')[0].slice(2), x + barW / 2, 196);
+
+                ctx.fillStyle = 'rgba(255,255,255,.7)';
+                ctx.font = '10px Inter';
+                ctx.fillText('$' + Math.round(val).toLocaleString(), x + barW / 2, y - 6);
+            });
+        }
+
+        function renderServicesChart() {
+            const canvas = document.getElementById('servicesChart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth - 48;
+            canvas.height = 200;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const svcCounts = {};
+            allLeads.forEach(l => {
+                const svcs = (l.serviceType || '').split(',').map(s => s.trim()).filter(Boolean);
+                svcs.forEach(s => { svcCounts[s] = (svcCounts[s] || 0) + 1 });
+            });
+
+            const entries = Object.entries(svcCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+            if (entries.length === 0) { ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.font = '14px Inter'; ctx.fillText('No data', canvas.width / 2 - 25, 100); return }
+
+            const colors = ['#e67e22', '#3498db', '#2ecc71', '#9b59b6', '#f39c12', '#e74c3c'];
+            const total = entries.reduce((s, e) => s + e[1], 0);
+            let angle = -Math.PI / 2;
+            const cx = 85, cy = 100, r = 70;
+
+            entries.forEach(([name, count], i) => {
+                const slice = (count / total) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, r, angle, angle + slice);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                angle += slice;
+            });
+
+            // Inner circle for donut
+            ctx.beginPath();
+            ctx.arc(cx, cy, 38, 0, Math.PI * 2);
+            ctx.fillStyle = getComputedStyle(document.body).backgroundColor || '#0a1628';
+            ctx.fill();
+
+            // Legend
+            let ly = 30;
+            entries.forEach(([name, count], i) => {
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillRect(180, ly, 10, 10);
+                ctx.fillStyle = 'rgba(255,255,255,.7)';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'left';
+                const short = name.length > 18 ? name.slice(0, 16) + '...' : name;
+                ctx.fillText(`${short} (${count})`, 196, ly + 9);
+                ly += 20;
+            });
+        }
+
+        function renderFunnel() {
+            const container = document.getElementById('funnelContainer');
+            const stages = [
+                { label: 'New', count: allLeads.filter(l => l.status === 'New').length, color: '#3498db' },
+                { label: 'Contacted', count: allLeads.filter(l => l.status === 'Contacted').length, color: '#f39c12' },
+                { label: 'Quoted', count: allLeads.filter(l => l.status === 'Quoted').length, color: '#9b59b6' },
+                { label: 'Closed', count: allLeads.filter(l => l.status === 'Closed').length, color: '#2ecc71' }
+            ];
+            const max = Math.max(...stages.map(s => s.count), 1);
+
+            container.innerHTML = stages.map(s => {
+                const h = Math.max((s.count / max) * 130, 20);
+                return `<div style="flex:1;text-align:center">
+                    <div style="font-size:1.4rem;font-weight:800;color:${s.color}">${s.count}</div>
+                    <div style="height:${h}px;background:${s.color};border-radius:8px 8px 0 0;margin:6px auto 0;width:80%;opacity:.7;transition:height .5s"></div>
+                    <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:6px">${s.label}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // SMS MODAL
+        function openSmsModal(id) {
+            const lead = allLeads.find(l => l.id === id);
+            if (!lead) return;
+            document.getElementById('smsTo').value = lead.phone;
+            document.getElementById('smsClientName').value = lead.clientName;
+            document.getElementById('smsModal').classList.add('show');
+            updateSmsPreview();
+        }
+
+        function closeSmsModal() { document.getElementById('smsModal').classList.remove('show') }
+
+        function updateSmsPreview() {
+            const tmpl = document.getElementById('smsTemplate').value;
+            const name = document.getElementById('smsClientName').value;
+            const msg = document.getElementById('smsMessage');
+            const templates = {
+                estimate: `Hi ${name}! Your estimate from Core Exteriors is ready. Please check your email for the full details. Questions? Call us at 606 616 2026. Thank you!`,
+                followup: `Hi ${name}, just following up on your estimate from Core Exteriors. We'd love to help you get started! Feel free to reach us at 606 616 2026.`,
+                reminder: `Hi ${name}! Just a reminder about your upcoming appointment with Core Exteriors. See you soon! Questions? 606 616 2026`,
+                custom: ''
+            };
+            msg.value = templates[tmpl] || '';
+        }
+
+        async function sendSms() {
+            const phone = document.getElementById('smsTo').value;
+            const message = document.getElementById('smsMessage').value;
+            if (!message) { toast('Please enter a message', 'error'); return }
+            document.getElementById('sendSmsBtn').disabled = true;
+            document.getElementById('sendSmsBtn').textContent = 'Sending...';
+            try {
+                const r = await fetch(`${API_BASE}/sms`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ to: phone, message })
+                });
+                const d = await r.json();
+                if (d.success) { toast('SMS sent!', 'success'); closeSmsModal() }
+                else { toast(d.error || 'SMS failed. Check Twilio config.', 'error') }
+            } catch (e) { toast('SMS failed to send.', 'error') }
+            finally { document.getElementById('sendSmsBtn').disabled = false; document.getElementById('sendSmsBtn').textContent = 'Send SMS' }
+        }
+
+        // FOLLOW-UP EMAILS
+        document.getElementById('followupBtn').addEventListener('click', async () => {
+            if (!confirm('Send follow-up emails to leads older than 3 days with status New or Quoted?')) return;
+            try {
+                const r = await fetch(`${API_BASE}/followup`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                if (d.success) { toast(`Follow-ups sent to ${d.count} lead(s)`, 'success') }
+                else { toast(d.error || 'Failed to send follow-ups', 'error') }
+            } catch (e) { toast('Failed to send follow-ups.', 'error') }
+        });
+
+        // EXPORT CSV
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            if (allLeads.length === 0) { toast('No leads to export', 'info'); return }
+            const headers = ['Date', 'Estimate #', 'Client', 'Phone', 'Email', 'Address', 'Service', 'Value', 'Rep', 'Status', 'Payment', 'Method', 'Notes'];
+            const rows = allLeads.map(l => [
+                new Date(l.createdAt).toLocaleDateString('en-CA'),
+                l.estimateNumber || '',
+                l.clientName, l.phone, l.email, l.address, l.serviceType,
+                l.total || l.estimatedValue || '',
+                l.salesRep, l.status,
+                l.paymentStatus || 'Unpaid',
+                l.paymentMethod || '',
+                l.notes
+            ]);
+            const csv = [headers, ...rows].map(r => r.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `core-exteriors-leads-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click(); URL.revokeObjectURL(a.href);
+            toast('CSV exported', 'success');
+        });
+
+        // MATERIALS CALCULATOR
+        function calcMaterials() {
+            // Deck
+            const deckSqft = parseFloat(document.getElementById('matDeckSqft').value) || 0;
+            const deckCond = parseInt(document.getElementById('matDeckCond').value);
+            if (deckSqft > 0) {
+                const stripperGal = Math.ceil(deckSqft / 150);
+                const brighterGal = Math.ceil(deckSqft / 200);
+                const stainGal = Math.ceil(deckSqft / 200);
+                const sandpaper = deckCond <= 2 ? Math.ceil(deckSqft / 50) + ' sheets' : 'Minimal';
+                document.getElementById('matDeckResult').innerHTML =
+                    `<b>Stripper:</b> ~${stripperGal} gal &nbsp;|&nbsp; <b>Brightener:</b> ~${brighterGal} gal<br><b>Stain:</b> ~${stainGal} gal &nbsp;|&nbsp; <b>Sandpaper:</b> ${sandpaper}`;
+            }
+
+            // Interlock
+            const intSqft = parseFloat(document.getElementById('matInterlockSqft').value) || 0;
+            if (intSqft > 0) {
+                const polySand = Math.ceil(intSqft / 40);
+                const seal = document.getElementById('matInterlockSeal').value === 'yes';
+                const sealerGal = seal ? Math.ceil(intSqft / 80) : 0;
+                let result = `<b>Polymeric Sand:</b> ~${polySand} bags (50lb)`;
+                if (seal) result += `<br><b>Sealer:</b> ~${sealerGal} gal`;
+                document.getElementById('matInterlockResult').innerHTML = result;
+            }
+
+            // Garden
+            const gardenSqft = parseFloat(document.getElementById('matGardenSqft').value) || 0;
+            const gardenDepth = parseFloat(document.getElementById('matGardenDepth').value) || 3;
+            if (gardenSqft > 0) {
+                const cubicYards = Math.ceil((gardenSqft * (gardenDepth / 12)) / 27 * 10) / 10;
+                document.getElementById('matGardenResult').innerHTML =
+                    `<b>Mulch:</b> ~${cubicYards} cubic yards<br><b>Bags (2 cu ft):</b> ~${Math.ceil(cubicYards * 13.5)} bags`;
+            }
+
+            // Siding
+            const sidingPerimeter = parseFloat(document.getElementById('matSidingPerimeter').value) || 0;
+            const sidingStories = parseInt(document.getElementById('matSidingStories').value);
+            if (sidingPerimeter > 0) {
+                const wallArea = sidingPerimeter * sidingStories * 9;
+                const detergentGal = Math.ceil(wallArea / 500);
+                const bleachGal = Math.ceil(wallArea / 400);
+                document.getElementById('matSidingResult').innerHTML =
+                    `<b>Wall Area:</b> ~${wallArea} sqft<br><b>Detergent:</b> ~${detergentGal} gal &nbsp;|&nbsp; <b>Bleach:</b> ~${bleachGal} gal`;
+            }
+
+            // Stain
+            const stainSqft = parseFloat(document.getElementById('matStainSqft').value) || 0;
+            const stainCoats = parseInt(document.getElementById('matStainCoats').value);
+            if (stainSqft > 0) {
+                const stainGal = Math.ceil((stainSqft * stainCoats) / 200);
+                document.getElementById('matStainResult').innerHTML =
+                    `<b>Stain/Sealer:</b> ~${stainGal} gal (${stainCoats} coat${stainCoats > 1 ? 's' : ''})`;
+            }
+
+            // Sand
+            const sandSqft = parseFloat(document.getElementById('matSandSqft').value) || 0;
+            if (sandSqft > 0) {
+                const width = document.getElementById('matSandWidth').value;
+                const rate = { narrow: 60, standard: 40, wide: 25 }[width] || 40;
+                const bags = Math.ceil(sandSqft / rate);
+                document.getElementById('matSandResult').innerHTML =
+                    `<b>Polymeric Sand:</b> ~${bags} bags (50lb)`;
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════
+        // CALENDAR
+        // ════════════════════════════════════════════════════════════
+
+        let scheduleLeadId = '';
+
+        function openScheduleModal(leadId, clientName, address) {
+            scheduleLeadId = leadId;
+            document.getElementById('scheduleClientName').textContent = clientName;
+            document.getElementById('scheduleAddress').textContent = address;
+            document.getElementById('scheduleDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('scheduleStart').value = '09:00';
+            document.getElementById('scheduleEnd').value = '12:00';
+            document.getElementById('scheduleNotes').value = '';
+            document.getElementById('scheduleModal').style.display = 'flex';
+        }
+
+        function openBlockModal() {
+            document.getElementById('blockDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('blockRep').value = '';
+            document.getElementById('blockReason').value = '';
+            document.getElementById('blockModal').style.display = 'flex';
+        }
+
+        function closeScheduleModal() { document.getElementById('scheduleModal').style.display = 'none'; }
+        function closeBlockModal() { document.getElementById('blockModal').style.display = 'none'; }
+
+        async function submitScheduleJob() {
+            const date = document.getElementById('scheduleDate').value;
+            const startTime = document.getElementById('scheduleStart').value;
+            const endTime = document.getElementById('scheduleEnd').value;
+            const notes = document.getElementById('scheduleNotes').value;
+            const clientName = document.getElementById('scheduleClientName').textContent;
+            const address = document.getElementById('scheduleAddress').textContent;
+
+            if (!date) { toast('Please select a date', 'error'); return; }
+
+            const btn = document.getElementById('scheduleSubmitBtn');
+            btn.disabled = true; btn.textContent = 'Scheduling...';
+
+            try {
+                const r = await fetch(`${API_BASE}/calendar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({
+                        title: `🟢 Job — ${clientName}`,
+                        description: `Address: ${address}${notes ? '\nNotes: ' + notes : ''}`,
+                        date, startTime, endTime,
+                        allDay: false,
+                        leadId: scheduleLeadId,
+                        eventType: 'job',
+                    }),
+                });
+                const d = await r.json();
+                if (d.success) {
+                    toast('Job scheduled on Google Calendar!', 'success');
+                    closeScheduleModal();
+                    const l = allLeads.find(x => x.id === scheduleLeadId);
+                    if (l) { l.status = 'Scheduled'; l.jobEventId = d.eventId; }
+                    renderLeads();
+                    loadCalendarEvents();
+                } else {
+                    toast(d.error || 'Failed to schedule', 'error');
+                }
+            } catch (e) {
+                toast('Connection error', 'error');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Schedule Job';
+            }
+        }
+
+        async function submitBlockDay() {
+            const date = document.getElementById('blockDate').value;
+            const rep = document.getElementById('blockRep').value.trim();
+            const reason = document.getElementById('blockReason').value.trim();
+
+            if (!date || !rep) { toast('Date and rep name are required', 'error'); return; }
+
+            const btn = document.getElementById('blockSubmitBtn');
+            btn.disabled = true; btn.textContent = 'Blocking...';
+
+            try {
+                const r = await fetch(`${API_BASE}/calendar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({
+                        title: `🚫 UNAVAILABLE — ${rep}`,
+                        description: reason || 'Not available',
+                        date, allDay: true,
+                        repName: rep,
+                        eventType: 'unavailable',
+                    }),
+                });
+                const d = await r.json();
+                if (d.success) {
+                    toast(`${rep} blocked on ${date}`, 'success');
+                    closeBlockModal();
+                    loadCalendarEvents();
+                } else {
+                    toast(d.error || 'Failed to block day', 'error');
+                }
+            } catch (e) {
+                toast('Connection error', 'error');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Block Day';
+            }
+        }
+
+        async function deleteCalendarEvent(eventId) {
+            if (!confirm('Remove this event from Google Calendar?')) return;
+            try {
+                const r = await fetch(`${API_BASE}/calendar`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ eventId }),
+                });
+                const d = await r.json();
+                if (d.success) { toast('Event removed', 'success'); loadCalendarEvents(); }
+                else toast(d.error || 'Failed to remove event', 'error');
+            } catch (e) { toast('Connection error', 'error'); }
+        }
+
+        async function loadCalendarEvents() {
+            const container = document.getElementById('calendarEventsList');
+            container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Loading...</div>';
+            try {
+                const now = new Date();
+                const end = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+                const r = await fetch(`${API_BASE}/calendar?start=${now.toISOString()}&end=${end.toISOString()}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+                const d = await r.json();
+                if (!d.success) { container.innerHTML = '<div style="color:#e74c3c;padding:1rem">' + (d.error || 'Failed to load') + '</div>'; return; }
+
+                const events = d.events;
+                if (events.length === 0) {
+                    container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">No upcoming events in the next 60 days</div>';
+                    return;
+                }
+
+                // Group by date
+                const byDay = {};
+                events.forEach(e => {
+                    const day = (e.start || '').split('T')[0];
+                    if (!byDay[day]) byDay[day] = [];
+                    byDay[day].push(e);
+                });
+
+                const typeColors = { sales_visit: '#3498db', job: '#2ecc71', unavailable: '#95a5a6', other: '#e67e22' };
+                const typeLabels = { sales_visit: 'Sales Visit', job: 'Job', unavailable: 'Unavailable', other: 'Event' };
+
+                container.innerHTML = Object.entries(byDay).map(([day, evts]) => {
+                    const label = new Date(day + 'T12:00:00').toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
+                    return `
+                        <div style="margin-bottom:1.25rem">
+                            <div style="font-size:.75rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:1px solid rgba(255,255,255,.07)">${label}</div>
+                            ${evts.map(e => {
+                                const color = typeColors[e.type] || '#e67e22';
+                                const time = e.allDay ? 'All Day' : (e.start.split('T')[1] || '').slice(0, 5) + ' – ' + (e.end.split('T')[1] || '').slice(0, 5);
+                                return `
+                                <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:.4rem;border-left:3px solid ${color}">
+                                    <div style="flex:1;min-width:0">
+                                        <div style="font-weight:600;font-size:.9rem">${esc(e.title)}</div>
+                                        ${e.description ? `<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px;white-space:pre-line">${esc(e.description)}</div>` : ''}
+                                        <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:3px">${time} &nbsp;·&nbsp; <span style="color:${color}">${typeLabels[e.type] || e.type}</span></div>
+                                    </div>
+                                    <button onclick="deleteCalendarEvent('${e.id}')" title="Remove event" style="background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:1rem;padding:4px">✕</button>
+                                </div>`;
+                            }).join('')}
+                        </div>`;
+                }).join('');
+            } catch (e) {
+                container.innerHTML = '<div style="color:#e74c3c;padding:1rem">Connection error</div>';
+            }
+        }
+
+        // Auto-load calendar when tab is clicked
+        document.querySelector('[data-tab="calendar"]').addEventListener('click', loadCalendarEvents);
+
+        // TOAST
+        function toast(msg, type) {
+            const t = document.getElementById('toast');
+            t.className = `toast toast-${type} show`;
+            t.textContent = msg;
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // ESCAPE HTML
+        function esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML }
+    </script>
+</body>
+
+</html>

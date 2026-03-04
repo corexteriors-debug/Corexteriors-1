@@ -1,4 +1,47 @@
 const { kv } = require('@vercel/kv');
+const { google } = require('googleapis');
+
+function getCalendarClient() {
+    const email = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
+    const key = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
+    if (!email || !key) return null;
+    const auth = new google.auth.JWT({
+        email, key,
+        scopes: ['https://www.googleapis.com/auth/calendar'],
+    });
+    return google.calendar({ version: 'v3', auth });
+}
+
+async function createSalesVisitEvent(lead) {
+    const calendarId = (process.env.GOOGLE_CALENDAR_ID || '').trim();
+    const cal = getCalendarClient();
+    if (!cal || !calendarId) return null;
+
+    const date = lead.survey?.visitDate;
+    if (!date) return null;
+
+    try {
+        const endDate = new Date(date);
+        endDate.setDate(endDate.getDate() + 1);
+        const event = await cal.events.insert({
+            calendarId,
+            resource: {
+                summary: `🔵 Sales Visit — ${lead.clientName}`,
+                description: `Rep: ${lead.salesRep}\nAddress: ${lead.address}\nServices: ${lead.serviceType}\nEstimate: ${lead.total}\nPhone: ${lead.phone}\nEstimate #: ${lead.estimateNumber}`,
+                start: { date },
+                end: { date: endDate.toISOString().split('T')[0] },
+                colorId: '7',
+                extendedProperties: {
+                    private: { eventType: 'sales_visit', leadId: lead.id, repName: lead.salesRep },
+                },
+            },
+        });
+        return event.data.id;
+    } catch (err) {
+        console.error('Auto calendar event error:', err.message);
+        return null;
+    }
+}
 
 module.exports = async function handler(req, res) {
     // CORS headers
@@ -64,6 +107,14 @@ module.exports = async function handler(req, res) {
             const leadIds = (await kv.get('lead_ids')) || [];
             leadIds.unshift(lead.id);
             await kv.set('lead_ids', leadIds);
+
+            // Auto-create Google Calendar sales visit event (non blocking)
+            createSalesVisitEvent(lead).then(eventId => {
+                if (eventId) {
+                    lead.calendarEventId = eventId;
+                    kv.set(`lead:${lead.id}`, lead).catch(() => {});
+                }
+            }).catch(() => {});
 
             // Push to Google Sheet (non blocking)
             const sheetWebhook = process.env.GOOGLE_SHEET_WEBHOOK;
