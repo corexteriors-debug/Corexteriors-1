@@ -2945,13 +2945,14 @@ body.page-exit {
 }
 
 /* Ensure clean photo presentation */
-.image-slot {
-    position: relative;
-    overflow: hidden;
-}
-
 .image-slot img {
     object-position: center;
+}
+
+/* Homepage gallery: force uniform card height */
+.gallery-grid .image-slot {
+    aspect-ratio: unset;
+    height: 220px;
 }
 
 
