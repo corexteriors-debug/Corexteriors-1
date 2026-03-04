@@ -5,20 +5,20 @@
 /* CSS Custom Properties */
 :root {
     /* Brand Colors */
-    --sky-blue: #4AABDC;
-    --sky-blue-dark: #3A8FBC;
-    --gold: #F5B800;
-    --gold-hover: #E5A800;
+    --sky-blue: #002147;
+    --sky-blue-dark: #001535;
+    --gold: #C9A84C;
+    --gold-hover: #B8973D;
     --black: #1A1A1A;
     --white: #FFFFFF;
-    --light-gray: #F8F9FA;
+    --light-gray: #F4F4F4;
     --medium-gray: #6C757D;
     --dark-gray: #343A40;
 
     /* Gradients */
-    --gradient-blue: linear-gradient(135deg, #4AABDC 0%, #3A8FBC 100%);
-    --gradient-gold: linear-gradient(135deg, #F5B800 0%, #E5A800 100%);
-    --gradient-hero: linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%);
+    --gradient-blue: linear-gradient(135deg, #002147 0%, #001535 100%);
+    --gradient-gold: linear-gradient(135deg, #C9A84C 0%, #B8973D 100%);
+    --gradient-hero: linear-gradient(135deg, #F4F4F4 0%, #FFFFFF 100%);
 
     /* Shadows */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
