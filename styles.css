@@ -190,9 +190,10 @@ img {
 }
 
 .logo-image {
-    height: 60px;
+    height: 52px;
     width: auto;
     object-fit: contain;
+    mix-blend-mode: multiply;
     transition: transform var(--transition-fast);
 }
 
@@ -395,6 +396,28 @@ img {
 
 .hero-image-wrapper:hover .hero-image {
     transform: scale(1.03);
+}
+
+/* Hero Wordmark & Seal */
+.hero-wordmark {
+    width: 240px;
+    height: auto;
+    display: block;
+    margin-bottom: 20px;
+    mix-blend-mode: multiply;
+}
+
+.form-seal-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.form-seal {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    mix-blend-mode: multiply;
 }
 
 /* Hero Features */
