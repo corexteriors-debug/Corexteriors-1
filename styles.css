@@ -2950,9 +2950,20 @@ body.page-exit {
 }
 
 /* Homepage gallery: force uniform card height */
+.gallery-grid .before-after {
+    height: 220px;
+    overflow: hidden;
+}
+
 .gallery-grid .image-slot {
     aspect-ratio: unset;
-    height: 220px;
+    height: 100%;
+}
+
+.gallery-grid .image-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 
