@@ -1991,6 +1991,9 @@ corexteriors.ca
             div.innerHTML = `
                 <div style="display:flex;align-items:center;gap:.6rem">
                     <input type="date" class="avail-date" value="${today}" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.55rem .75rem;font-size:.9rem">
+                    <input type="time" class="avail-start" value="08:00" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.55rem .6rem;font-size:.9rem">
+                    <span style="color:rgba(255,255,255,.3);font-size:.8rem">to</span>
+                    <input type="time" class="avail-end" value="20:00" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.55rem .6rem;font-size:.9rem">
                     <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:1rem;padding:4px">✕</button>
                 </div>`;
             document.getElementById('availSlots').appendChild(div);
@@ -2005,8 +2008,10 @@ corexteriors.ca
             const entries = [];
             for (const slot of slots) {
                 const date = slot.querySelector('.avail-date').value;
+                const start = slot.querySelector('.avail-start').value;
+                const end = slot.querySelector('.avail-end').value;
                 if (!date) { showAvailMsg('Fill in all dates', 'error'); return; }
-                entries.push({ date });
+                entries.push({ date, start, end });
             }
 
             const btn = document.getElementById('availSubmitBtn');
@@ -2020,9 +2025,11 @@ corexteriors.ca
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
                         body: JSON.stringify({
                             title: '✅ AVAILABLE — ' + rep,
-                            description: rep + ' is available all day',
+                            description: rep + ' available ' + e.start + '–' + e.end,
                             date: e.date,
-                            allDay: true,
+                            startTime: e.start,
+                            endTime: e.end,
+                            allDay: false,
                             repName: rep,
                             eventType: 'available',
                         }),
