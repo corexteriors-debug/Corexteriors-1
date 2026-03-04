@@ -477,16 +477,18 @@ img {
 
 .form-submit {
     width: 100%;
-    padding: 16px;
+    padding: 20px;
     background: var(--gradient-gold);
     border: none;
-    border-radius: 10px;
-    font-size: 16px;
+    border-radius: 12px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--black);
     cursor: pointer;
     transition: all var(--transition-normal);
-    margin-top: 8px;
+    margin-top: 12px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 20px rgba(201, 168, 76, 0.35);
 }
 
 .form-submit:hover {
