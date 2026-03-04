@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>London Lead Finder | Exterior Maintenance Leads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-hover: #243044;
+      --border: #2d3a4d;
+      --text: #e6edf3;
+      --text-muted: #8b9eb5;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding: 1.25rem;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--surface-hover);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--border);
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status.ok {
+      color: var(--success);
+    }
+
+    .status.warn {
+      color: var(--warning);
+    }
+
+    .results-section {
+      margin-top: 1.5rem;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .results-count {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 1rem 1.25rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--surface-hover);
+    }
+
+    .name {
+      font-weight: 500;
+      min-width: 180px;
+    }
+
+    .address {
+      color: var(--text-muted);
+      min-width: 220px;
+    }
+
+    .type-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--accent);
+      text-transform: capitalize;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .empty-state,
+    .loading-state,
+    .error-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+      margin-top: 1rem;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error-state {
+      color: #ef4444;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(245, 158, 11, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid var(--warning);
+    }
+
+    .email-cell input,
+    .notes-cell input,
+    .notes-cell textarea {
+      width: 100%;
+      min-width: 140px;
+      padding: 0.4rem 0.6rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+    }
+
+    .notes-cell textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .email-cell input::placeholder,
+    .notes-cell input::placeholder,
+    .notes-cell textarea::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .replied-select {
+      padding: 0.4rem 0.6rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      min-width: 90px;
+      cursor: pointer;
+    }
+
+    .replied-select.replied-yes {
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .replied-select.replied-no {
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-body {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+    }
+
+    .form-group input[type="text"] {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+    }
+
+    .form-group input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-group .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .help-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .help-text a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>London Lead Finder</h1>
+      <p class="subtitle">Find contact info for commercial, strata & apartment complexes in London, Ontario</p>
+    </header>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="searchBtn">
+        <span>🔍</span> Search London Properties
+      </button>
+      <button class="btn btn-secondary" id="exportBtn" disabled>Export CSV</button>
+      <button class="btn btn-secondary" id="syncSheetsBtn" disabled title="Sync to Google Sheets">📊 Sync to
+        Sheets</button>
+      <button class="btn btn-secondary" id="configureSheetsBtn" title="Configure Google Sheets">⚙️ Sheets
+        Config</button>
+      <button class="btn btn-secondary" id="importBtn">Import CSV</button>
+      <input type="file" id="importFile" accept=".csv" style="display:none">
+      <button class="btn btn-secondary" id="clearLeadsBtn" title="Clear saved leads from this browser">Clear
+        Saved</button>
+      <button class="btn btn-secondary" id="resetBudgetBtn"
+        title="Reset budget tracker (use when you add more credits)">Reset Budget</button>
+      <span class="status" id="apiStatus">Checking API…</span>
+      <span class="status" id="budgetStatus"></span>
+      <span class="status" id="sheetsStatus"></span>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> Google Places does not provide email addresses. You can add emails manually in the table
+      below, or find them on the property's website. Phone numbers and addresses are fetched when available.
+    </div>
+
+    <div class="results-section">
+      <div class="results-header">
+        <span class="results-count" id="resultsCount"></span>
+      </div>
+
+      <div id="content">
+        <div class="empty-state" id="emptyState">
+          Click "Search London Properties" to find apartment buildings, condos, and commercial complexes in London, ON.
+          Results include address, phone, website, and building type. Export to CSV for your lead sheet.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+    const STORAGE_KEY = 'london-lead-finder-leads';
+    let places = [];
+
+    const searchBtn = document.getElementById('searchBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const syncSheetsBtn = document.getElementById('syncSheetsBtn');
+    const configureSheetsBtn = document.getElementById('configureSheetsBtn');
+    const apiStatus = document.getElementById('apiStatus');
+    const sheetsStatus = document.getElementById('sheetsStatus');
+    const resultsCount = document.getElementById('resultsCount');
+    const content = document.getElementById('content');
+    const emptyState = document.getElementById('emptyState');
+
+    async function checkApi() {
+      try {
+        const r = await fetch(`${API}/health`);
+        const d = await r.json();
+        apiStatus.textContent = d.ok ? '✓ API ready' : '⚠ Set GOOGLE_PLACES_API_KEY';
+        apiStatus.className = 'status ' + (d.ok ? 'ok' : 'warn');
+        if (d.budget) {
+          const b = document.getElementById('budgetStatus');
+          const rem = d.budget.remainingUsd ?? 0;
+          const lim = d.budget.limitUsd ?? 150;
+          b.textContent = `Budget: $${rem.toFixed(2)} / $${lim} remaining`;
+          b.className = 'status ' + (rem > 10 ? 'ok' : 'warn');
+        }
+        if (d.googleSheets) {
+          const status = d.googleSheets.enabled ? '✓ Sheets ready' :
+            d.googleSheets.configured ? '⚙️ Sheets configured' :
+              '○ Sheets not configured';
+          sheetsStatus.textContent = status;
+          sheetsStatus.className = 'status ' + (d.googleSheets.enabled ? 'ok' : 'warn');
+        }
+      } catch {
+        apiStatus.textContent = '✗ Server not running';
+        apiStatus.className = 'status warn';
+      }
+    }
+
+    async function runSearch() {
+      searchBtn.disabled = true;
+      searchBtn.innerHTML = '<span class="spinner" style="width:18px;height:18px;border-width:2px;margin:0"></span> Searching…';
+      content.innerHTML = `
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Searching apartment buildings, condos, commercial properties…</p>
+          <p style="margin-top:0.5rem;font-size:0.85rem">This may take 1–2 minutes. Fetching contact details for each property.</p>
+        </div>
+      `;
+
+      try {
+        const r = await fetch(`${API}/search`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maxPlaces: 80 }),
+        });
+
+        const data = await r.json();
+
+        if (!r.ok) {
+          if (r.status === 402) {
+            content.innerHTML = `
+              <div class="error-state">
+                <p><strong>Budget limit reached</strong></p>
+                <p>${escapeHtml(data.error || '')}</p>
+                <p style="margin-top:0.5rem">Remaining: $${(data.remainingUsd || 0).toFixed(2)}. Use "Reset Budget" when you add more credits, or reduce the search size.</p>
+              </div>
+            `;
+          } else {
+            throw new Error(data.error || 'Search failed');
+          }
+          return;
+        }
+
+        places = data.places || [];
+        renderTable(places);
+        exportBtn.disabled = places.length === 0;
+        syncSheetsBtn.disabled = places.length === 0;
+        saveLeads();
+        let countText = `${places.length} properties found`;
+        if (data.costThisRun != null) countText += ` ($${data.costThisRun.toFixed(2)} this run)`;
+        if (data.sheetsSynced) countText += ` - ✓ Synced to Google Sheets`;
+        resultsCount.textContent = countText;
+        checkApi();
+      } catch (err) {
+        content.innerHTML = `
+          <div class="error-state">
+            <p><strong>Error:</strong> ${err.message}</p>
+            <p style="margin-top:0.5rem;font-size:0.85rem">Make sure the server is running and GOOGLE_PLACES_API_KEY is set in .env</p>
+          </div>
+        `;
+        resultsCount.textContent = '';
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = '<span>🔍</span> Search London Properties';
+      }
+    }
+
+    function renderTable(rows) {
+      if (!rows.length) {
+        content.innerHTML = '<div class="empty-state">No results found. Try running the search again.</div>';
+        return;
+      }
+
+      content.innerHTML = `
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Website</th>
+                <th>Type</th>
+                <th>Replied</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((p, i) => {
+        const replied = p.replied || '';
+        const repliedClass = replied === 'Yes' ? 'replied-yes' : (replied === 'No' ? 'replied-no' : '');
+        return `
+                <tr data-idx="${i}">
+                  <td class="name">${escapeHtml(p.name)}</td>
+                  <td class="address">${escapeHtml(p.address)}</td>
+                  <td>${p.phone ? `<a href="tel:${p.phone}">${escapeHtml(p.phone)}</a>` : '—'}</td>
+                  <td class="email-cell">
+                    <input type="email" placeholder="Add email" value="${escapeHtml(p.email || '')}"
+                      data-idx="${i}" data-field="email">
+                  </td>
+                  <td>${p.website ? `<a href="${escapeHtml(p.website)}" target="_blank" rel="noopener">Website</a>` : '—'}</td>
+                  <td><span class="type-badge">${escapeHtml(formatType(p.type))}</span></td>
+                  <td>
+                    <select class="replied-select ${repliedClass}" data-idx="${i}" data-field="replied">
+                      <option value="">—</option>
+                      <option value="Yes" ${replied === 'Yes' ? 'selected' : ''}>Yes</option>
+                      <option value="No" ${replied === 'No' ? 'selected' : ''}>No</option>
+                    </select>
+                  </td>
+                  <td class="notes-cell">
+                    <textarea placeholder="What did they say?" data-idx="${i}" data-field="notes" rows="2">${escapeHtml(p.notes || '')}</textarea>
+                  </td>
+                </tr>
+              `}).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      content.querySelectorAll('input[data-field="email"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const idx = parseInt(e.target.dataset.idx, 10);
+          if (places[idx]) { places[idx].email = e.target.value.trim() || null; saveLeads(); }
+        });
+      });
+
+      content.querySelectorAll('select[data-field="replied"]').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          const idx = parseInt(e.target.dataset.idx, 10);
+          const val = e.target.value || null;
+          if (places[idx]) { places[idx].replied = val; saveLeads(); }
+          e.target.className = 'replied-select ' + (val === 'Yes' ? 'replied-yes' : (val === 'No' ? 'replied-no' : ''));
+        });
+      });
+
+      content.querySelectorAll('textarea[data-field="notes"]').forEach(ta => {
+        const save = (e) => {
+          const idx = parseInt(e.target.dataset.idx, 10);
+          if (places[idx]) { places[idx].notes = e.target.value.trim() || null; saveLeads(); }
+        };
+        ta.addEventListener('change', save);
+        ta.addEventListener('blur', save);
+      });
+    }
+
+    function formatType(t) {
+      if (!t) return 'Unknown';
+      return (t || '').replace(/_/g, ' ');
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function exportCsv() {
+      const headers = ['Name', 'Address', 'Phone', 'Email', 'Website', 'Type', 'Replied', 'Notes'];
+      const rows = places.map(p => [
+        p.name,
+        p.address,
+        p.phone || '',
+        p.email || '',
+        p.website || '',
+        formatType(p.type),
+        p.replied || '',
+        p.notes || '',
+      ]);
+
+      const csv = [
+        headers.join(','),
+        ...rows.map(row =>
+          row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')
+        ),
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `london-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    async function resetBudget() {
+      try {
+        await fetch(`${API}/budget/reset`, { method: 'POST' });
+        checkApi();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function parseCsvLine(line) {
+      const vals = [];
+      let cur = '', inQ = false;
+      for (let j = 0; j < line.length; j++) {
+        const c = line[j];
+        if (c === '"') {
+          if (inQ && line[j + 1] === '"') { cur += '"'; j++; }
+          else inQ = !inQ;
+        } else if (!inQ && c === ',') { vals.push(cur.replace(/""/g, '"')); cur = ''; }
+        else cur += c;
+      }
+      vals.push(cur.replace(/""/g, '"'));
+      return vals;
+    }
+    function parseCsv(text) {
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return [];
+      const headerVals = parseCsvLine(lines[0]);
+      const headers = headerVals.map(h => h.trim());
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const vals = parseCsvLine(lines[i]);
+        const obj = {};
+        headers.forEach((h, k) => { obj[h] = (vals[k] || '').trim(); });
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    function importCsv() {
+      const input = document.getElementById('importFile');
+      input.onchange = (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => {
+          const rows = parseCsv(r.result);
+          if (!rows.length) { alert('No valid rows in CSV'); return; }
+          places = rows.map(r => ({
+            name: r.Name || r.name || '',
+            address: r.Address || r.address || '',
+            phone: r.Phone || r.phone || '',
+            email: r.Email || r.email || '',
+            website: r.Website || r.website || '',
+            type: r.Type || r.type || '',
+            replied: r.Replied || r.replied || null,
+            notes: r.Notes || r.notes || null,
+          }));
+          renderTable(places);
+          exportBtn.disabled = false;
+          saveLeads();
+          resultsCount.textContent = `${places.length} leads imported`;
+        };
+        r.readAsText(f);
+        input.value = '';
+      };
+      input.click();
+    }
+
+    function saveLeads() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(places));
+      } catch (e) {
+        console.warn('Could not save leads to browser storage', e);
+      }
+    }
+
+    function loadLeads() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length) {
+            places = parsed;
+            renderTable(places);
+            exportBtn.disabled = false;
+            resultsCount.textContent = `${places.length} leads (saved)`;
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load saved leads', e);
+      }
+      return false;
+    }
+
+    function clearLeads() {
+      if (!confirm('Clear all saved leads? This cannot be undone.')) return;
+      places = [];
+      localStorage.removeItem(STORAGE_KEY);
+      content.innerHTML = `
+        <div class="empty-state" id="emptyState">
+          Click "Search London Properties" to find apartment buildings, condos, and commercial complexes in London, ON.
+        </div>
+      `;
+      exportBtn.disabled = true;
+      resultsCount.textContent = '';
+    }
+
+    // Google Sheets functions
+    async function syncToGoogleSheets() {
+      if (!places.length) {
+        alert('No leads to sync. Run a search first.');
+        return;
+      }
+
+      syncSheetsBtn.disabled = true;
+      syncSheetsBtn.textContent = '⏳ Syncing...';
+
+      try {
+        const r = await fetch(`${API}/sheets/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ places }),
+        });
+
+        const data = await r.json();
+
+        if (!r.ok) {
+          throw new Error(data.error || 'Sync failed');
+        }
+
+        alert(`✓ Successfully synced ${data.rowsWritten} leads to Google Sheets!`);
+        checkApi();
+      } catch (err) {
+        alert(`Google Sheets sync failed:\n${err.message}\n\nMake sure:\n1. Service account is configured\n2. Sheet is shared with service account email\n3. GOOGLE_SHEET_ID is set`);
+      } finally {
+        syncSheetsBtn.disabled = false;
+        syncSheetsBtn.textContent = '📊 Sync to Sheets';
+      }
+    }
+
+    function openSheetsConfig() {
+      const modal = document.getElementById('sheetsModal');
+      // Pre-fill with current values (you could fetch from server if needed)
+      modal.classList.add('active');
+    }
+
+    function closeSheetsConfig() {
+      const modal = document.getElementById('sheetsModal');
+      modal.classList.remove('active');
+    }
+
+    async function testSheetsConnection() {
+      const sheetId = document.getElementById('sheetIdInput').value.trim();
+
+      if (!sheetId) {
+        alert('Please enter a Sheet ID first');
+        return;
+      }
+
+      const btn = document.getElementById('testSheetsBtn');
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+
+      try {
+        const r = await fetch(`${API}/sheets/test`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spreadsheetId: sheetId }),
+        });
+
+        const data = await r.json();
+
+        if (!r.ok) {
+          throw new Error(data.error || 'Connection test failed');
+        }
+
+        alert(`✓ Connection successful!\n\nSheet: ${data.title}`);
+      } catch (err) {
+        alert(`Connection failed:\n${err.message}\n\nMake sure:\n1. Service account credentials are configured\n2. Sheet is shared with service account email\n3. Sheet ID is correct`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test Connection';
+      }
+    }
+
+    async function saveSheetsConfig() {
+      const sheetId = document.getElementById('sheetIdInput').value.trim();
+      const autoSync = document.getElementById('autoSyncCheckbox').checked;
+
+      if (!sheetId) {
+        alert('Please enter a Sheet ID');
+        return;
+      }
+
+      try {
+        const r = await fetch(`${API}/sheets/config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spreadsheetId: sheetId, autoSync }),
+        });
+
+        const data = await r.json();
+
+        if (!r.ok) {
+          throw new Error(data.error || 'Failed to save configuration');
+        }
+
+        alert('✓ Configuration saved!');
+        closeSheetsConfig();
+        checkApi();
+      } catch (err) {
+        alert(`Failed to save:\n${err.message}`);
+      }
+    }
+
+    searchBtn.addEventListener('click', runSearch);
+    exportBtn.addEventListener('click', exportCsv);
+    syncSheetsBtn.addEventListener('click', syncToGoogleSheets);
+    configureSheetsBtn.addEventListener('click', openSheetsConfig);
+    document.getElementById('closeSheetsModal').addEventListener('click', closeSheetsConfig);
+    document.getElementById('testSheetsBtn').addEventListener('click', testSheetsConnection);
+    document.getElementById('saveSheetsConfig').addEventListener('click', saveSheetsConfig);
+    document.getElementById('importBtn').addEventListener('click', importCsv);
+    document.getElementById('clearLeadsBtn').addEventListener('click', clearLeads);
+    document.getElementById('resetBudgetBtn').addEventListener('click', resetBudget);
+
+    // Close modal on outside click
+    document.getElementById('sheetsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'sheetsModal') closeSheetsConfig();
+    });
+
+    if (!loadLeads()) {
+      content.innerHTML = `
+        <div class="empty-state" id="emptyState">
+          Click "Search London Properties" to find apartment buildings, condos, and commercial complexes in London, ON. Results include address, phone, website, and building type. Export to CSV for your lead sheet.
+        </div>
+      `;
+    }
+    checkApi();
+  </script>
+
+  <!-- Google Sheets Configuration Modal -->
+  <div id="sheetsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">Configure Google Sheets</div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="sheetIdInput">Google Sheet ID</label>
+          <input type="text" id="sheetIdInput" placeholder="1a2b3c4d5e6f...">
+          <div class="help-text">
+            Find this in your Google Sheet URL: <code>docs.google.com/spreadsheets/d/<strong>[ID]</strong>/edit</code>
+            <br><a href="https://developers.google.com/sheets/api/guides/concepts#spreadsheet_id" target="_blank">Learn
+              more</a>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="checkbox-wrapper">
+            <input type="checkbox" id="autoSyncCheckbox">
+            <label for="autoSyncCheckbox" style="margin:0">Auto-sync after each search</label>
+          </div>
+        </div>
+        <div class="note" style="margin-bottom:0">
+          <strong>Setup Required:</strong> You need a Google Service Account to use this feature. Check the README for
+          setup instructions.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeSheetsModal">Cancel</button>
+        <button class="btn btn-secondary" id="testSheetsBtn">Test Connection</button>
+        <button class="btn btn-primary" id="saveSheetsConfig">Save</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

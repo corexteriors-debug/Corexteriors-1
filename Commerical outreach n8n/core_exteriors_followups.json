@@ -1,0 +1,217 @@
+{
+  "name": "Core Exteriors \\u2013 Follow-ups + Alerts (No response / Interested-no-meeting / Timing)",
+  "nodes": [
+    {
+      "id": "Cron",
+      "name": "Cron \\u2013 Weekdays 9:15",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        0
+      ],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyWeekday",
+              "hour": 9,
+              "minute": 15
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "Config",
+      "name": "Set Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        0
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "sheetId",
+              "value": "1hm8hisPCTqfurATHBExftrzhbfIC0-FPm0jOU3I_E-k"
+            },
+            {
+              "name": "leadsTab",
+              "value": "Leads"
+            },
+            {
+              "name": "telegramChatId",
+              "value": "YOUR_TELEGRAM_CHAT_ID"
+            },
+            {
+              "name": "auditOffer",
+              "value": "Free 5\\u201310 min Exterior Audit (walkthrough + 3 curb-appeal fixes + options)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "Read",
+      "name": "Sheets \\u2013 Read Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -200,
+        0
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": "={{$node['Set Config'].json.sheetId}}",
+        "sheetName": "={{$node['Set Config'].json.leadsTab}}",
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GSHEETS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "Bucket",
+      "name": "Bucket Leads",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        20,
+        0
+      ],
+      "parameters": {
+        "functionCode": "\\nfunction norm(s){ return (s ?? '').toString().trim(); }\\nfunction daysBetween(a,b){ return Math.floor((a-b)/(24*3600*1000)); }\\nconst today = new Date();\\nconst rows = items.map(i=>i.json);\\n\\nconst noResponse = [];\\nconst interestedNoMeeting = [];\\nconst timingLater = [];\\n\\nfor (let idx=0; idx<rows.length; idx++){\\n  const r = rows[idx];\\n  const rowNumber = idx+2;\\n  const status = norm(r.Status).toLowerCase();\\n  const lastTouch = norm(r['Last Touch Date']);\\n  const meeting = norm(r['Meeting Date/Time']);\\n  const outcome = norm(r['Outcome Reason']).toLowerCase();\\n\\n  if (outcome.includes('timing') || outcome.includes('later')){\\n    timingLater.push({ rowNumber, name: r['Business Name']||r.BusinessName });\\n  }\\n\\n  if (status.includes('interested') && !meeting){\\n    interestedNoMeeting.push({ rowNumber, name: r['Business Name']||r.BusinessName });\\n  }\\n\\n  if (status === 'sent'){\\n    if (lastTouch){\\n      const lt = new Date(lastTouch);\\n      if (!isNaN(lt) && daysBetween(today, lt) >= 3){\\n        noResponse.push({ rowNumber, name: r['Business Name']||r.BusinessName, types: r['Type(s)']||r.Types||'' });\\n      }\\n    }\\n  }\\n}\\n\\nreturn [{ json: { noResponse, interestedNoMeeting, timingLater } }];\\n"
+      }
+    },
+    {
+      "id": "InterestedMsg",
+      "name": "Build Interested Alert",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        240,
+        120
+      ],
+      "parameters": {
+        "functionCode": "\\nconst arr = ($json.interestedNoMeeting||[]).slice(0,12);\\nif (!arr.length) return [{json:{skip:true}}];\\nconst lines = arr.map(x=>`\\u2022 ${x.name} (row ${x.rowNumber})`).join('\\\\n');\\nreturn [{ json: { text: `\\ud83d\\udd25 Interested but no meeting booked \\u2014 CALL TODAY:\\\\n${lines}` } }];\\n"
+      }
+    },
+    {
+      "id": "IfInterested",
+      "name": "IF Send Interested Alert",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        460,
+        120
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.skip}}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "TelegramInterested",
+      "name": "Telegram \\u2013 Interested Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        680,
+        120
+      ],
+      "parameters": {
+        "chatId": "={{$node['Set Config'].json.telegramChatId}}",
+        "text": "={{$json.text}}"
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_CRED_ID",
+          "name": "Telegram"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron \\u2013 Weekdays 9:15": {
+      "main": [
+        [
+          {
+            "node": "Set Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Config": {
+      "main": [
+        [
+          {
+            "node": "Sheets \\u2013 Read Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets \\u2013 Read Leads": {
+      "main": [
+        [
+          {
+            "node": "Bucket Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bucket Leads": {
+      "main": [
+        [
+          {
+            "node": "Build Interested Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Interested Alert": {
+      "main": [
+        [
+          {
+            "node": "IF Send Interested Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Send Interested Alert": {
+      "main": [
+        [
+          {
+            "node": "Telegram \\u2013 Interested Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "1"
+}

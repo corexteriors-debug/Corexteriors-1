@@ -1,0 +1,103 @@
+﻿==================================================
+CONNECTION VERIFICATION REPORT
+==================================================
+
+ERRORS:
+  SOURCE MISSING: Collector � Every 6 hours
+  TARGET MISSING: Google Places � Text Search (from Split Queries)
+  SOURCE MISSING: Google Places � Text Search
+  TARGET MISSING: Google Places � Details (from Split Places)
+  SOURCE MISSING: Google Places � Details
+  TARGET MISSING: Sheets � Read Leads (dedupe) (from Normalize Lead)
+  SOURCE MISSING: Sheets � Read Leads (dedupe)
+  TARGET MISSING: HTTP � Fetch Homepage (from IF Website Exists)
+  SOURCE MISSING: HTTP � Fetch Homepage
+  TARGET MISSING: HTTP � Fetch /contact (from IF Email Found (Home))
+  SOURCE MISSING: HTTP � Fetch /contact
+  TARGET MISSING: AI � Draft Email (from IF ContactMethod = Email)
+  SOURCE MISSING: AI � Draft Email
+  TARGET MISSING: Sheets � Append Lead (from Merge Draft)
+  TARGET MISSING: Sheets � Append Lead (from Queue ContactForm (no email))
+  SOURCE MISSING: Sender � Every 10 min
+  TARGET MISSING: Sheets � Read Leads (send) (from Config � Sender)
+  SOURCE MISSING: Sheets � Read Leads (send)
+  TARGET MISSING: Gmail � Send (from Wait Random)
+  SOURCE MISSING: Gmail � Send
+  TARGET MISSING: Sheets � Update Row (sent) (from Gmail � Send)
+  SOURCE MISSING: Sheets � Update Row (sent)
+  SOURCE MISSING: Followup � Weekdays 9:15
+  TARGET MISSING: Sheets � Read Leads (followup) (from Config � Followup)
+  SOURCE MISSING: Sheets � Read Leads (followup)
+  TARGET MISSING: Telegram � Interested Alert (from IF Send Interested Alert)
+
+ORPHAN NODES (disconnected): {'Google Places \\u2013 Text Search', 'HTTP \\u2013 Fetch Homepage', 'HTTP \\u2013 Fetch /contact', 'AI \\u2013 Draft Email', 'Gmail \\u2013 Send', 'Sheets \\u2013 Read Leads (dedupe)', 'Sheets \\u2013 Read Leads (send)', 'Collector \\u2013 Every 6 hours', 'Sheets \\u2013 Read Leads', 'Sender \\u2013 Every 10 min', 'Sheets \\u2013 Update Row (sent)', 'Telegram \\u2013 Interested Alert', 'Cron \\u2013 Weekdays 9:15', 'Sheets \\u2013 Append Lead', 'Google Places \\u2013 Details'}
+
+--- Collector Path ---
+Collector � Every 6 hours -> Config � Collector
+  Config � Collector -> Seed Queries
+    Seed Queries -> Split Queries
+      Split Queries -> Google Places � Text Search
+        Google Places � Text Search -> Flatten Places
+          Flatten Places -> Split Places
+            Split Places -> Google Places � Details
+              Google Places � Details -> Normalize Lead
+                Normalize Lead -> Sheets � Read Leads (dedupe)
+                  Sheets � Read Leads (dedupe) -> Dedupe Place ID
+                    Dedupe Place ID -> IF Website Exists
+                      IF Website Exists -> HTTP � Fetch Homepage
+                        HTTP � Fetch Homepage -> Extract Email (Homepage)
+                          Extract Email (Homepage) -> IF Email Found (Home)
+                            IF Email Found (Home) -> Set Contact Method
+                              Set Contact Method -> IF ContactMethod = Email
+                                IF ContactMethod = Email -> AI � Draft Email
+                                  AI � Draft Email -> Merge Draft
+                                    Merge Draft -> Sheets � Append Lead
+                                IF ContactMethod = Email -> Queue ContactForm (no email)
+                                  Queue ContactForm (no email) -> Sheets � Append Lead
+                            IF Email Found (Home) -> HTTP � Fetch /contact
+                              HTTP � Fetch /contact -> Extract Email (/contact)
+                                Extract Email (/contact) -> Set Contact Method
+                      IF Website Exists -> Queue ContactForm (no email)
+            Split Places -> Split Places
+      Split Queries -> Split Queries
+
+--- Sender Path ---
+Sender � Every 10 min -> Config � Sender
+  Config � Sender -> Sheets � Read Leads (send)
+    Sheets � Read Leads (send) -> Select One Queued (6am-9pm + cap)
+      Select One Queued (6am-9pm + cap) -> IF mode=send
+        IF mode=send -> Wait Random
+          Wait Random -> Gmail � Send
+            Gmail � Send -> Sheets � Update Row (sent)
+              Sheets � Update Row (sent) -> Increment Sent Counter
+
+--- Followup Path ---
+Followup � Weekdays 9:15 -> Config � Followup
+  Config � Followup -> Sheets � Read Leads (followup)
+    Sheets � Read Leads (followup) -> Bucket Leads
+      Bucket Leads -> Build Interested Alert
+        Build Interested Alert -> IF Send Interested Alert
+          IF Send Interested Alert -> Telegram � Interested Alert
+      Bucket Leads -> Build No-Response Alert
+        Build No-Response Alert -> IF Send No-Response Alert
+          IF Send No-Response Alert -> Telegram � No-Response Alert
+      Bucket Leads -> Build Timing Alert
+        Build Timing Alert -> IF Send Timing Alert
+          IF Send Timing Alert -> Telegram � Timing Alert
+
+--- Telegram Bot Path ---
+Telegram Trigger -> Config � Telegram
+  Config � Telegram -> Parse Command
+    Parse Command -> Switch Command
+      Switch Command -> Sheets � Read Leads (bot)
+        Sheets � Read Leads (bot) -> Format Bot Reply
+          Format Bot Reply -> Telegram � Bot Reply
+      Switch Command -> Sheets � Read Leads (bot)
+      Switch Command -> Sheets � Read Leads (bot)
+      Switch Command -> Sheets � Append Portfolio
+        Sheets � Append Portfolio -> Telegram � Portfolio Confirm
+      Switch Command -> Telegram � Help Reply
+
+==================================================
+NOT REACHABLE: {'Google Places \\u2013 Text Search', 'HTTP \\u2013 Fetch Homepage', 'HTTP \\u2013 Fetch /contact', 'AI \\u2013 Draft Email', 'Gmail \\u2013 Send', 'Sheets \\u2013 Read Leads (dedupe)', 'Sheets \\u2013 Read Leads (send)', 'Collector \\u2013 Every 6 hours', 'Sheets \\u2013 Read Leads', 'Sender \\u2013 Every 10 min', 'Sheets \\u2013 Update Row (sent)', 'Telegram \\u2013 Interested Alert', 'Cron \\u2013 Weekdays 9:15', 'Sheets \\u2013 Append Lead', 'Google Places \\u2013 Details'}
+Total nodes: 55, Total connections: 47

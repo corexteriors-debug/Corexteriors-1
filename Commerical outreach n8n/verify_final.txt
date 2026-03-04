@@ -1,0 +1,76 @@
+﻿==================================================
+CONNECTION VERIFICATION REPORT
+==================================================
+
+All connection targets exist!
+No orphan nodes!
+
+--- Collector Path ---
+Collector � Every 6 hours -> Config � Collector
+  Config � Collector -> Seed Queries
+    Seed Queries -> Split Queries
+      Split Queries -> Google Places � Text Search
+        Google Places � Text Search -> Flatten Places
+          Flatten Places -> Split Places
+            Split Places -> Google Places � Details
+              Google Places � Details -> Normalize Lead
+                Normalize Lead -> Sheets � Read Leads (followup) (dedupe)
+                  Sheets � Read Leads (followup) (dedupe) -> Dedupe Place ID
+                    Dedupe Place ID -> IF Website Exists
+                      IF Website Exists -> HTTP � Fetch Homepage
+                        HTTP � Fetch Homepage -> Extract Email (Homepage)
+                          Extract Email (Homepage) -> IF Email Found (Home)
+                            IF Email Found (Home) -> Set Contact Method
+                              Set Contact Method -> IF ContactMethod = Email
+                                IF ContactMethod = Email -> AI � Draft Email
+                                  AI � Draft Email -> Merge Draft
+                                    Merge Draft -> Sheets � Append Lead
+                                IF ContactMethod = Email -> Queue ContactForm (no email)
+                                  Queue ContactForm (no email) -> Sheets � Append Lead
+                            IF Email Found (Home) -> HTTP � Fetch /contact
+                              HTTP � Fetch /contact -> Extract Email (/contact)
+                                Extract Email (/contact) -> Set Contact Method
+                      IF Website Exists -> Queue ContactForm (no email)
+            Split Places -> Split Places
+      Split Queries -> Split Queries
+
+--- Sender Path ---
+Sender � Every 10 min -> Config � Sender
+  Config � Sender -> Sheets � Read Leads (followup) (send)
+    Sheets � Read Leads (followup) (send) -> Select One Queued (6am-9pm + cap)
+      Select One Queued (6am-9pm + cap) -> IF mode=send
+        IF mode=send -> Wait Random
+          Wait Random -> Gmail � Send
+            Gmail � Send -> Sheets � Update Row (sent)
+              Sheets � Update Row (sent) -> Increment Sent Counter
+
+--- Followup Path ---
+Followup � Weekdays 9:15 -> Config � Followup
+  Config � Followup -> Sheets � Read Leads (followup) (followup)
+    Sheets � Read Leads (followup) (followup) -> Bucket Leads
+      Bucket Leads -> Build Interested Alert
+        Build Interested Alert -> IF Send Interested Alert
+          IF Send Interested Alert -> Telegram � Interested Alert
+      Bucket Leads -> Build No-Response Alert
+        Build No-Response Alert -> IF Send No-Response Alert
+          IF Send No-Response Alert -> Telegram � No-Response Alert
+      Bucket Leads -> Build Timing Alert
+        Build Timing Alert -> IF Send Timing Alert
+          IF Send Timing Alert -> Telegram � Timing Alert
+
+--- Telegram Bot Path ---
+Telegram Trigger -> Config � Telegram
+  Config � Telegram -> Parse Command
+    Parse Command -> Switch Command
+      Switch Command -> Sheets � Read Leads (followup) (bot)
+        Sheets � Read Leads (followup) (bot) -> Format Bot Reply
+          Format Bot Reply -> Telegram � Bot Reply
+      Switch Command -> Sheets � Read Leads (followup) (bot)
+      Switch Command -> Sheets � Read Leads (followup) (bot)
+      Switch Command -> Sheets � Append Portfolio
+        Sheets � Append Portfolio -> Telegram � Portfolio Confirm
+      Switch Command -> Telegram � Help Reply
+
+==================================================
+All 55 nodes are reachable!
+Total nodes: 55, Total connections: 47

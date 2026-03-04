@@ -812,8 +812,9 @@ img {
 
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
+    justify-items: center;
 }
 
 .service-card {
@@ -1246,6 +1247,14 @@ img {
     margin-bottom: 48px;
 }
 
+.gallery-grid .gallery-item:first-child {
+    grid-column: span 2;
+}
+
+.gallery-grid .gallery-item:first-child .before-after {
+    min-height: 320px;
+}
+
 .video-card {
     background: var(--white);
     border-radius: 20px;
@@ -1458,26 +1467,29 @@ img {
 }
 
 .carousel-btn {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    border: 2px solid var(--sky-blue);
+    border: 2px solid var(--gold);
     background: var(--white);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
+    box-shadow: 0 4px 16px rgba(201, 168, 76, 0.2);
 }
 
 .carousel-btn:hover {
-    background: var(--sky-blue);
+    background: var(--gold);
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
 }
 
 .carousel-btn svg {
-    width: 24px;
-    height: 24px;
-    color: var(--sky-blue);
+    width: 26px;
+    height: 26px;
+    color: var(--gold);
     transition: color var(--transition-fast);
 }
 

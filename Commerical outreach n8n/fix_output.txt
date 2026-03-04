@@ -1,0 +1,23 @@
+﻿  Fixed node: Collector \u2013 Every 6 hours -> Collector � Every 6 hours
+  Fixed node: Google Places \u2013 Text Search -> Google Places � Text Search
+  Fixed node: Google Places \u2013 Details -> Google Places � Details
+  Fixed node: Sheets \u2013 Read Leads (dedupe) -> Sheets � Read Leads (dedupe)
+  Fixed node: HTTP \u2013 Fetch Homepage -> HTTP � Fetch Homepage
+  Fixed node: HTTP \u2013 Fetch /contact -> HTTP � Fetch /contact
+  Fixed node: AI \u2013 Draft Email -> AI � Draft Email
+  Fixed node: Sheets \u2013 Append Lead -> Sheets � Append Lead
+  Fixed node: Sender \u2013 Every 10 min -> Sender � Every 10 min
+  Fixed node: Sheets \u2013 Read Leads (send) -> Sheets � Read Leads (send)
+  Fixed node: Gmail \u2013 Send -> Gmail � Send
+  Fixed node: Sheets \u2013 Update Row (sent) -> Sheets � Update Row (sent)
+  Fixed node: Cron \u2013 Weekdays 9:15 -> Cron � Weekdays 9:15
+  Fixed node: Sheets \u2013 Read Leads -> Sheets � Read Leads
+  Fixed node: Telegram \u2013 Interested Alert -> Telegram � Interested Alert
+
+Remaining errors: 3
+  SOURCE: 'Followup � Weekdays 9:15'
+  TARGET: 'Sheets � Read Leads (followup)' from 'Config � Followup'
+  SOURCE: 'Sheets � Read Leads (followup)'
+Orphans: {'Sheets � Read Leads'}
+Total: 55 nodes, 47 connections
+File saved!

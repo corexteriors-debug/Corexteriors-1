@@ -1,0 +1,13 @@
+# Raw source photos/videos (not used on the site)
+photos and vids for website/
+
+# Separate project
+london-lead-finder-main/
+
+# Git directory
+.git/
+
+# GitHub Pages artifacts (not needed on Vercel)
+.nojekyll
+CNAME
+README.md

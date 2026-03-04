@@ -1,0 +1,980 @@
+{
+  "name": "Core Exteriors \\u2013 Outreach Engine (Queue + Send 6am\\u20139pm via Gmail)",
+  "nodes": [
+    {
+      "id": "SetConfig",
+      "name": "Set Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -920,
+        120
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "sheetId",
+              "value": "1hm8hisPCTqfurATHBExftrzhbfIC0-FPm0jOU3I_E-k"
+            },
+            {
+              "name": "leadsTab",
+              "value": "Leads"
+            },
+            {
+              "name": "companyName",
+              "value": "Core Exteriors"
+            },
+            {
+              "name": "senderName",
+              "value": "YOUR NAME"
+            },
+            {
+              "name": "senderPhone",
+              "value": "YOUR PHONE"
+            },
+            {
+              "name": "liability",
+              "value": "$5,000,000 liability coverage"
+            },
+            {
+              "name": "legalLine",
+              "value": "We\\u2019re a fully registered/insured Ontario business (HST set up)."
+            },
+            {
+              "name": "servicesList",
+              "value": "Wood Restoration and Deck Maintenance; Hardscape Optimization (Interlock & Polymeric Sand); Exterior Siding Cleaning (Soft Wash); Gutter and Eavestrough Maintenance; Window Cleaning; Landscaping and Garden Finishing (Mulching & Weeding)"
+            },
+            {
+              "name": "auditOffer",
+              "value": "Free 5\\u201310 min Exterior Audit (walkthrough + 3 curb-appeal fixes + options/quote)"
+            },
+            {
+              "name": "latlng",
+              "value": "42.9849,-81.2453"
+            },
+            {
+              "name": "radiusMeters",
+              "value": "60000"
+            },
+            {
+              "name": "dailySendCap",
+              "value": "40"
+            },
+            {
+              "name": "minDelaySec",
+              "value": "90"
+            },
+            {
+              "name": "maxDelaySec",
+              "value": "360"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "CollectorCron",
+      "name": "Collector \\u2013 Every 6 hours",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -1140,
+        -180
+      ],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "0 */6 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "SeedQueries",
+      "name": "Seed Queries",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -920,
+        -180
+      ],
+      "parameters": {
+        "functionCode": "\nconst queries = [\n  \"property management london ontario\",\n  \"commercial property management london ontario\",\n  \"plaza management london ontario\",\n  \"shopping plaza london ontario\",\n  \"facility management london ontario\",\n  \"hotel london ontario\",\n  \"medical clinic london ontario\",\n  \"auto dealership london ontario\",\n  \"restaurant london ontario\"\n];\nreturn queries.map(q => ({ json: { searchQuery: q } }));\n"
+      }
+    },
+    {
+      "id": "SplitQueries",
+      "name": "Split Queries",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -700,
+        -180
+      ],
+      "parameters": {
+        "batchSize": 2,
+        "options": {}
+      }
+    },
+    {
+      "id": "PlacesTextSearch",
+      "name": "Google Places \\u2013 Text Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -460,
+        -180
+      ],
+      "parameters": {
+        "url": "=https://maps.googleapis.com/maps/api/place/textsearch/json?query={{$json.searchQuery}}&location={{$node['Set Config'].json.latlng}}&radius={{$node['Set Config'].json.radiusMeters}}&key={{$env.GOOGLE_MAPS_API_KEY}}",
+        "options": {
+          "responseFormat": "json"
+        }
+      }
+    },
+    {
+      "id": "FlattenPlaces",
+      "name": "Flatten Places",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -180
+      ],
+      "parameters": {
+        "functionCode": "\nconst results = ($json.results || []).slice(0, 10);\nreturn results.map(r => ({ json: {\n  searchQuery: $node['Split Queries'].json.searchQuery,\n  place_id: r.place_id,\n  name: r.name,\n  types: (r.types || []).join(', '),\n  address: r.formatted_address || ''\n}}));\n"
+      }
+    },
+    {
+      "id": "SplitPlaces",
+      "name": "Split Places",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -20,
+        -180
+      ],
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      }
+    },
+    {
+      "id": "PlaceDetails",
+      "name": "Google Places \\u2013 Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        200,
+        -180
+      ],
+      "parameters": {
+        "url": "=https://maps.googleapis.com/maps/api/place/details/json?place_id={{$json.place_id}}&fields=name,formatted_address,international_phone_number,website,types,url&key={{$env.GOOGLE_MAPS_API_KEY}}",
+        "options": {
+          "responseFormat": "json"
+        }
+      }
+    },
+    {
+      "id": "NormalizeLead",
+      "name": "Normalize Lead",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        420,
+        -180
+      ],
+      "parameters": {
+        "functionCode": "\nconst r = $json.result || {};\nreturn [{\n  json: {\n    capturedDate: new Date().toISOString().slice(0,10),\n    source: \"Google Maps\",\n    searchQuery: $node['Split Queries'].json.searchQuery,\n    businessName: r.name || $node['Split Places'].json.name,\n    placeId: $node['Split Places'].json.place_id,\n    types: (r.types || []).join(', '),\n    address: r.formatted_address || $node['Split Places'].json.address,\n    phone: r.international_phone_number || \"\",\n    website: r.website || \"\",\n    mapsUrl: r.url || \"\"\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "ReadLeadsForDedupe",
+      "name": "Sheets \\u2013 Read Leads (dedupe)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        420,
+        -340
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": "={{$node['Set Config'].json.sheetId}}",
+        "sheetName": "={{$node['Set Config'].json.leadsTab}}",
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GSHEETS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "Dedupe",
+      "name": "Dedupe Place ID",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -180
+      ],
+      "parameters": {
+        "functionCode": "\nconst lead = $node['Normalize Lead'].json;\nconst rows = $items('Sheets \\u2013 Read Leads (dedupe)', 0).map(i => i.json);\nconst existing = new Set(rows.map(r => (r['Place ID']||r.PlaceID||r.placeId||'').toString()));\nif (existing.has((lead.placeId||'').toString())) return [];\nreturn [{ json: lead }];\n"
+      }
+    },
+    {
+      "id": "IfWebsite",
+      "name": "IF Website Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        860,
+        -180
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.website}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "FetchHome",
+      "name": "HTTP \\u2013 Fetch Homepage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1080,
+        -260
+      ],
+      "parameters": {
+        "url": "={{$json.website}}",
+        "options": {
+          "responseFormat": "string",
+          "timeout": 20000
+        }
+      }
+    },
+    {
+      "id": "ExtractHomeEmail",
+      "name": "Extract Email (Homepage)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        -260
+      ],
+      "parameters": {
+        "functionCode": "\nconst html = ($json.body || '').toString();\nconst emails = Array.from(new Set((html.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig) || [])));\nconst preferred = emails.find(e => /info@|contact@|hello@|admin@/i.test(e)) || emails[0] || \"\";\nreturn [{ json: { ...$node['Dedupe Place ID'].json, foundEmail: preferred, emailSource: preferred ? \"homepage\" : \"\" } }];\n"
+      }
+    },
+    {
+      "id": "IfHomeEmail",
+      "name": "IF Email Found (Home)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        -260
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.foundEmail}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "FetchContact",
+      "name": "HTTP \\u2013 Fetch /contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1080,
+        -100
+      ],
+      "parameters": {
+        "url": "={{$json.website.replace(/\\/$/, '') + '/contact'}}",
+        "options": {
+          "responseFormat": "string",
+          "timeout": 20000
+        }
+      }
+    },
+    {
+      "id": "ExtractContactEmail",
+      "name": "Extract Email (/contact)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        -100
+      ],
+      "parameters": {
+        "functionCode": "\nconst html = ($json.body || '').toString();\nconst emails = Array.from(new Set((html.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig) || [])));\nconst preferred = emails.find(e => /info@|contact@|hello@|admin@/i.test(e)) || emails[0] || \"\";\nconst base = $node['Dedupe Place ID'].json;\nreturn [{ json: { ...base, foundEmail: preferred, emailSource: preferred ? \"contact\" : \"\" } }];\n"
+      }
+    },    {
+      "id": "SetContactMethod",
+      "name": "Set Contact Method",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        -100
+      ],
+      "parameters": {
+        "functionCode": "\nconst lead = $node['Extract Email (/contact)'].json;\nconst contactUrl = (lead.website ? lead.website.replace(/\\/$/,'') + '/contact' : '');\nreturn [{\n  json: {\n    ...lead,\n    contactMethod: lead.foundEmail ? 'Email' : 'ContactForm',\n    contactFormUrl: lead.foundEmail ? '' : contactUrl\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "IfEmailMethod",
+      "name": "IF ContactMethod = Email",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1740,
+        -180
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.contactMethod}}",
+              "operation": "equals",
+              "value2": "Email"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "AIDraft",
+      "name": "AI \\u2013 Draft Email",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 4,
+      "position": [
+        1960,
+        -260
+      ],
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You write short, honest B2B outreach emails. Output ONLY JSON."
+          },
+          {
+            "role": "user",
+            "content": "Business: {{$json.businessName}} ({{$json.types}})\\nAddress: {{$json.address}}\\nWebsite: {{$json.website}}\\n\\nSender: {{$node['Set Config'].json.companyName}}\\nOffer: {{$node['Set Config'].json.auditOffer}}\\nServices: {{$node['Set Config'].json.servicesList}}\\nCredibility: {{$node['Set Config'].json.legalLine}} + {{$node['Set Config'].json.liability}}\\n\\nWrite an email under 170 words to book a meeting next week in London OR a free exterior audit. Provide two time options (Tue/Wed/Thu next week). Mention 2-3 relevant services. Include: Reply unsubscribe and I won\\u2019t follow up.\\n\\nReturn JSON: {\\\"variant\\\":\\\"A|B\\\",\\\"score\\\":0-100,\\\"priority\\\":\\\"High|Medium|Low\\\",\\\"recommendedServices\\\":\\\"...\\\",\\\"nextBestOffer\\\":\\\"Exterior audit|Coffee chat\\\",\\\"subject\\\":\\\"...\\\",\\\"body\\\":\\\"...\\\",\\\"nextFollowUpDays\\\":3}"
+          }
+        ],
+        "options": {
+          "temperature": 0.55
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CRED_ID",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "id": "MergeDraft",
+      "name": "Merge Draft",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        2180,
+        -260
+      ],
+      "parameters": {
+        "functionCode": "\nlet p;\ntry { p = JSON.parse($json.message?.content || $json.text || '{}'); }\ncatch(e){ p = {variant:'A',score:60,priority:'Medium',recommendedServices:'',nextBestOffer:'Exterior audit',subject:'Quick exterior audit?',body:'',nextFollowUpDays:3}; }\nconst lead = $node['IF ContactMethod = Email'].json;\nconst nextFU = new Date(Date.now() + (p.nextFollowUpDays||3)*86400000).toISOString().slice(0,10);\nreturn [{\n  json: {\n    ...lead,\n    variant: p.variant,\n    leadScore: p.score,\n    priority: p.priority,\n    recommendedServices: p.recommendedServices,\n    nextBestOffer: p.nextBestOffer,\n    emailSubject: p.subject,\n    emailBody: p.body,\n    nextFollowUpDate: nextFU,\n    status: 'Queued',\n    approvedToSend: 'Y'\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "QueueContactForm",
+      "name": "Queue ContactForm (no email)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1960,
+        -100
+      ],
+      "parameters": {
+        "functionCode": "\nconst lead = $node['IF ContactMethod = Email'].json;\nreturn [{\n  json: {\n    ...lead,\n    variant: '',\n    leadScore: 50,\n    priority: /property|management|plaza|facility/i.test((lead.searchQuery||'') + ' ' + (lead.types||'') + ' ' + (lead.businessName||'')) ? 'High' : 'Medium',\n    recommendedServices: '',\n    nextBestOffer: 'Exterior audit',\n    emailSubject: '',\n    emailBody: '',\n    nextFollowUpDate: new Date(Date.now()+7*86400000).toISOString().slice(0,10),\n    status: 'Queued',\n    approvedToSend: 'N'\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "AppendLead",
+      "name": "Sheets \\u2013 Append Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        2400,
+        -180
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": "={{$node['Set Config'].json.sheetId}}",
+        "sheetName": "={{$node['Set Config'].json.leadsTab}}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Captured Date": "={{$json.capturedDate}}",
+            "Source": "={{$json.source}}",
+            "Search Query/Category": "={{$json.searchQuery}}",
+            "Business Name": "={{$json.businessName}}",
+            "Place ID": "={{$json.placeId}}",
+            "Type(s)": "={{$json.types}}",
+            "Address": "={{$json.address}}",
+            "Phone": "={{$json.phone}}",
+            "Website": "={{$json.website}}",
+            "Contact Email": "={{$json.foundEmail}}",
+            "Recommended Services": "={{$json.recommendedServices || ''}}",
+            "Email Subject": "={{$json.emailSubject || ''}}",
+            "Email Body": "={{$json.emailBody || ''}}",
+            "Status": "={{$json.status}}",
+            "Next Follow-up Date": "={{$json.nextFollowUpDate}}",
+            "Variant": "={{$json.variant || ''}}",
+            "Lead Score": "={{$json.leadScore || ''}}",
+            "Priority": "={{$json.priority || ''}}",
+            "ApprovedToSend (Y/N)": "={{$json.approvedToSend || 'N'}}",
+            "Contact Method": "={{$json.contactMethod || 'Email'}}",
+            "Contact Form URL": "={{$json.contactFormUrl || ''}}",
+            "Email Source": "={{$json.emailSource || ''}}"
+          }
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GSHEETS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "SenderCron",
+      "name": "Sender \\u2013 Every 10 min",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -1140,
+        420
+      ],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "*/10 * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ReadToSend",
+      "name": "Sheets \\u2013 Read Leads (send)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -920,
+        420
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": "={{$node['Set Config'].json.sheetId}}",
+        "sheetName": "={{$node['Set Config'].json.leadsTab}}",
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GSHEETS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "SelectQueued",
+      "name": "Select One Queued (6am-9pm + cap)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        420
+      ],
+      "parameters": {
+        "functionCode": "\nconst rows = items.map(i=>i.json);\nconst now = new Date();\nconst hhmm = now.toTimeString().slice(0,5);\nif (!(hhmm >= '06:00' && hhmm <= '21:00')) return [{ json: { mode:'outside_window' } }];\n\nconst sd = this.getWorkflowStaticData('global');\nconst today = now.toISOString().slice(0,10);\nif (sd.sendDate !== today){ sd.sendDate = today; sd.sentToday = 0; }\nconst cap = Number($node['Set Config'].json.dailySendCap || 40);\nif ((sd.sentToday || 0) >= cap) return [{ json: { mode:'cap_reached', sentToday: sd.sentToday, cap } }];\n\nfor (let i=0;i<rows.length;i++){\n  const r = rows[i];\n  const status = (r.Status||'').toString().toLowerCase();\n  const approved = (r['ApprovedToSend (Y/N)']||'').toString().toUpperCase();\n  const method = (r['Contact Method']||'Email').toString();\n  const email = (r['Contact Email']||'').toString();\n  if (status === 'queued' && approved === 'Y' && method === 'Email' && email){\n    return [{ json: { mode:'send', rowNumber: i+2, row: r } }];\n  }\n}\nreturn [{ json: { mode:'none' } }];\n"
+      }
+    },
+    {
+      "id": "IfSend",
+      "name": "IF mode=send",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        420
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.mode}}",
+              "operation": "equals",
+              "value2": "send"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "WaitRandom",
+      "name": "Wait Random",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        420
+      ],
+      "parameters": {
+        "amount": "={{Math.floor((Number($node['Set Config'].json.minDelaySec)||90) + Math.random()*((Number($node['Set Config'].json.maxDelaySec)||360)-(Number($node['Set Config'].json.minDelaySec)||90)))}}",
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "GmailSend",
+      "name": "Gmail \\u2013 Send",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        0,
+        420
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "to": "={{$json.row['Contact Email']}}",
+        "subject": "={{$json.row['Email Subject']}}",
+        "message": "={{$json.row['Email Body']}}",
+        "options": {
+          "fromEmail": "corexteriors@gmail.com"
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GMAIL_CRED_ID",
+          "name": "corexteriors@gmail.com"
+        }
+      }
+    },
+    {
+      "id": "UpdateAfterSend",
+      "name": "Sheets \\u2013 Update Row (sent)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        240,
+        420
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": "={{$node['Set Config'].json.sheetId}}",
+        "sheetName": "={{$node['Set Config'].json.leadsTab}}",
+        "updateBy": "rowNumber",
+        "rowNumber": "={{$node['IF mode=send'].json.rowNumber}}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Sent",
+            "Last Touch Date": "={{new Date().toISOString().slice(0,10)}}",
+            "Sent Date": "={{new Date().toISOString().slice(0,10)}}",
+            "Next Follow-up Date": "={{new Date(Date.now()+3*86400000).toISOString().slice(0,10)}}"
+          }
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GSHEETS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "IncCap",
+      "name": "Increment Sent Counter",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        520,
+        420
+      ],
+      "parameters": {
+        "functionCode": "const sd=this.getWorkflowStaticData('global'); const t=new Date().toISOString().slice(0,10); if(sd.sendDate!==t){sd.sendDate=t; sd.sentToday=0;} sd.sentToday=(sd.sentToday||0)+1; return items;"
+      }
+    }
+  ],  "connections": {
+    "Collector \\u2013 Every 6 hours": {
+      "main": [
+        [
+          {
+            "node": "Seed Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seed Queries": {
+      "main": [
+        [
+          {
+            "node": "Split Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Queries": {
+      "main": [
+        [
+          {
+            "node": "Google Places \\u2013 Text Search",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Queries",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Places \\u2013 Text Search": {
+      "main": [
+        [
+          {
+            "node": "Flatten Places",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten Places": {
+      "main": [
+        [
+          {
+            "node": "Split Places",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Places": {
+      "main": [
+        [
+          {
+            "node": "Google Places \\u2013 Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Places",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Places \\u2013 Details": {
+      "main": [
+        [
+          {
+            "node": "Normalize Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Lead": {
+      "main": [
+        [
+          {
+            "node": "Sheets \\u2013 Read Leads (dedupe)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets \\u2013 Read Leads (dedupe)": {
+      "main": [
+        [
+          {
+            "node": "Dedupe Place ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedupe Place ID": {
+      "main": [
+        [
+          {
+            "node": "IF Website Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Website Exists": {
+      "main": [
+        [
+          {
+            "node": "HTTP \\u2013 Fetch Homepage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Queue ContactForm (no email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP \\u2013 Fetch Homepage": {
+      "main": [
+        [
+          {
+            "node": "Extract Email (Homepage)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Email (Homepage)": {
+      "main": [
+        [
+          {
+            "node": "IF Email Found (Home)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Email Found (Home)": {
+      "main": [
+        [
+          {
+            "node": "IF ContactMethod = Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP \\u2013 Fetch /contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP \\u2013 Fetch /contact": {
+      "main": [
+        [
+          {
+            "node": "Extract Email (/contact)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Email (/contact)": {
+      "main": [
+        [
+          {
+            "node": "Set Contact Method",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Contact Method": {
+      "main": [
+        [
+          {
+            "node": "IF ContactMethod = Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF ContactMethod = Email": {
+      "main": [
+        [
+          {
+            "node": "AI \\u2013 Draft Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Queue ContactForm (no email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI \\u2013 Draft Email": {
+      "main": [
+        [
+          {
+            "node": "Merge Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Draft": {
+      "main": [
+        [
+          {
+            "node": "Sheets \\u2013 Append Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue ContactForm (no email)": {
+      "main": [
+        [
+          {
+            "node": "Sheets \\u2013 Append Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sender \\u2013 Every 10 min": {
+      "main": [
+        [
+          {
+            "node": "Sheets \\u2013 Read Leads (send)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets \\u2013 Read Leads (send)": {
+      "main": [
+        [
+          {
+            "node": "Select One Queued (6am-9pm + cap)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select One Queued (6am-9pm + cap)": {
+      "main": [
+        [
+          {
+            "node": "IF mode=send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF mode=send": {
+      "main": [
+        [
+          {
+            "node": "Wait Random",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait Random": {
+      "main": [
+        [
+          {
+            "node": "Gmail \\u2013 Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail \\u2013 Send": {
+      "main": [
+        [
+          {
+            "node": "Sheets \\u2013 Update Row (sent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets \\u2013 Update Row (sent)": {
+      "main": [
+        [
+          {
+            "node": "Increment Sent Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "1"
+}

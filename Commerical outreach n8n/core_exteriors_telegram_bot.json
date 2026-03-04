@@ -1,0 +1,135 @@
+{
+  "name": "Core Exteriors \\u2013 Telegram Commands + Portfolio Logger",
+  "nodes": [
+    {
+      "id": "TgTrigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        0
+      ],
+      "parameters": {},
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_CRED_ID",
+          "name": "Telegram"
+        }
+      }
+    },
+    {
+      "id": "Cfg",
+      "name": "Set Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        0
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "sheetId",
+              "value": "1hm8hisPCTqfurATHBExftrzhbfIC0-FPm0jOU3I_E-k"
+            },
+            {
+              "name": "leadsTab",
+              "value": "Leads"
+            },
+            {
+              "name": "portfolioTab",
+              "value": "Portfolio"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "Parse",
+      "name": "Parse Command",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        0
+      ],
+      "parameters": {
+        "functionCode": "\\nconst text = ($json.message?.text || '').trim();\\nconst lower = text.toLowerCase();\\nlet cmd='help', payload='';\\nif (lower.startsWith('/today')) cmd='today';\\nelse if (lower.startsWith('/due')) cmd='due';\\nelse if (lower.startsWith('/top10')) cmd='top10';\\nelse if (lower.startsWith('/addportfolio')) { cmd='addportfolio'; payload = text.replace(/\\\\/addportfolio\\\\s*/i,''); }\\nreturn [{ json: { cmd, payload, chatId: $json.message.chat.id } }];\\n"
+      }
+    },
+    {
+      "id": "Switch",
+      "name": "Switch Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        20,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "string": [
+            {
+              "value1": "={{$json.cmd}}",
+              "operation": "equals",
+              "value2": "today"
+            },
+            {
+              "value1": "={{$json.cmd}}",
+              "operation": "equals",
+              "value2": "due"
+            },
+            {
+              "value1": "={{$json.cmd}}",
+              "operation": "equals",
+              "value2": "top10"
+            },
+            {
+              "value1": "={{$json.cmd}}",
+              "operation": "equals",
+              "value2": "addportfolio"
+            }
+          ]
+        }
+      }
+    }
+  ],  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Config": {
+      "main": [
+        [
+          {
+            "node": "Parse Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Command": {
+      "main": [
+        [
+          {
+            "node": "Switch Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "1"
+}
