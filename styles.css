@@ -1271,13 +1271,6 @@ img {
     margin-bottom: 48px;
 }
 
-.gallery-grid .gallery-item:first-child {
-    grid-column: span 2;
-}
-
-.gallery-grid .gallery-item:first-child .before-after {
-    min-height: 320px;
-}
 
 .video-card {
     background: var(--white);

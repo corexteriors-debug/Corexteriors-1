@@ -426,9 +426,18 @@
             cursor: zoom-in;
         }
 
-        /* Keep deck card from being too wide */
+        /* Deck card spans full width */
         .photo-card.photo-card-wide {
-            max-width: 500px;
+            grid-column: 1 / -1;
+        }
+
+        .photo-card.photo-card-wide .photo-card-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .photo-card.photo-card-wide .image-slot {
+            aspect-ratio: unset;
+            height: 380px;
         }
 
         .image-stage-label {
