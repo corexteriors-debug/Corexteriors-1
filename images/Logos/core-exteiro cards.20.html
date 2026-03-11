@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Core Exteriors Business Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --navy: #0B1630; --gold: #B8952A; --cream: #EFE4C4; }
+
+  body { background: #f0f0f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+  .card {
+    width: 3.5in; height: 2in;
+    background: var(--navy);
+    position: relative; overflow: hidden;
+    display: flex; align-items: center;
+    border: 0.5px solid var(--gold);
+  }
+
+  @media print {
+    @page { size: 3.5in 2in; margin: 0; }
+    body { background: white; }
+    .card { border: none; }
+  }
+
+  /* Decorative Elements */
+  .card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(184,149,42,0.1), transparent 70%);
+  }
+
+  .inner { position: relative; z-index: 2; width: 100%; height: 100%; display: flex; align-items: center; padding: 0.2in; }
+  
+  .left { width: 45%; display: flex; flex-direction: column; align-items: center; border-right: 1px solid rgba(184,149,42,0.3); padding-right: 10px; }
+  .logo-text { font-family: 'Cinzel', serif; font-size: 24px; color: var(--gold); font-weight: 600; border: 2px solid var(--gold); padding: 5px 10px; margin-bottom: 5px; }
+  .brand-name { font-family: 'Cinzel', serif; font-size: 12px; color: var(--cream); letter-spacing: 3px; text-align: center; }
+
+  .right { width: 55%; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .contact-item { font-family: 'Cormorant Garamond', serif; color: var(--cream); font-size: 10px; }
+  .label { font-family: 'Cinzel', serif; font-size: 5px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  
+  .tagline { position: absolute; bottom: 8px; width: 100%; text-align: center; font-family: 'Cinzel', serif; font-size: 5px; color: rgba(184,149,42,0.5); letter-

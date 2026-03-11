@@ -93,14 +93,14 @@ module.exports = async (req, res) => {
     </div>
     <p>In the meantime, feel free to reach us anytime:</p>
     <ul style="list-style:none;padding:0;font-size:14px;line-height:2">
-      <li>📞 <strong><a href="tel:606-616-2026" style="color:#1a2a4a">606-616-2026</a></strong></li>
+      <li>📞 <strong><a href="tel:519-712-1431" style="color:#1a2a4a">519-712-1431</a></strong></li>
       <li>📧 <strong><a href="mailto:corexteriors@gmail.com" style="color:#1a2a4a">corexteriors@gmail.com</a></strong></li>
     </ul>
     <p>We look forward to working with you!</p>
     <p style="font-weight:600;color:#1a2a4a;margin-bottom:0">— The Core Exteriors Team</p>
   </div>
   <div style="background:#0a1628;padding:14px 32px;border-radius:0 0 12px 12px;text-align:center">
-    <p style="color:#8899aa;font-size:11px;margin:0">203 Cambridge St, London, ON, N6H 1N6 &nbsp;|&nbsp; 606-616-2026 &nbsp;|&nbsp; corexteriors.ca</p>
+    <p style="color:#8899aa;font-size:11px;margin:0">203 Cambridge St, London, ON, N6H 1N6 &nbsp;|&nbsp; 519-712-1431 &nbsp;|&nbsp; corexteriors.ca</p>
   </div>
 </div>`
         });

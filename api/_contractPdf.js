@@ -178,7 +178,7 @@ async function generateContractPDF(est, signatureData) {
     // ─── FOOTER BAR ─────────────────────────────────────────────────────────
     page.drawRectangle({ x: 0, y: 0, width, height: 35, color: darkBlue });
     page.drawText(
-        'Core Exteriors Ltd.  |  203 Cambridge St, London, ON, N6H 1N6  |  606-616-2026  |  corexteriors.ca',
+        'Core Exteriors Ltd.  |  203 Cambridge St, London, ON, N6H 1N6  |  519-712-1431  |  corexteriors.ca',
         { x: 65, y: 14, size: 7.5, font, color: rgb(0.6, 0.7, 0.8) }
     );
     page.drawRectangle({ x: 0, y: 35, width, height: 3, color: gold });

@@ -340,7 +340,7 @@ async function sendPaymentSms({ clientName, clientPhone, amount, isDeposit }) {
 
     // Short message — no URL (avoids carrier filtering & trial account URL restrictions)
     // The payment link is in the email attachment and email body
-    const message = `Hi ${clientName}! Core Exteriors has sent your ${label} request of ${amountStr} CAD. Please check your email for the secure payment link. Questions? Call 606-616-2026.`;
+    const message = `Hi ${clientName}! Core Exteriors has sent your ${label} request of ${amountStr} CAD. Please check your email for the secure payment link. Questions? Call 519-712-1431.`;
 
     const body = new URLSearchParams({ To: to, From: fromPhone, Body: message });
 
