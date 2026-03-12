@@ -752,6 +752,7 @@
             <div class="tab-bar">
                 <button class="tab-btn active" data-tab="overview">📊 Overview</button>
                 <button class="tab-btn" data-tab="leads">📋 Leads</button>
+                <button class="tab-btn" data-tab="salesleads">🗒️ Sales Leads</button>
                 <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
                 <button class="tab-btn" data-tab="materials">🧮 Materials</button>
             </div>
@@ -872,6 +873,25 @@
                 </div>
             </div>
 
+            <!-- ========== TAB: SALES LEADS ========== -->
+            <div class="tab-content" id="tab-salesleads">
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>🗒️ Sales Leads <span id="qlCount" style="font-size:.9rem;color:rgba(255,255,255,.4);font-weight:400"></span></h2>
+                        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                            <input type="text" id="qlSearch" placeholder="🔍 Search name, address..." oninput="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .85rem;color:#fff;font-size:.85rem;outline:none;min-width:200px">
+                            <select id="qlRepFilter" onchange="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .75rem;color:#fff;font-size:.85rem;outline:none">
+                                <option value="all">All Reps</option>
+                            </select>
+                            <button onclick="loadQLLeads()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div id="qlLeadsList" style="padding:.5rem 0">
+                        <div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Click Refresh or switch to this tab to load</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ========== TAB: CALENDAR ========== -->
             <div class="tab-content" id="tab-calendar">
                 <div class="table-card" style="margin-bottom:1.5rem">
@@ -973,6 +993,27 @@
 
     <!-- TOAST -->
     <div class="toast" id="toast"></div>
+
+    <!-- EDIT QUICK LEAD MODAL -->
+    <div id="editQLModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#1a2a4a;border:1px solid rgba(230,126,34,.25);border-radius:16px;padding:1.75rem;width:100%;max-width:420px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+                <h3 style="margin:0;color:#fff">✏️ Edit Sales Lead</h3>
+                <button onclick="closeEditQL()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:1.2rem;cursor:pointer">✕</button>
+            </div>
+            <input type="hidden" id="editQLId">
+            <div style="display:flex;flex-direction:column;gap:.6rem">
+                <input id="editQLName" type="text" placeholder="Client Name" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;width:100%">
+                <input id="editQLAddress" type="text" placeholder="Address" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;width:100%">
+                <textarea id="editQLNotes" placeholder="Notes" rows="3" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;resize:vertical;font-family:inherit;width:100%"></textarea>
+            </div>
+            <div style="display:flex;gap:.75rem;margin-top:1rem">
+                <button onclick="saveEditQL()" id="editQLSaveBtn" style="flex:1;background:#e67e22;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Save Changes</button>
+                <button onclick="closeEditQL()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:.75rem 1.25rem;border-radius:10px;cursor:pointer">Cancel</button>
+            </div>
+            <div id="editQLMsg" style="display:none;margin-top:.6rem;font-size:.82rem;padding:.5rem .75rem;border-radius:6px"></div>
+        </div>
+    </div>
 
     <!-- SCHEDULE JOB MODAL -->
     <!-- EDIT LEAD MODAL -->
@@ -1082,6 +1123,7 @@
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
                 document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+                if (btn.dataset.tab === 'salesleads') loadQLLeads();
             });
         });
 
@@ -1238,6 +1280,142 @@
             document.getElementById(id).classList.toggle('show');
         }
         document.addEventListener('click', e => { if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')) });
+
+        // ── SALES LEADS (QUICK LEADS) ──────────────────────────────
+        let allQLLeads = [];
+
+        async function loadQLLeads() {
+            const container = document.getElementById('qlLeadsList');
+            container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Loading...</div>';
+            try {
+                const r = await fetch(`${API_BASE}/quick-leads`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error);
+                allQLLeads = d.leads || [];
+
+                // Populate rep filter
+                const reps = [...new Set(allQLLeads.map(l => l.salesRep).filter(Boolean))];
+                const sel = document.getElementById('qlRepFilter');
+                const cur = sel.value;
+                sel.innerHTML = '<option value="all">All Reps</option>' + reps.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
+                if (cur && reps.includes(cur)) sel.value = cur;
+
+                filterQLLeads();
+            } catch (e) {
+                container.innerHTML = '<div style="color:#e74c3c;text-align:center;padding:2rem">Failed to load.</div>';
+            }
+        }
+
+        function filterQLLeads() {
+            const q = (document.getElementById('qlSearch').value || '').toLowerCase();
+            const rep = document.getElementById('qlRepFilter').value;
+            const filtered = allQLLeads.filter(l => {
+                const matchRep = rep === 'all' || l.salesRep === rep;
+                const matchQ = !q || (l.name || '').toLowerCase().includes(q) || (l.address || '').toLowerCase().includes(q) || (l.notes || '').toLowerCase().includes(q);
+                return matchRep && matchQ;
+            });
+            renderQLLeads(filtered);
+        }
+
+        function renderQLLeads(leads) {
+            const container = document.getElementById('qlLeadsList');
+            document.getElementById('qlCount').textContent = `(${leads.length} of ${allQLLeads.length})`;
+            if (!leads.length) {
+                container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">No leads found.</div>';
+                return;
+            }
+            container.innerHTML = `
+                <table style="width:100%;border-collapse:collapse">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,.08)">
+                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Date</th>
+                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Name</th>
+                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Address</th>
+                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Notes</th>
+                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Rep</th>
+                            <th style="padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${leads.map(lead => `
+                        <tr id="qlrow-${lead.id}" style="border-bottom:1px solid rgba(255,255,255,.05)">
+                            <td style="padding:.7rem 1rem;font-size:.82rem;color:rgba(255,255,255,.4);white-space:nowrap">${new Date(lead.createdAt).toLocaleDateString('en-CA', {month:'short',day:'numeric',year:'numeric'})}</td>
+                            <td style="padding:.7rem 1rem;font-weight:600;color:#fff">${esc(lead.name)}</td>
+                            <td style="padding:.7rem 1rem;font-size:.85rem;color:rgba(255,255,255,.65)">📍 ${esc(lead.address)}</td>
+                            <td style="padding:.7rem 1rem;font-size:.82rem;color:rgba(255,255,255,.45);max-width:220px">${lead.notes ? esc(lead.notes) : '<span style="color:rgba(255,255,255,.2)">—</span>'}</td>
+                            <td style="padding:.7rem 1rem;font-size:.82rem;color:rgba(255,255,255,.5)">${esc(lead.salesRep || '—')}</td>
+                            <td style="padding:.7rem 1rem;white-space:nowrap">
+                                <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;margin-right:4px">✏️ Edit</button>
+                                <button onclick="deleteQL('${lead.id}')" style="background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem">🗑 Delete</button>
+                            </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>`;
+        }
+
+        function openEditQL(id) {
+            const lead = allQLLeads.find(l => l.id === id);
+            if (!lead) return;
+            document.getElementById('editQLId').value = id;
+            document.getElementById('editQLName').value = lead.name || '';
+            document.getElementById('editQLAddress').value = lead.address || '';
+            document.getElementById('editQLNotes').value = lead.notes || '';
+            document.getElementById('editQLMsg').style.display = 'none';
+            document.getElementById('editQLModal').style.display = 'flex';
+        }
+
+        function closeEditQL() { document.getElementById('editQLModal').style.display = 'none'; }
+
+        async function saveEditQL() {
+            const id = document.getElementById('editQLId').value;
+            const btn = document.getElementById('editQLSaveBtn');
+            const msg = document.getElementById('editQLMsg');
+            btn.disabled = true; btn.textContent = 'Saving...';
+            msg.style.display = 'none';
+            try {
+                const r = await fetch(`${API_BASE}/quick-leads`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({
+                        id,
+                        name: document.getElementById('editQLName').value,
+                        address: document.getElementById('editQLAddress').value,
+                        notes: document.getElementById('editQLNotes').value
+                    })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    const idx = allQLLeads.findIndex(l => l.id === id);
+                    if (idx !== -1) allQLLeads[idx] = d.lead;
+                    filterQLLeads();
+                    closeEditQL();
+                    toast('Lead updated', 'success');
+                } else { throw new Error(d.error || 'Failed'); }
+            } catch (e) {
+                msg.style.display = 'block';
+                msg.style.background = 'rgba(231,76,60,.15)'; msg.style.color = '#e74c3c';
+                msg.textContent = e.message || 'Error saving.';
+            }
+            btn.disabled = false; btn.textContent = 'Save Changes';
+        }
+
+        async function deleteQL(id) {
+            if (!confirm('Delete this sales lead? This cannot be undone.')) return;
+            try {
+                const r = await fetch(`${API_BASE}/quick-leads`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ id })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    allQLLeads = allQLLeads.filter(l => l.id !== id);
+                    filterQLLeads();
+                    toast('Lead deleted', 'success');
+                } else { throw new Error(d.error || 'Failed'); }
+            } catch (e) { toast('Error deleting lead', 'error'); }
+        }
+        // ── END SALES LEADS ────────────────────────────────────────
 
         // EDIT LEAD
         function openEditLead(id) {

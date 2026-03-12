@@ -2,7 +2,7 @@ const { kv } = require('@vercel/kv');
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
@@ -52,6 +52,26 @@ module.exports = async function handler(req, res) {
                 }
             }
             return res.status(200).json({ success: true, leads });
+        }
+
+        // PATCH — edit a quick lead (admin only, or own lead)
+        if (req.method === 'PATCH') {
+            const { id, name, address, notes } = req.body;
+            if (!id) return res.status(400).json({ error: 'ID required' });
+
+            const lead = await kv.get(`ql:${id}`);
+            if (!lead) return res.status(404).json({ error: 'Not found' });
+            if (tokenData.role !== 'admin' && lead.salesRep !== tokenData.repName) {
+                return res.status(403).json({ error: 'Forbidden' });
+            }
+
+            if (name !== undefined) lead.name = name;
+            if (address !== undefined) lead.address = address;
+            if (notes !== undefined) lead.notes = notes;
+            lead.updatedAt = new Date().toISOString();
+
+            await kv.set(`ql:${id}`, lead);
+            return res.status(200).json({ success: true, lead });
         }
 
         // DELETE — remove a lead (own leads only, or admin)
