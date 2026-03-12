@@ -1368,13 +1368,19 @@
             }
 
             tbody.innerHTML = filtered.map(lead => {
-                const timeStr = lead.saleTime ? ' · ' + lead.saleTime : '';
+                // Sales portal uses survey.visitDate (datetime-local), admin uses saleDate + saleTime
+                const visitDateRaw = lead.survey?.visitDate || '';
+                const visitDatePart = visitDateRaw.includes('T') ? visitDateRaw.split('T')[0] : visitDateRaw;
+                const visitTimePart = visitDateRaw.includes('T') ? visitDateRaw.split('T')[1]?.slice(0, 5) : '';
+                const rawDate = lead.saleDate || visitDatePart || lead.createdAt;
+                const rawTime = lead.saleTime || visitTimePart || '';
+                const timeStr = rawTime && rawTime !== '00:00' ? ' · ' + rawTime : '';
                 let dateDisplay;
-                if (lead.saleDate && /^\d{4}-\d{2}-\d{2}$/.test(lead.saleDate)) {
-                    const [y, m, d] = lead.saleDate.split('-').map(Number);
+                if (rawDate && /^\d{4}-\d{2}-\d{2}/.test(rawDate)) {
+                    const [y, m, d] = rawDate.slice(0, 10).split('-').map(Number);
                     dateDisplay = new Date(y, m - 1, d).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
                 } else {
-                    dateDisplay = new Date(lead.saleDate || lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+                    dateDisplay = new Date(rawDate || lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
                 }
                 const date = dateDisplay + timeStr;
                 const val = lead.total || (lead.estimatedValue ? '$' + parseFloat(lead.estimatedValue).toLocaleString() : '—');
