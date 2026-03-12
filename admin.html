@@ -743,6 +743,7 @@
                 <div class="header-actions">
                     <button class="btn btn-green" id="exportBtn">📥 Export CSV</button>
                     <button class="btn btn-blue" id="followupBtn">📧 Send Follow ups</button>
+                    <button class="btn btn-outline" id="syncCalBtn">📅 Sync Calendar</button>
                     <button class="btn btn-outline" id="refreshBtn">🔄 Refresh</button>
                     <button class="btn btn-danger" id="logoutBtn">Sign Out</button>
                 </div>
@@ -1860,6 +1861,64 @@
 
         // REFRESH
         document.getElementById('refreshBtn').addEventListener('click', loadLeads);
+
+        // SYNC ALL TO GOOGLE CALENDAR
+        document.getElementById('syncCalBtn').addEventListener('click', async () => {
+            const toSync = allLeads.filter(l => {
+                const visitRaw = l.survey?.visitDate || '';
+                const hasDate = l.saleDate || (visitRaw.includes('T') ? visitRaw.split('T')[0] : visitRaw);
+                return hasDate && !l.jobEventId;
+            });
+
+            if (toSync.length === 0) { toast('All leads already synced to calendar', 'info'); return; }
+            if (!confirm(`Push ${toSync.length} lead(s) with scheduled dates to Google Calendar?`)) return;
+
+            const btn = document.getElementById('syncCalBtn');
+            btn.disabled = true; btn.textContent = `📅 Syncing 0/${toSync.length}...`;
+
+            let synced = 0, failed = 0;
+            for (const lead of toSync) {
+                const visitRaw = lead.survey?.visitDate || '';
+                const visitDatePart = visitRaw.includes('T') ? visitRaw.split('T')[0] : visitRaw;
+                const visitTimePart = visitRaw.includes('T') ? visitRaw.split('T')[1]?.slice(0, 5) : '';
+                const date = lead.saleDate || visitDatePart;
+                const startTime = lead.saleTime || visitTimePart || '09:00';
+                const [hh, mm] = startTime.split(':').map(Number);
+                const endMs = ((hh * 60 + (mm || 0)) + 180) * 60000;
+                const endTime = String(Math.floor(endMs / 3600000) % 24).padStart(2, '0') + ':' + String(Math.floor((endMs % 3600000) / 60000)).padStart(2, '0');
+
+                try {
+                    const r = await fetch(`${API_BASE}/calendar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                        body: JSON.stringify({
+                            title: `🟢 Job — ${lead.clientName} | ${lead.serviceType || 'Service'}`,
+                            description: [
+                                `📋 Estimate #: ${lead.estimateNumber || '—'}`,
+                                `👤 ${lead.clientName} | ${lead.phone || '—'} | ${lead.email || '—'}`,
+                                `📍 ${lead.address || '—'}`,
+                                `🛠️ ${lead.serviceType || '—'}`,
+                                `💰 Total: ${lead.total || lead.estimatedValue || '—'} | Paid: ${lead.paymentStatus || 'Unpaid'}`,
+                                `👷 Rep: ${lead.salesRep || '—'}`,
+                                lead.notes ? `📝 ${lead.notes}` : '',
+                            ].filter(Boolean).join('\n'),
+                            date, startTime, endTime,
+                            leadId: lead.id,
+                            eventType: 'job',
+                        }),
+                    });
+                    const d = await r.json();
+                    if (d.success) { lead.jobEventId = d.eventId; synced++; }
+                    else failed++;
+                } catch (_) { failed++; }
+
+                btn.textContent = `📅 Syncing ${synced + failed}/${toSync.length}...`;
+            }
+
+            btn.disabled = false; btn.textContent = '📅 Sync Calendar';
+            toast(`Synced ${synced} lead(s) to Google Calendar${failed ? `, ${failed} failed` : ''}`, synced > 0 ? 'success' : 'error');
+            renderLeads();
+        });
 
         // CHARTS
         function renderCharts() {
