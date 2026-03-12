@@ -335,21 +335,21 @@
             font-weight: 700
         }
 
-        .bundle-badge {
-            display: none;
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: .85rem;
+        .disc-btn {
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.15);
+            color: rgba(255,255,255,.5);
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: .78rem;
             font-weight: 600;
-            text-align: center;
-            margin-top: .75rem;
-            animation: fadeIn .3s
+            cursor: pointer;
+            transition: all .15s
         }
-
-        .bundle-badge.show {
-            display: block
+        .disc-btn.active {
+            background: rgba(231,76,60,.2);
+            border-color: rgba(231,76,60,.5);
+            color: #e74c3c
         }
 
         @keyframes fadeIn {
@@ -907,8 +907,6 @@
                             onchange="toggleService('garden')"><label for="svc_garden"><span
                                 class="check-icon"></span>Garden</label></div>
                 </div>
-                <div class="bundle-badge" id="bundleBadge">🎉 Bundle Discount Applied: $50 off for multiple services!
-                </div>
             </div>
 
             <!-- DECK RESTORATION CARD -->
@@ -1256,9 +1254,18 @@
                     <div class="lbl">Services</div>
                     <div class="val" id="footerServices">0</div>
                 </div>
+                <div class="footer-item">
+                    <div class="lbl">Discount</div>
+                    <div style="display:flex;gap:4px;align-items:center">
+                        <button onclick="setDiscount(0)" id="disc-0" class="disc-btn active">None</button>
+                        <button onclick="setDiscount(50)" id="disc-50" class="disc-btn">$50</button>
+                        <button onclick="setDiscount(100)" id="disc-100" class="disc-btn">$100</button>
+                        <button onclick="setDiscount(150)" id="disc-150" class="disc-btn">$150</button>
+                    </div>
+                </div>
                 <div class="footer-item" id="discountItem" style="display:none">
-                    <div class="lbl">Bundle Discount</div>
-                    <div class="val discount" id="footerDiscount">-$50</div>
+                    <div class="lbl"></div>
+                    <div class="val discount" id="footerDiscount">-$0</div>
                 </div>
                 <div class="footer-item">
                     <div class="lbl">Subtotal</div>
@@ -1411,14 +1418,26 @@
         }
 
         function updateBundle() {
-            const svcs = document.querySelectorAll('.service-check input:checked');
-            const badge = document.getElementById('bundleBadge');
-            const discountItem = document.getElementById('discountItem');
-            const count = svcs.length;
+            const count = document.querySelectorAll('.service-check input:checked').length;
             document.getElementById('footerServices').textContent = count;
-            if (count > 1) { badge.classList.add('show'); discountItem.style.display = 'block' }
-            else { badge.classList.remove('show'); discountItem.style.display = 'none' }
         }
+
+        let _discount = 0;
+        function setDiscount(val) {
+            _discount = val;
+            [0, 50, 100, 150].forEach(v => {
+                document.getElementById('disc-' + v).classList.toggle('active', v === val);
+            });
+            const item = document.getElementById('discountItem');
+            if (val > 0) {
+                item.style.display = 'flex';
+                document.getElementById('footerDiscount').textContent = '-$' + val + '.00';
+            } else {
+                item.style.display = 'none';
+            }
+            calcAll();
+        }
+        function getDiscount() { return _discount; }
 
         // DECK CONDITION CHANGE
         function deckConditionChange() {
@@ -1517,10 +1536,7 @@
                 subtotal += gardenPrice;
             } else { document.getElementById('price_garden').textContent = '$0.00' }
 
-            // BUNDLE DISCOUNT
-            const svcCount = document.querySelectorAll('.service-check input:checked').length;
-            const discount = svcCount > 1 ? 50 : 0;
-
+            const discount = getDiscount();
             const finalSubtotal = subtotal - discount;
             const hst = finalSubtotal * 0.13;
             const total = finalSubtotal + hst;
@@ -1825,8 +1841,7 @@
             document.querySelectorAll('.legal-item input').forEach(c => c.checked = false);
             document.querySelectorAll('.hazard-item').forEach(h => { h.classList.remove('checked'); h.querySelector('input').checked = false });
             document.getElementById('photoPreviews').innerHTML = '';
-            document.getElementById('bundleBadge').classList.remove('show');
-            document.getElementById('discountItem').style.display = 'none';
+            setDiscount(0);
             document.getElementById('submitMsg').className = 'msg'; document.getElementById('submitMsg').style.display = 'none';
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             localStorage.removeItem('estimate_draft');
@@ -1870,8 +1885,7 @@
                 }
             });
 
-            const svcCount = services.length;
-            const discount = svcCount > 1 ? 50 : 0;
+            const discount = getDiscount();
 
             // Survey data
             const hazards = [];
@@ -1887,7 +1901,7 @@
                 salesRep: rep,
                 estimateNumber,
                 services,
-                bundleDiscount: discount,
+                discount: discount,
                 subtotal: document.getElementById('footerSubtotal').textContent,
                 hst: document.getElementById('footerHST').textContent,
                 total: document.getElementById('footerTotal').textContent,
@@ -1957,8 +1971,8 @@
                 if (document.getElementById('svc_' + s).checked) services.push(svcNames[s] + ': ' + document.getElementById('price_' + s).textContent);
             });
 
-            const svcCount = document.querySelectorAll('.service-check input:checked').length;
-            const discount = svcCount > 1 ? 'Bundle Discount: ($50.00)\n' : '';
+            const discAmt = getDiscount();
+            const discount = discAmt > 0 ? `Discount: (-$${discAmt}.00)\n` : '';
 
             const text = `
 CORE EXTERIORS — ESTIMATE
