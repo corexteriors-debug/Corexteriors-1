@@ -1863,9 +1863,14 @@
                 msg.className = 'msg error'; msg.textContent = 'Please fill in Client Name, Phone, Email, Address, and Sales Rep.'; msg.style.display = 'block'; return;
             }
             if (!visitDate) {
-                msg.className = 'msg error'; msg.textContent = 'Please select a Scheduled Visit Date.'; msg.style.display = 'block';
-                document.getElementById('visitDate').focus(); return;
+                msg.className = 'msg error'; msg.textContent = '⚠️ Scheduled Visit Date is required before submitting.'; msg.style.display = 'block';
+                const vd = document.getElementById('visitDate');
+                vd.style.border = '2px solid #e74c3c';
+                vd.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                vd.focus();
+                return;
             }
+            document.getElementById('visitDate').style.border = '';
 
             // Check legal
             const l1 = document.getElementById('legal_cooling').checked;
