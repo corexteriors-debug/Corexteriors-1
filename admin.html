@@ -1311,9 +1311,8 @@
                 return s + v;
             }, 0);
 
-            const collected = allLeads.filter(l => l.paymentStatus === 'Paid' || l.paymentStatus === 'Deposit').reduce((s, l) => {
-                const v = parseFloat(String(l.total || l.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
-                return s + (l.paymentStatus === 'Deposit' ? v * 0.25 : v);
+            const collected = allLeads.reduce((s, l) => {
+                return s + (parseFloat(l.paymentAmount) || 0);
             }, 0);
 
             const closeRate = total > 0 ? Math.round((closed / (total - lost || 1)) * 100) : 0;
@@ -1369,13 +1368,22 @@
             }
 
             tbody.innerHTML = filtered.map(lead => {
-                const dateStr = lead.saleDate || lead.createdAt;
                 const timeStr = lead.saleTime ? ' · ' + lead.saleTime : '';
-                const date = new Date(dateStr).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) + timeStr;
+                let dateDisplay;
+                if (lead.saleDate && /^\d{4}-\d{2}-\d{2}$/.test(lead.saleDate)) {
+                    const [y, m, d] = lead.saleDate.split('-').map(Number);
+                    dateDisplay = new Date(y, m - 1, d).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+                } else {
+                    dateDisplay = new Date(lead.saleDate || lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+                }
+                const date = dateDisplay + timeStr;
                 const val = lead.total || (lead.estimatedValue ? '$' + parseFloat(lead.estimatedValue).toLocaleString() : '—');
                 const payStatus = lead.paymentStatus || 'Unpaid';
                 const payMethod = lead.paymentMethod || '';
                 const payLabel = payStatus === 'Deposit' ? 'Deposit' : payStatus;
+                const totalNum = parseFloat(String(lead.total || lead.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
+                const paidNum = parseFloat(lead.paymentAmount) || 0;
+                const owedNum = Math.max(0, totalNum - paidNum);
 
                 return `
                     <tr>
@@ -1404,6 +1412,8 @@
                         <td>
                             <div class="dropdown">
                                 <button class="pay-badge pay-${payStatus}" onclick="toggleDrop('pay-${lead.id}')">${payLabel}${payMethod ? ' (' + payMethod + ')' : ''}</button>
+                                ${paidNum > 0 ? `<div style="font-size:.72rem;color:#2ecc71;margin-top:3px">Paid: $${paidNum.toFixed(2)}</div>` : ''}
+                                ${owedNum > 0 && payStatus !== 'Unpaid' ? `<div style="font-size:.72rem;color:#e74c3c;margin-top:1px">Owed: $${owedNum.toFixed(2)}</div>` : ''}
                                 <div class="dropdown-menu" id="pay-${lead.id}">
                                     <button onclick="setPayment('${lead.id}','Unpaid','')">❌ Unpaid</button>
                                     <button onclick="setPayment('${lead.id}','Deposit','Cash')">💵 Deposit (Cash)</button>
@@ -1821,11 +1831,16 @@
 
         // PAYMENT UPDATE
         async function setPayment(id, paymentStatus, paymentMethod) {
+            const l = allLeads.find(x => x.id === id);
+            const totalNum = parseFloat(String((l?.total || l?.estimatedValue || '0')).replace(/[$,]/g, '')) || 0;
+            let paymentAmount = parseFloat(l?.paymentAmount) || 0;
+            if (paymentStatus === 'Paid') paymentAmount = totalNum;
+            else if (paymentStatus === 'Deposit') paymentAmount = paymentAmount > 0 ? paymentAmount : Math.round(totalNum * 0.25 * 100) / 100;
+            else paymentAmount = 0;
             try {
-                const r = await fetch(`${API_BASE}/leads`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, paymentStatus, paymentMethod }) });
+                const r = await fetch(`${API_BASE}/leads`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, paymentStatus, paymentMethod, paymentAmount }) });
                 if (r.ok) {
-                    const l = allLeads.find(x => x.id === id);
-                    if (l) { l.paymentStatus = paymentStatus; l.paymentMethod = paymentMethod }
+                    if (l) { l.paymentStatus = paymentStatus; l.paymentMethod = paymentMethod; l.paymentAmount = paymentAmount; }
                     updateStats(); renderLeads(); toast('Payment updated', 'success');
                 }
             } catch (e) { toast('Failed to update', 'error') }

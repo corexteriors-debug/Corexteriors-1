@@ -211,7 +211,7 @@ module.exports = async function handler(req, res) {
                 return res.status(403).json({ error: 'Admin access required' });
             }
 
-            const { id, status, paymentStatus, paymentMethod, clientName, phone, email, address, notes } = req.body;
+            const { id, status, paymentStatus, paymentMethod, paymentAmount, clientName, phone, email, address, notes } = req.body;
 
             if (!id) {
                 return res.status(400).json({ error: 'Lead ID is required' });
@@ -237,6 +237,7 @@ module.exports = async function handler(req, res) {
                 }
                 lead.paymentStatus = paymentStatus;
                 lead.paymentMethod = paymentMethod || '';
+                if (paymentAmount !== undefined) lead.paymentAmount = parseFloat(paymentAmount) || 0;
             }
 
             if (clientName !== undefined) lead.clientName = clientName;
