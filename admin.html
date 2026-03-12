@@ -1053,6 +1053,14 @@
                         <option value="Closed" selected>Closed</option>
                     </select>
                 </div>
+                <div>
+                    <label style="font-size:.75rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Date</label>
+                    <input id="ns_date" type="date" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;color-scheme:dark">
+                </div>
+                <div>
+                    <label style="font-size:.75rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Time</label>
+                    <input id="ns_time" type="time" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;color-scheme:dark">
+                </div>
                 <div style="grid-column:1/-1">
                     <label style="font-size:.75rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Notes</label>
                     <textarea id="ns_notes" rows="2" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;resize:vertical;font-family:inherit"></textarea>
@@ -1308,7 +1316,9 @@
             }
 
             tbody.innerHTML = filtered.map(lead => {
-                const date = new Date(lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+                const dateStr = lead.saleDate || lead.createdAt;
+                const timeStr = lead.saleTime ? ' · ' + lead.saleTime : '';
+                const date = new Date(dateStr).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) + timeStr;
                 const val = lead.total || (lead.estimatedValue ? '$' + parseFloat(lead.estimatedValue).toLocaleString() : '—');
                 const payStatus = lead.paymentStatus || 'Unpaid';
                 const payMethod = lead.paymentMethod || '';
@@ -1380,6 +1390,9 @@
             ['ns_name','ns_phone','ns_email','ns_address','ns_service','ns_subtotal','ns_rep','ns_notes'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('ns_discount').value = '0';
             document.getElementById('ns_status').value = 'Closed';
+            const now = new Date();
+            document.getElementById('ns_date').value = now.toISOString().split('T')[0];
+            document.getElementById('ns_time').value = now.toTimeString().slice(0,5);
             document.getElementById('ns_sendemail').checked = true;
             document.getElementById('nsSaleMsg').style.display = 'none';
             calcNSTotal();
@@ -1428,6 +1441,8 @@
                 serviceType: document.getElementById('ns_service').value.trim(),
                 salesRep: document.getElementById('ns_rep').value.trim(),
                 notes: document.getElementById('ns_notes').value.trim(),
+                saleDate: document.getElementById('ns_date').value,
+                saleTime: document.getElementById('ns_time').value,
                 status: document.getElementById('ns_status').value,
                 discount: disc,
                 subtotal: '$' + after.toFixed(2),
