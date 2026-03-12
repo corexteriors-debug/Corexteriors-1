@@ -1103,8 +1103,8 @@
                         </select>
                     </div>
                     <div class="field">
-                        <label>Scheduled Visit Date <span class="req">*</span></label>
-                        <input type="datetime-local" id="visitDate" required>
+                        <label>Scheduled Visit Date <span style="color:#e74c3c;font-weight:700">*</span></label>
+                        <input type="datetime-local" id="visitDate" required style="border:1px solid rgba(255,255,255,.15)">
                     </div>
                     <div class="field">
                         <label>Water Access</label>
@@ -1866,11 +1866,14 @@
                 msg.className = 'msg error'; msg.textContent = '⚠️ Scheduled Visit Date is required before submitting.'; msg.style.display = 'block';
                 const vd = document.getElementById('visitDate');
                 vd.style.border = '2px solid #e74c3c';
+                vd.style.boxShadow = '0 0 0 3px rgba(231,76,60,.3)';
                 vd.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                vd.focus();
+                setTimeout(() => vd.focus(), 300);
                 return;
             }
-            document.getElementById('visitDate').style.border = '';
+            const vdEl = document.getElementById('visitDate');
+            vdEl.style.border = '1px solid rgba(255,255,255,.15)';
+            vdEl.style.boxShadow = '';
 
             // Check legal
             const l1 = document.getElementById('legal_cooling').checked;
