@@ -18,7 +18,7 @@ function getCalendarClient() {
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', 'https://corexteriors.ca');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -142,6 +142,30 @@ module.exports = async (req, res) => {
                 eventId: event.data.id,
                 eventLink: event.data.htmlLink,
             });
+        }
+
+        // ── PUT: update existing event ───────────────────────────────────────
+        if (req.method === 'PUT') {
+            const { eventId, title, description, date, startTime, endTime, leadId, eventType } = req.body;
+            if (!eventId || !date) return res.status(400).json({ error: 'eventId and date required' });
+
+            const st = startTime || '09:00';
+            const et = endTime || '12:00';
+
+            const event = await cal.events.update({
+                calendarId,
+                eventId,
+                resource: {
+                    summary: title,
+                    description: description || '',
+                    start: { dateTime: `${date}T${st}:00`, timeZone: TIMEZONE },
+                    end:   { dateTime: `${date}T${et}:00`, timeZone: TIMEZONE },
+                    colorId: '10',
+                    extendedProperties: { private: { eventType: eventType || 'job', leadId: leadId || '' } },
+                },
+            });
+
+            return res.status(200).json({ success: true, eventId: event.data.id });
         }
 
         // ── DELETE: remove event ─────────────────────────────────────────────

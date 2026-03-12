@@ -1434,7 +1434,7 @@
                         </td>
 
                         <td>
-                            <button onclick="openScheduleModal('${lead.id}','${esc(lead.clientName)}','${esc(lead.address)}')" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;white-space:nowrap">${lead.jobEventId ? '📅 Rescheduled' : '📅 Schedule'}</button>
+                            <button onclick="openScheduleModal('${lead.id}')" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;white-space:nowrap">${lead.jobEventId ? '📅 Reschedule' : '📅 Schedule'}</button>
                         </td>
                         <td style="white-space:nowrap">
                             <button onclick="openEditLead('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;margin-right:4px">✏️ Edit</button>
@@ -2148,14 +2148,22 @@
 
         let scheduleLeadId = '';
 
-        function openScheduleModal(leadId, clientName, address) {
+        function openScheduleModal(leadId) {
             scheduleLeadId = leadId;
-            document.getElementById('scheduleClientName').textContent = clientName;
-            document.getElementById('scheduleAddress').textContent = address;
-            document.getElementById('scheduleDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('scheduleStart').value = '09:00';
-            document.getElementById('scheduleEnd').value = '12:00';
-            document.getElementById('scheduleNotes').value = '';
+            const lead = allLeads.find(x => x.id === leadId) || {};
+            document.getElementById('scheduleClientName').textContent = lead.clientName || '';
+            document.getElementById('scheduleAddress').textContent = lead.address || '';
+            // Pre-fill existing scheduled date/time
+            const visitRaw = lead.survey?.visitDate || '';
+            const existingDate = lead.saleDate || (visitRaw.includes('T') ? visitRaw.split('T')[0] : visitRaw) || new Date().toISOString().split('T')[0];
+            const existingTime = lead.saleTime || (visitRaw.includes('T') ? visitRaw.split('T')[1]?.slice(0, 5) : '') || '09:00';
+            const [hh, mm] = existingTime.split(':').map(Number);
+            const endMs = ((hh * 60 + (mm || 0)) + 180) * 60000;
+            const endTime = String(Math.floor(endMs / 3600000) % 24).padStart(2, '0') + ':' + String(Math.floor((endMs % 3600000) / 60000)).padStart(2, '0');
+            document.getElementById('scheduleDate').value = existingDate;
+            document.getElementById('scheduleStart').value = existingTime;
+            document.getElementById('scheduleEnd').value = endTime;
+            document.getElementById('scheduleNotes').value = lead.notes || '';
             document.getElementById('scheduleModal').style.display = 'flex';
         }
 
@@ -2174,26 +2182,37 @@
             const startTime = document.getElementById('scheduleStart').value;
             const endTime = document.getElementById('scheduleEnd').value;
             const notes = document.getElementById('scheduleNotes').value;
-            const clientName = document.getElementById('scheduleClientName').textContent;
-            const address = document.getElementById('scheduleAddress').textContent;
+            const lead = allLeads.find(x => x.id === scheduleLeadId) || {};
+            const clientName = lead.clientName || '';
+            const existingEventId = lead.jobEventId || '';
 
             if (!date) { toast('Please select a date', 'error'); return; }
 
             const btn = document.getElementById('scheduleSubmitBtn');
-            btn.disabled = true; btn.textContent = 'Scheduling...';
+            btn.disabled = true; btn.textContent = existingEventId ? 'Updating...' : 'Scheduling...';
+
+            const payload = {
+                title: `🟢 Job — ${clientName} | ${lead.serviceType || 'Service'}`,
+                description: [
+                    `📋 Estimate #: ${lead.estimateNumber || '—'}`,
+                    `👤 ${clientName} | ${lead.phone || '—'} | ${lead.email || '—'}`,
+                    `📍 ${lead.address || '—'}`,
+                    `🛠️ ${lead.serviceType || '—'}`,
+                    `💰 Total: ${lead.total || lead.estimatedValue || '—'} | Paid: ${lead.paymentStatus || 'Unpaid'}`,
+                    `👷 Rep: ${lead.salesRep || '—'}`,
+                    notes ? `📝 ${notes}` : '',
+                ].filter(Boolean).join('\n'),
+                date, startTime, endTime,
+                leadId: scheduleLeadId,
+                eventType: 'job',
+                ...(existingEventId && { eventId: existingEventId }),
+            };
 
             try {
                 const r = await fetch(`${API_BASE}/calendar`, {
-                    method: 'POST',
+                    method: existingEventId ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                    body: JSON.stringify({
-                        title: `🟢 Job — ${clientName}`,
-                        description: `Address: ${address}${notes ? '\nNotes: ' + notes : ''}`,
-                        date, startTime, endTime,
-                        allDay: false,
-                        leadId: scheduleLeadId,
-                        eventType: 'job',
-                    }),
+                    body: JSON.stringify(payload),
                 });
                 const d = await r.json();
                 if (d.success) {
