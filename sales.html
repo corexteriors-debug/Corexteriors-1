@@ -1850,7 +1850,20 @@
 
         // SUBMIT
         async function submitEstimate() {
-            // Validate required fields
+            // ── VISIT DATE — must be first ──────────────────────────
+            const vdEl = document.getElementById('visitDate');
+            if (!vdEl || !vdEl.value) {
+                vdEl.style.border = '2px solid #e74c3c';
+                vdEl.style.boxShadow = '0 0 0 4px rgba(231,76,60,.35)';
+                vdEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const errEl = document.getElementById('submitMsg');
+                if (errEl) { errEl.className = 'msg error'; errEl.textContent = '⚠️ Scheduled Visit Date is required.'; errEl.style.display = 'block'; }
+                return;
+            }
+            vdEl.style.border = '';
+            vdEl.style.boxShadow = '';
+
+            // Validate other required fields
             const name = document.getElementById('clientName').value.trim();
             const phone = document.getElementById('clientPhone').value.trim();
             const email = document.getElementById('clientEmail').value.trim();
@@ -1858,22 +1871,9 @@
             const rep = document.getElementById('salesRep').value.trim();
             const msg = document.getElementById('submitMsg');
 
-            const visitDate = document.getElementById('visitDate').value.trim();
             if (!name || !phone || !email || !address || !rep) {
                 msg.className = 'msg error'; msg.textContent = 'Please fill in Client Name, Phone, Email, Address, and Sales Rep.'; msg.style.display = 'block'; return;
             }
-            if (!visitDate) {
-                msg.className = 'msg error'; msg.textContent = '⚠️ Scheduled Visit Date is required before submitting.'; msg.style.display = 'block';
-                const vd = document.getElementById('visitDate');
-                vd.style.border = '2px solid #e74c3c';
-                vd.style.boxShadow = '0 0 0 3px rgba(231,76,60,.3)';
-                vd.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => vd.focus(), 300);
-                return;
-            }
-            const vdEl = document.getElementById('visitDate');
-            vdEl.style.border = '1px solid rgba(255,255,255,.15)';
-            vdEl.style.boxShadow = '';
 
             // Check legal
             const l1 = document.getElementById('legal_cooling').checked;
