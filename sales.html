@@ -1858,10 +1858,11 @@
             const visitDate = document.getElementById('visitDate').value;
             const msg = document.getElementById('submitMsg');
 
-            if (!name || !phone || !email || !address || !rep || !visitDate) {
-                msg.className = 'msg error';
-                msg.textContent = !visitDate ? '⚠️ Scheduled Visit Date is required.' : 'Please fill in Client Name, Phone, Email, Address, and Sales Rep.';
-                msg.style.display = 'block';
+            if (!name || !phone || !email || !address || !rep) {
+                msg.className = 'msg error'; msg.textContent = 'Please fill in Client Name, Phone, Email, Address, and Sales Rep.'; msg.style.display = 'block'; return;
+            }
+            if (!visitDate) {
+                document.getElementById('visitDate').reportValidity();
                 return;
             }
 
