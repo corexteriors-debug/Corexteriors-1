@@ -46,7 +46,7 @@ async function createSalesVisitEvent(lead) {
 module.exports = async function handler(req, res) {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') {
@@ -169,7 +169,7 @@ module.exports = async function handler(req, res) {
                 return res.status(403).json({ error: 'Admin access required' });
             }
 
-            const { id, status, paymentStatus, paymentMethod } = req.body;
+            const { id, status, paymentStatus, paymentMethod, clientName, phone, email, address, notes } = req.body;
 
             if (!id) {
                 return res.status(400).json({ error: 'Lead ID is required' });
@@ -197,10 +197,35 @@ module.exports = async function handler(req, res) {
                 lead.paymentMethod = paymentMethod || '';
             }
 
+            if (clientName !== undefined) lead.clientName = clientName;
+            if (phone !== undefined) lead.phone = phone;
+            if (email !== undefined) lead.email = email;
+            if (address !== undefined) lead.address = address;
+            if (notes !== undefined) lead.notes = notes;
+
             lead.updatedAt = new Date().toISOString();
             await kv.set(`lead:${id}`, lead);
 
             return res.status(200).json({ success: true, lead });
+        }
+
+        // DELETE - Remove a lead (admin only)
+        if (req.method === 'DELETE') {
+            if (tokenData.role !== 'admin') {
+                return res.status(403).json({ error: 'Admin access required' });
+            }
+
+            const { id } = req.body;
+            if (!id) return res.status(400).json({ error: 'Lead ID is required' });
+
+            const lead = await kv.get(`lead:${id}`);
+            if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+            await kv.del(`lead:${id}`);
+            const leadIds = ((await kv.get('lead_ids')) || []).filter(i => i !== id);
+            await kv.set('lead_ids', leadIds);
+
+            return res.status(200).json({ success: true });
         }
 
         return res.status(405).json({ error: 'Method not allowed' });

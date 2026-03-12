@@ -975,6 +975,29 @@
     <div class="toast" id="toast"></div>
 
     <!-- SCHEDULE JOB MODAL -->
+    <!-- EDIT LEAD MODAL -->
+    <div id="editLeadModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#1a2a4a;border:1px solid rgba(230,126,34,.25);border-radius:16px;padding:1.75rem;width:100%;max-width:480px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+                <h3 style="margin:0;color:#fff">✏️ Edit Lead</h3>
+                <button onclick="closeEditLead()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:1.2rem;cursor:pointer">✕</button>
+            </div>
+            <input type="hidden" id="editLeadId">
+            <div style="display:flex;flex-direction:column;gap:.6rem">
+                <input id="editLeadName" type="text" placeholder="Client Name" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;width:100%">
+                <input id="editLeadPhone" type="text" placeholder="Phone" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;width:100%">
+                <input id="editLeadEmail" type="text" placeholder="Email" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;width:100%">
+                <input id="editLeadAddress" type="text" placeholder="Address" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;width:100%">
+                <textarea id="editLeadNotes" placeholder="Notes" rows="3" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;resize:vertical;font-family:inherit;width:100%"></textarea>
+            </div>
+            <div style="display:flex;gap:.75rem;margin-top:1rem">
+                <button onclick="saveEditLead()" id="editLeadSaveBtn" style="flex:1;background:#e67e22;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Save Changes</button>
+                <button onclick="closeEditLead()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:.75rem 1.25rem;border-radius:10px;cursor:pointer">Cancel</button>
+            </div>
+            <div id="editLeadMsg" style="display:none;margin-top:.6rem;font-size:.82rem;padding:.5rem .75rem;border-radius:6px"></div>
+        </div>
+    </div>
+
     <div id="scheduleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center">
         <div style="background:#1a2a4a;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:2rem;width:100%;max-width:420px;margin:1rem">
             <h3 style="margin:0 0 .25rem;color:#fff">📅 Schedule Job</h3>
@@ -1199,8 +1222,12 @@
                         <td>
                             <button onclick="openScheduleModal('${lead.id}','${esc(lead.clientName)}','${esc(lead.address)}')" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;white-space:nowrap">${lead.jobEventId ? '📅 Rescheduled' : '📅 Schedule'}</button>
                         </td>
+                        <td style="white-space:nowrap">
+                            <button onclick="openEditLead('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;margin-right:4px">✏️ Edit</button>
+                            <button onclick="deleteLead('${lead.id}')" style="background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem">🗑 Delete</button>
+                        </td>
                     </tr>
-                    ${lead.notes ? `<tr><td colspan="10" style="padding:.2rem 1rem .8rem;color:rgba(255,255,255,.35);font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.06)">📝 ${esc(lead.notes)}</td></tr>` : ''}
+                    ${lead.notes ? `<tr><td colspan="11" style="padding:.2rem 1rem .8rem;color:rgba(255,255,255,.35);font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.06)">📝 ${esc(lead.notes)}</td></tr>` : ''}
                 `;
             }).join('');
         }
@@ -1211,6 +1238,78 @@
             document.getElementById(id).classList.toggle('show');
         }
         document.addEventListener('click', e => { if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')) });
+
+        // EDIT LEAD
+        function openEditLead(id) {
+            const lead = allLeads.find(l => l.id === id);
+            if (!lead) return;
+            document.getElementById('editLeadId').value = id;
+            document.getElementById('editLeadName').value = lead.clientName || '';
+            document.getElementById('editLeadPhone').value = lead.phone || '';
+            document.getElementById('editLeadEmail').value = lead.email || '';
+            document.getElementById('editLeadAddress').value = lead.address || '';
+            document.getElementById('editLeadNotes').value = lead.notes || '';
+            document.getElementById('editLeadMsg').style.display = 'none';
+            document.getElementById('editLeadModal').style.display = 'flex';
+        }
+
+        function closeEditLead() {
+            document.getElementById('editLeadModal').style.display = 'none';
+        }
+
+        async function saveEditLead() {
+            const id = document.getElementById('editLeadId').value;
+            const btn = document.getElementById('editLeadSaveBtn');
+            const msg = document.getElementById('editLeadMsg');
+            btn.disabled = true; btn.textContent = 'Saving...';
+            msg.style.display = 'none';
+            try {
+                const r = await fetch(`${API_BASE}/leads`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({
+                        id,
+                        clientName: document.getElementById('editLeadName').value,
+                        phone: document.getElementById('editLeadPhone').value,
+                        email: document.getElementById('editLeadEmail').value,
+                        address: document.getElementById('editLeadAddress').value,
+                        notes: document.getElementById('editLeadNotes').value
+                    })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    const idx = allLeads.findIndex(l => l.id === id);
+                    if (idx !== -1) allLeads[idx] = d.lead;
+                    renderLeads(); updateStats();
+                    closeEditLead();
+                    toast('Lead updated', 'success');
+                } else { throw new Error(d.error || 'Failed'); }
+            } catch (e) {
+                msg.style.display = 'block';
+                msg.style.background = 'rgba(231,76,60,.15)';
+                msg.style.color = '#e74c3c';
+                msg.textContent = e.message || 'Error saving.';
+            }
+            btn.disabled = false; btn.textContent = 'Save Changes';
+        }
+
+        // DELETE LEAD
+        async function deleteLead(id) {
+            if (!confirm('Permanently delete this lead? This cannot be undone.')) return;
+            try {
+                const r = await fetch(`${API_BASE}/leads`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ id })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    allLeads = allLeads.filter(l => l.id !== id);
+                    renderLeads(); updateStats(); renderCharts();
+                    toast('Lead deleted', 'success');
+                } else { throw new Error(d.error || 'Failed'); }
+            } catch (e) { toast('Error deleting lead', 'error'); }
+        }
 
         // STATUS UPDATE
         async function setStatus(id, status) {
