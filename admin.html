@@ -1166,7 +1166,24 @@
         let authToken = localStorage.getItem('admin_token') || '';
         let allLeads = [];
 
-        if (authToken) showDashboard();
+        if (authToken) verifyAndShow();
+
+        // VERIFY STORED TOKEN
+        async function verifyAndShow() {
+            try {
+                const r = await fetch(`${API_BASE}/auth`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                if (d.success && d.role === 'admin') {
+                    showDashboard();
+                } else {
+                    authToken = '';
+                    localStorage.removeItem('admin_token');
+                }
+            } catch {
+                authToken = '';
+                localStorage.removeItem('admin_token');
+            }
+        }
 
         // LOGIN
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
