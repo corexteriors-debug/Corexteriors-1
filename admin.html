@@ -751,8 +751,8 @@
             <!-- TABS -->
             <div class="tab-bar">
                 <button class="tab-btn active" data-tab="overview">📊 Overview</button>
-                <button class="tab-btn" data-tab="leads">📋 Leads</button>
-                <button class="tab-btn" data-tab="salesleads">💰 Sales</button>
+                <button class="tab-btn" data-tab="leads">💰 Sales</button>
+                <button class="tab-btn" data-tab="salesleads">📋 Leads</button>
                 <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
                 <button class="tab-btn" data-tab="materials">🧮 Materials</button>
             </div>
@@ -845,7 +845,7 @@
                 <!-- Table -->
                 <div class="table-card">
                     <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
-                        <h2>All Leads <span id="leadCount" style="color:rgba(255,255,255,.3);font-weight:400;font-size:.85rem"></span></h2>
+                        <h2>💰 Sales <span id="leadCount" style="color:rgba(255,255,255,.3);font-weight:400;font-size:.85rem"></span></h2>
                         <button onclick="openNewSaleModal()" style="background:#e67e22;border:none;color:#fff;font-weight:700;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:.85rem">+ New Sale</button>
                     </div>
                     <div class="table-scroll">
@@ -877,7 +877,7 @@
             <div class="tab-content" id="tab-salesleads">
                 <div class="table-card" style="margin-bottom:1.5rem">
                     <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
-                        <h2>💰 Sales <span id="qlCount" style="font-size:.9rem;color:rgba(255,255,255,.4);font-weight:400"></span></h2>
+                        <h2>📋 Leads <span id="qlCount" style="font-size:.9rem;color:rgba(255,255,255,.4);font-weight:400"></span></h2>
                         <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
                             <input type="text" id="qlSearch" placeholder="🔍 Search name, address..." oninput="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .85rem;color:#fff;font-size:.85rem;outline:none;min-width:200px">
                             <select id="qlRepFilter" onchange="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .75rem;color:#fff;font-size:.85rem;outline:none">

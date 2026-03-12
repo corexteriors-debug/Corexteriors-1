@@ -31,16 +31,45 @@ async function createJobEvent(lead) {
     const endMin  = String(Math.floor((endMs % 3600000) / 60000)).padStart(2, '0');
     const endTime = `${endHour}:${endMin}`;
 
-    const payInfo = lead.paymentStatus && lead.paymentStatus !== 'Unpaid'
-        ? `\nPayment: ${lead.paymentStatus}${lead.paymentMethod ? ' (' + lead.paymentMethod + ')' : ''}${lead.paymentAmount ? ' — $' + parseFloat(lead.paymentAmount).toFixed(2) : ''}`
-        : '';
+    const lines = [
+        `📋 ESTIMATE #: ${lead.estimateNumber || '—'}`,
+        ``,
+        `👤 CLIENT`,
+        `Name:    ${lead.clientName}`,
+        `Phone:   ${lead.phone || '—'}`,
+        `Email:   ${lead.email || '—'}`,
+        `Address: ${lead.address || '—'}`,
+        ``,
+        `🛠️ SERVICES`,
+        `${lead.serviceType || '—'}`,
+        ...(lead.services && lead.services.length
+            ? lead.services.map(s => `  • ${s.name}${s.price ? ' — ' + s.price : ''}`)
+            : []),
+        ``,
+        `💰 PRICING`,
+        `Subtotal: ${lead.subtotal || '—'}`,
+        ...(lead.discount ? [`Discount: -$${lead.discount}`] : []),
+        `HST (13%): ${lead.hst || '—'}`,
+        `Total:    ${lead.total || '—'}`,
+        ``,
+        `💳 PAYMENT`,
+        `Status:  ${lead.paymentStatus || 'Unpaid'}`,
+        ...(lead.paymentMethod ? [`Method:  ${lead.paymentMethod}`] : []),
+        ...(lead.paymentAmount ? [`Amount:  $${parseFloat(lead.paymentAmount).toFixed(2)}`] : []),
+        ``,
+        `👷 SALES REP: ${lead.salesRep || '—'}`,
+        ...(lead.notes ? [``, `📝 NOTES`, lead.notes] : []),
+        ``,
+        `─────────────────────`,
+        `Core Exteriors | corexteriors.ca | 519-712-1431`,
+    ];
 
     try {
         const event = await cal.events.insert({
             calendarId,
             resource: {
-                summary: `🟢 Job — ${lead.clientName}`,
-                description: `Address: ${lead.address}\nServices: ${lead.serviceType}\nTotal: ${lead.total}\nPhone: ${lead.phone}\nRep: ${lead.salesRep || '—'}\nEst #: ${lead.estimateNumber || '—'}${payInfo}`,
+                summary: `🟢 Job — ${lead.clientName} | ${lead.serviceType || 'Service'}`,
+                description: lines.join('\n'),
                 start: { dateTime: `${date}T${startTime}:00`, timeZone: TIMEZONE },
                 end:   { dateTime: `${date}T${endTime}:00`,   timeZone: TIMEZONE },
                 colorId: '10', // Basil (green) — job
