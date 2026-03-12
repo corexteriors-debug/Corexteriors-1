@@ -1368,7 +1368,6 @@
             }
 
             tbody.innerHTML = filtered.map(lead => {
-                // Sales portal uses survey.visitDate (datetime-local), admin uses saleDate + saleTime
                 const visitDateRaw = lead.survey?.visitDate || '';
                 const visitDatePart = visitDateRaw.includes('T') ? visitDateRaw.split('T')[0] : visitDateRaw;
                 const visitTimePart = visitDateRaw.includes('T') ? visitDateRaw.split('T')[1]?.slice(0, 5) : '';
@@ -1378,9 +1377,9 @@
                 let dateDisplay;
                 if (rawDate && /^\d{4}-\d{2}-\d{2}/.test(rawDate)) {
                     const [y, m, d] = rawDate.slice(0, 10).split('-').map(Number);
-                    dateDisplay = new Date(y, m - 1, d).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+                    dateDisplay = new Date(y, m - 1, d).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
                 } else {
-                    dateDisplay = new Date(rawDate || lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+                    dateDisplay = new Date(rawDate || lead.createdAt).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
                 }
                 const date = dateDisplay + timeStr;
                 const val = lead.total || (lead.estimatedValue ? '$' + parseFloat(lead.estimatedValue).toLocaleString() : '—');
@@ -2048,14 +2047,17 @@
             const headers = ['Submitted Date', 'Scheduled Date', 'Estimate #', 'Client', 'Phone', 'Email', 'Address', 'Service', 'Value', 'Paid', 'Owed', 'Rep', 'Status', 'Payment', 'Method', 'Notes'];
             const rows = allLeads.map(l => {
                 const visitRaw = l.survey?.visitDate || '';
-                const visitDate = visitRaw.includes('T') ? visitRaw.split('T')[0] : visitRaw;
-                const scheduledDate = l.saleDate || visitDate || '';
+                const visitDatePart = visitRaw.includes('T') ? visitRaw.split('T')[0] : visitRaw;
+                const visitTimePart = visitRaw.includes('T') ? visitRaw.split('T')[1]?.slice(0, 5) : '';
+                const scheduledDate = l.saleDate || visitDatePart || '';
+                const scheduledTime = l.saleTime || visitTimePart || '';
+                const scheduledDateTime = scheduledDate + (scheduledTime ? ' ' + scheduledTime : '');
                 const totalNum = parseFloat(String(l.total || l.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
                 const paidNum = parseFloat(l.paymentAmount) || 0;
                 const owedNum = Math.max(0, totalNum - paidNum);
                 return [
                     new Date(l.createdAt).toLocaleDateString('en-CA'),
-                    scheduledDate,
+                    scheduledDateTime,
                     l.estimateNumber || '',
                     l.clientName, l.phone, l.email, l.address, l.serviceType,
                     l.total || l.estimatedValue || '',
