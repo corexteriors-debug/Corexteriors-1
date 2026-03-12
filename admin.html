@@ -1065,6 +1065,36 @@
                     <label style="font-size:.75rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Notes</label>
                     <textarea id="ns_notes" rows="2" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;outline:none;resize:vertical;font-family:inherit"></textarea>
                 </div>
+
+                <!-- PAYMENT SECTION -->
+                <div style="grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:.85rem;margin-top:.1rem">
+                    <p style="font-size:.75rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">💳 Payment</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem">
+                        <div>
+                            <label style="font-size:.72rem;color:rgba(255,255,255,.35);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Status</label>
+                            <select id="ns_pay_status" onchange="onNSPayStatusChange()" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.55rem .75rem;color:#fff;font-size:.85rem;outline:none">
+                                <option value="Unpaid">Unpaid</option>
+                                <option value="Deposit">Deposit</option>
+                                <option value="Paid" selected>Paid</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:.72rem;color:rgba(255,255,255,.35);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Method</label>
+                            <select id="ns_pay_method" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.55rem .75rem;color:#fff;font-size:.85rem;outline:none">
+                                <option value="">— None —</option>
+                                <option value="Cash">Cash</option>
+                                <option value="E-transfer">E-transfer</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Cheque">Cheque</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:.72rem;color:rgba(255,255,255,.35);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Amount ($)</label>
+                            <input id="ns_pay_amount" type="number" min="0" step="0.01" placeholder="0.00" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.55rem .75rem;color:#fff;font-size:.85rem;outline:none">
+                        </div>
+                    </div>
+                </div>
+
                 <div style="grid-column:1/-1;display:flex;align-items:center;gap:.5rem">
                     <input type="checkbox" id="ns_sendemail" checked style="width:16px;height:16px;cursor:pointer">
                     <label for="ns_sendemail" style="font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">Send invoice email to customer</label>
@@ -1390,6 +1420,11 @@
             ['ns_name','ns_phone','ns_email','ns_address','ns_service','ns_subtotal','ns_rep','ns_notes'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('ns_discount').value = '0';
             document.getElementById('ns_status').value = 'Closed';
+            document.getElementById('ns_pay_status').value = 'Paid';
+            document.getElementById('ns_pay_method').value = 'Cash';
+            document.getElementById('ns_pay_amount').value = '';
+            document.getElementById('ns_pay_amount').disabled = false;
+            document.getElementById('ns_pay_method').disabled = false;
             const now = new Date();
             document.getElementById('ns_date').value = now.toISOString().split('T')[0];
             document.getElementById('ns_time').value = now.toTimeString().slice(0,5);
@@ -1409,6 +1444,34 @@
             const total = after + hst;
             document.getElementById('ns_hst_display').textContent = '$' + hst.toFixed(2);
             document.getElementById('ns_total_display').textContent = '$' + total.toFixed(2);
+            // Auto-fill payment amount based on status
+            onNSPayStatusChange(total);
+        }
+
+        function onNSPayStatusChange(total) {
+            const t = total !== undefined ? total : (() => {
+                const sub = parseFloat(document.getElementById('ns_subtotal').value) || 0;
+                const disc = parseFloat(document.getElementById('ns_discount').value) || 0;
+                const after = Math.max(0, sub - disc);
+                return after * 1.13;
+            })();
+            const status = document.getElementById('ns_pay_status').value;
+            const amtField = document.getElementById('ns_pay_amount');
+            const methodField = document.getElementById('ns_pay_method');
+            if (status === 'Unpaid') {
+                amtField.value = '';
+                amtField.disabled = true;
+                methodField.value = '';
+                methodField.disabled = true;
+            } else if (status === 'Deposit') {
+                amtField.value = (t * 0.25).toFixed(2);
+                amtField.disabled = false;
+                methodField.disabled = false;
+            } else { // Paid
+                amtField.value = t.toFixed(2);
+                amtField.disabled = false;
+                methodField.disabled = false;
+            }
         }
 
         async function submitNewSale() {
@@ -1431,6 +1494,9 @@
             const after = Math.max(0, sub - disc);
             const hst = after * 0.13;
             const total = after + hst;
+            const payStatus = document.getElementById('ns_pay_status').value;
+            const payMethod = document.getElementById('ns_pay_method').value;
+            const payAmount = parseFloat(document.getElementById('ns_pay_amount').value) || 0;
             const sendEmail = document.getElementById('ns_sendemail').checked;
 
             const estimate = {
@@ -1453,6 +1519,9 @@
                 services: document.getElementById('ns_service').value.trim()
                     ? [{ name: document.getElementById('ns_service').value.trim(), price: '$' + after.toFixed(2) }]
                     : [],
+                paymentStatus: payStatus,
+                paymentMethod: payStatus !== 'Unpaid' ? payMethod : '',
+                paymentAmount: payStatus !== 'Unpaid' ? payAmount : 0,
                 createdByAdmin: true
             };
 
