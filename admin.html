@@ -894,16 +894,39 @@
 
             <!-- ========== TAB: CALENDAR ========== -->
             <div class="tab-content" id="tab-calendar">
-                <div class="table-card" style="margin-bottom:1.5rem">
-                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
-                        <h2>📅 Upcoming Schedule</h2>
+                <!-- Monthly grid card -->
+                <div class="table-card" style="margin-bottom:1.25rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+                        <div style="display:flex;align-items:center;gap:.75rem">
+                            <button onclick="calNavMonth(-1)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1">‹</button>
+                            <h2 id="calMonthLabel" style="margin:0;font-size:1.1rem">—</h2>
+                            <button onclick="calNavMonth(1)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1">›</button>
+                        </div>
                         <div style="display:flex;gap:.5rem">
                             <button onclick="loadCalendarEvents()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
                             <button onclick="openBlockModal()" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🚫 Block Day</button>
                         </div>
                     </div>
+                    <!-- Day-of-week headers -->
+                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 1rem .5rem">
+                        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div style="text-align:center;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;padding:.4rem 0">${d}</div>`).join('')}
+                    </div>
+                    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:0 1rem 1rem"></div>
+                </div>
+
+                <!-- Selected day detail -->
+                <div class="table-card" id="calDayDetail" style="margin-bottom:1.5rem;display:none">
+                    <div class="table-title">
+                        <h2 id="calDayDetailLabel" style="font-size:1rem">Events</h2>
+                    </div>
+                    <div id="calDayDetailList" style="padding:.5rem 1rem 1rem"></div>
+                </div>
+
+                <!-- Upcoming list (all events) -->
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title"><h2>📋 All Upcoming Events</h2></div>
                     <div id="calendarEventsList" style="padding:1rem">
-                        <div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Click Refresh to load events</div>
+                        <div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Loading...</div>
                     </div>
                 </div>
             </div>
@@ -2207,56 +2230,138 @@
             } catch (e) { toast('Connection error', 'error'); }
         }
 
+        // ── CALENDAR ───────────────────────────────────────────────
+        let _calEvents = [];
+        let _calYear = new Date().getFullYear();
+        let _calMonth = new Date().getMonth(); // 0-indexed
+
+        const typeColors = { sales_visit:'#3498db', job:'#2ecc71', unavailable:'#95a5a6', available:'#a8e6cf', other:'#e67e22' };
+        const typeLabels = { sales_visit:'Sales Visit', job:'Job', unavailable:'Unavailable', available:'Available', other:'Event' };
+
+        function calNavMonth(dir) {
+            _calMonth += dir;
+            if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+            if (_calMonth < 0)  { _calMonth = 11; _calYear--; }
+            renderCalGrid();
+        }
+
+        function renderCalGrid() {
+            const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            document.getElementById('calMonthLabel').textContent = `${monthNames[_calMonth]} ${_calYear}`;
+
+            const firstDay = new Date(_calYear, _calMonth, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
+            const today = new Date().toISOString().split('T')[0];
+
+            // Build event lookup by date
+            const byDay = {};
+            _calEvents.forEach(e => {
+                const day = (e.start || '').split('T')[0];
+                if (!byDay[day]) byDay[day] = [];
+                byDay[day].push(e);
+            });
+
+            let cells = '';
+            // Leading blanks
+            for (let i = 0; i < firstDay; i++) cells += `<div></div>`;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dayEvts = byDay[dateStr] || [];
+                const isToday = dateStr === today;
+                const hasJob = dayEvts.some(e => e.type === 'job');
+                const hasSales = dayEvts.some(e => e.type === 'sales_visit');
+                const hasBlock = dayEvts.some(e => e.type === 'unavailable');
+
+                const dots = dayEvts.slice(0,3).map(e => {
+                    const c = typeColors[e.type] || '#e67e22';
+                    return `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin:0 1px"></span>`;
+                }).join('');
+
+                cells += `
+                <div onclick="showCalDay('${dateStr}')" style="
+                    min-height:60px;padding:.4rem .35rem;border-radius:6px;cursor:pointer;
+                    background:${isToday ? 'rgba(52,152,219,.18)' : dayEvts.length ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.02)'};
+                    border:1px solid ${isToday ? 'rgba(52,152,219,.5)' : 'rgba(255,255,255,.06)'};
+                    transition:background .15s
+                " onmouseover="this.style.background='rgba(255,255,255,.09)'" onmouseout="this.style.background='${isToday ? 'rgba(52,152,219,.18)' : dayEvts.length ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.02)'}'">
+                    <div style="font-size:.8rem;font-weight:${isToday ? '700' : '500'};color:${isToday ? '#3498db' : 'rgba(255,255,255,.7)'};margin-bottom:3px">${d}</div>
+                    ${dayEvts.length ? `<div style="line-height:1.6">${dots}</div>` : ''}
+                    ${dayEvts.length ? `<div style="font-size:.65rem;color:rgba(255,255,255,.35);margin-top:2px">${dayEvts.length} event${dayEvts.length>1?'s':''}</div>` : ''}
+                </div>`;
+            }
+            document.getElementById('calGrid').innerHTML = cells;
+        }
+
+        function showCalDay(dateStr) {
+            const detail = document.getElementById('calDayDetail');
+            const label = document.getElementById('calDayDetailLabel');
+            const list = document.getElementById('calDayDetailList');
+            const evts = _calEvents.filter(e => (e.start || '').split('T')[0] === dateStr);
+            const dayLabel = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-CA', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+            label.textContent = `📅 ${dayLabel}`;
+            if (!evts.length) {
+                list.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:.85rem;padding:.5rem 0">No events this day.</div>';
+            } else {
+                list.innerHTML = evts.map(e => renderEventCard(e)).join('');
+            }
+            detail.style.display = 'block';
+            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function renderEventCard(e) {
+            const color = typeColors[e.type] || '#e67e22';
+            const time = e.allDay ? 'All Day' : (e.start.split('T')[1]||'').slice(0,5) + ' – ' + (e.end.split('T')[1]||'').slice(0,5);
+            return `
+            <div style="display:flex;gap:.75rem;padding:.75rem;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:.5rem;border-left:3px solid ${color}">
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:.95rem;color:#fff;margin-bottom:2px">${esc(e.title)}</div>
+                    <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:${e.description?'6px':'0'}">${time} · <span style="color:${color}">${typeLabels[e.type]||e.type}</span>${e.repName?' · '+esc(e.repName):''}</div>
+                    ${e.description ? `<pre style="font-size:.78rem;color:rgba(255,255,255,.55);white-space:pre-wrap;font-family:inherit;margin:0;line-height:1.5">${esc(e.description)}</pre>` : ''}
+                </div>
+                <button onclick="deleteCalendarEvent('${e.id}')" title="Remove" style="background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:1rem;padding:4px;align-self:flex-start">✕</button>
+            </div>`;
+        }
+
         async function loadCalendarEvents() {
             const container = document.getElementById('calendarEventsList');
             container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Loading...</div>';
             try {
-                const now = new Date();
-                const end = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
-                const r = await fetch(`${API_BASE}/calendar?start=${now.toISOString()}&end=${end.toISOString()}`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` },
+                // Fetch 3 months worth so the grid has data for prev/next
+                const start = new Date(_calYear, _calMonth - 1, 1);
+                const end   = new Date(_calYear, _calMonth + 3, 1);
+                const r = await fetch(`${API_BASE}/calendar?start=${start.toISOString()}&end=${end.toISOString()}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 const d = await r.json();
-                if (!d.success) { container.innerHTML = '<div style="color:#e74c3c;padding:1rem">' + (d.error || 'Failed to load') + '</div>'; return; }
+                if (!d.success) { container.innerHTML = `<div style="color:#e74c3c;padding:1rem">${d.error||'Failed to load'}</div>`; return; }
 
-                const events = d.events;
-                if (events.length === 0) {
-                    container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">No upcoming events in the next 60 days</div>';
+                _calEvents = d.events || [];
+                renderCalGrid();
+
+                if (!_calEvents.length) {
+                    container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">No upcoming events</div>';
                     return;
                 }
 
-                // Group by date
+                // Upcoming list grouped by day
                 const byDay = {};
-                events.forEach(e => {
-                    const day = (e.start || '').split('T')[0];
+                _calEvents.forEach(e => {
+                    const day = (e.start||'').split('T')[0];
                     if (!byDay[day]) byDay[day] = [];
                     byDay[day].push(e);
                 });
 
-                const typeColors = { sales_visit: '#3498db', job: '#2ecc71', unavailable: '#95a5a6', available: '#a8e6cf', other: '#e67e22' };
-                const typeLabels = { sales_visit: 'Sales Visit', job: 'Job', unavailable: 'Unavailable', available: 'Available', other: 'Event' };
-
-                container.innerHTML = Object.entries(byDay).map(([day, evts]) => {
-                    const label = new Date(day + 'T12:00:00').toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
-                    return `
-                        <div style="margin-bottom:1.25rem">
+                container.innerHTML = Object.entries(byDay)
+                    .sort(([a],[b]) => a.localeCompare(b))
+                    .map(([day, evts]) => {
+                        const label = new Date(day+'T12:00:00').toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'});
+                        return `<div style="margin-bottom:1.25rem">
                             <div style="font-size:.75rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:1px solid rgba(255,255,255,.07)">${label}</div>
-                            ${evts.map(e => {
-                                const color = typeColors[e.type] || '#e67e22';
-                                const time = e.allDay ? 'All Day' : (e.start.split('T')[1] || '').slice(0, 5) + ' – ' + (e.end.split('T')[1] || '').slice(0, 5);
-                                return `
-                                <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:.4rem;border-left:3px solid ${color}">
-                                    <div style="flex:1;min-width:0">
-                                        <div style="font-weight:600;font-size:.9rem">${esc(e.title)}</div>
-                                        ${e.description ? `<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px;white-space:pre-line">${esc(e.description)}</div>` : ''}
-                                        <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:3px">${time} &nbsp;·&nbsp; <span style="color:${color}">${typeLabels[e.type] || e.type}</span></div>
-                                    </div>
-                                    <button onclick="deleteCalendarEvent('${e.id}')" title="Remove event" style="background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:1rem;padding:4px">✕</button>
-                                </div>`;
-                            }).join('')}
+                            ${evts.map(e => renderEventCard(e)).join('')}
                         </div>`;
-                }).join('');
-            } catch (e) {
+                    }).join('');
+            } catch {
                 container.innerHTML = '<div style="color:#e74c3c;padding:1rem">Connection error</div>';
             }
         }
