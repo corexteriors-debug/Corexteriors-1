@@ -19,11 +19,14 @@ async function createJobEvent(lead) {
     const cal = getCalendarClient();
     if (!cal || !calendarId) return null;
 
-    // Accept date from admin entry (saleDate), sales portal survey, or fall back to today
-    const date = lead.saleDate || lead.survey?.visitDate
+    // Accept date from admin entry (saleDate), sales portal survey (datetime-local), or fall back to today
+    const visitDateRaw = lead.survey?.visitDate || '';
+    const visitDatePart = visitDateRaw.includes('T') ? visitDateRaw.split('T')[0] : visitDateRaw;
+    const visitTimePart = visitDateRaw.includes('T') ? visitDateRaw.split('T')[1]?.slice(0, 5) : '';
+    const date = lead.saleDate || visitDatePart
         || new Date(lead.createdAt || Date.now()).toISOString().split('T')[0];
 
-    const startTime = lead.saleTime || lead.survey?.visitTime || '09:00';
+    const startTime = lead.saleTime || visitTimePart || lead.survey?.visitTime || '09:00';
     const [hh, mm] = startTime.split(':').map(Number);
     const startMs = (hh * 60 + (mm || 0)) * 60000;
     const endMs = startMs + 3 * 3600000;

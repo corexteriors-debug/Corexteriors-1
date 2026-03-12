@@ -2045,17 +2045,28 @@
         // EXPORT CSV
         document.getElementById('exportBtn').addEventListener('click', () => {
             if (allLeads.length === 0) { toast('No leads to export', 'info'); return }
-            const headers = ['Date', 'Estimate #', 'Client', 'Phone', 'Email', 'Address', 'Service', 'Value', 'Rep', 'Status', 'Payment', 'Method', 'Notes'];
-            const rows = allLeads.map(l => [
-                new Date(l.createdAt).toLocaleDateString('en-CA'),
-                l.estimateNumber || '',
-                l.clientName, l.phone, l.email, l.address, l.serviceType,
-                l.total || l.estimatedValue || '',
-                l.salesRep, l.status,
-                l.paymentStatus || 'Unpaid',
-                l.paymentMethod || '',
-                l.notes
-            ]);
+            const headers = ['Submitted Date', 'Scheduled Date', 'Estimate #', 'Client', 'Phone', 'Email', 'Address', 'Service', 'Value', 'Paid', 'Owed', 'Rep', 'Status', 'Payment', 'Method', 'Notes'];
+            const rows = allLeads.map(l => {
+                const visitRaw = l.survey?.visitDate || '';
+                const visitDate = visitRaw.includes('T') ? visitRaw.split('T')[0] : visitRaw;
+                const scheduledDate = l.saleDate || visitDate || '';
+                const totalNum = parseFloat(String(l.total || l.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
+                const paidNum = parseFloat(l.paymentAmount) || 0;
+                const owedNum = Math.max(0, totalNum - paidNum);
+                return [
+                    new Date(l.createdAt).toLocaleDateString('en-CA'),
+                    scheduledDate,
+                    l.estimateNumber || '',
+                    l.clientName, l.phone, l.email, l.address, l.serviceType,
+                    l.total || l.estimatedValue || '',
+                    paidNum > 0 ? '$' + paidNum.toFixed(2) : '',
+                    owedNum > 0 && (l.paymentStatus || 'Unpaid') !== 'Unpaid' ? '$' + owedNum.toFixed(2) : '',
+                    l.salesRep, l.status,
+                    l.paymentStatus || 'Unpaid',
+                    l.paymentMethod || '',
+                    l.notes
+                ];
+            });
             const csv = [headers, ...rows].map(r => r.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
