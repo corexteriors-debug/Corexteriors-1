@@ -12,33 +12,46 @@ function getCalendarClient() {
     return google.calendar({ version: 'v3', auth });
 }
 
-async function createSalesVisitEvent(lead) {
+const TIMEZONE = 'America/Toronto';
+
+async function createJobEvent(lead) {
     const calendarId = (process.env.GOOGLE_CALENDAR_ID || '').trim();
     const cal = getCalendarClient();
     if (!cal || !calendarId) return null;
 
-    const date = lead.survey?.visitDate;
+    // Accept date from sales portal (survey.visitDate) or admin entry (saleDate)
+    const date = lead.saleDate || lead.survey?.visitDate;
     if (!date) return null;
 
+    const startTime = lead.saleTime || lead.survey?.visitTime || '09:00';
+    const [hh, mm] = startTime.split(':').map(Number);
+    const startMs = (hh * 60 + (mm || 0)) * 60000;
+    const endMs = startMs + 3 * 3600000;
+    const endHour = String(Math.floor(endMs / 3600000) % 24).padStart(2, '0');
+    const endMin  = String(Math.floor((endMs % 3600000) / 60000)).padStart(2, '0');
+    const endTime = `${endHour}:${endMin}`;
+
+    const payInfo = lead.paymentStatus && lead.paymentStatus !== 'Unpaid'
+        ? `\nPayment: ${lead.paymentStatus}${lead.paymentMethod ? ' (' + lead.paymentMethod + ')' : ''}${lead.paymentAmount ? ' — $' + parseFloat(lead.paymentAmount).toFixed(2) : ''}`
+        : '';
+
     try {
-        const endDate = new Date(date);
-        endDate.setDate(endDate.getDate() + 1);
         const event = await cal.events.insert({
             calendarId,
             resource: {
-                summary: `🔵 Sales Visit — ${lead.clientName}`,
-                description: `Rep: ${lead.salesRep}\nAddress: ${lead.address}\nServices: ${lead.serviceType}\nEstimate: ${lead.total}\nPhone: ${lead.phone}\nEstimate #: ${lead.estimateNumber}`,
-                start: { date },
-                end: { date: endDate.toISOString().split('T')[0] },
-                colorId: '7',
+                summary: `🟢 Job — ${lead.clientName}`,
+                description: `Address: ${lead.address}\nServices: ${lead.serviceType}\nTotal: ${lead.total}\nPhone: ${lead.phone}\nRep: ${lead.salesRep || '—'}\nEst #: ${lead.estimateNumber || '—'}${payInfo}`,
+                start: { dateTime: `${date}T${startTime}:00`, timeZone: TIMEZONE },
+                end:   { dateTime: `${date}T${endTime}:00`,   timeZone: TIMEZONE },
+                colorId: '10', // Basil (green) — job
                 extendedProperties: {
-                    private: { eventType: 'sales_visit', leadId: lead.id, repName: lead.salesRep },
+                    private: { eventType: 'job', leadId: lead.id, repName: lead.salesRep || '' },
                 },
             },
         });
         return event.data.id;
     } catch (err) {
-        console.error('Auto calendar event error:', err.message);
+        console.error('Auto calendar job event error:', err.message);
         return null;
     }
 }
@@ -108,10 +121,10 @@ module.exports = async function handler(req, res) {
             leadIds.unshift(lead.id);
             await kv.set('lead_ids', leadIds);
 
-            // Auto-create Google Calendar sales visit event (non blocking)
-            createSalesVisitEvent(lead).then(eventId => {
+            // Auto-create Google Calendar job event (3 hrs, non-blocking)
+            createJobEvent(lead).then(eventId => {
                 if (eventId) {
-                    lead.calendarEventId = eventId;
+                    lead.jobEventId = eventId;
                     kv.set(`lead:${lead.id}`, lead).catch(() => {});
                 }
             }).catch(() => {});
