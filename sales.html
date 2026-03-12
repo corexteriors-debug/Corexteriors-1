@@ -1103,8 +1103,8 @@
                         </select>
                     </div>
                     <div class="field">
-                        <label>Scheduled Visit Date</label>
-                        <input type="datetime-local" id="visitDate">
+                        <label>Scheduled Visit Date <span class="req">*</span></label>
+                        <input type="datetime-local" id="visitDate" required>
                     </div>
                     <div class="field">
                         <label>Water Access</label>
@@ -1858,8 +1858,13 @@
             const rep = document.getElementById('salesRep').value.trim();
             const msg = document.getElementById('submitMsg');
 
+            const visitDate = document.getElementById('visitDate').value.trim();
             if (!name || !phone || !email || !address || !rep) {
                 msg.className = 'msg error'; msg.textContent = 'Please fill in Client Name, Phone, Email, Address, and Sales Rep.'; msg.style.display = 'block'; return;
+            }
+            if (!visitDate) {
+                msg.className = 'msg error'; msg.textContent = 'Please select a Scheduled Visit Date.'; msg.style.display = 'block';
+                document.getElementById('visitDate').focus(); return;
             }
 
             // Check legal
