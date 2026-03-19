@@ -85,6 +85,66 @@ async function generateContractPDF(est, signatureData) {
 
     y -= 10;
 
+    // ─── JOB SCOPE ──────────────────────────────────────────────────────────
+    const jd = est.jobDetails;
+    const scopeLines = [];
+    if (jd) {
+        if (jd.deck) {
+            const d = jd.deck;
+            let line = 'Deck Restoration: ';
+            if (d.sqft) line += d.sqft + ' sq ft, Condition ' + d.condition + '/5';
+            else if (d.linft) line += d.linft + ' lin ft (rotten)';
+            if (d.rails) line += ', Rails/Stairs included';
+            scopeLines.push(line);
+        }
+        if (jd.gutter) {
+            const g = jd.gutter;
+            let line = 'Gutter Cleaning: ' + g.stories + '-storey';
+            if (g.deepClean) line += ', Deep Clean';
+            scopeLines.push(line);
+        }
+        if (jd.interlock) {
+            const i = jd.interlock;
+            let line = 'Interlock Restoration: ';
+            if (i.sqft) line += i.sqft + ' sq ft';
+            if (i.severity && i.severity !== 'none') line += ', ' + i.severity + ' re-leveling';
+            if (i.seal) line += ', Sealing included';
+            scopeLines.push(line);
+        }
+        if (jd.window) {
+            const w = jd.window;
+            let line = 'Window Cleaning: ';
+            if (w.count) line += w.count + ' units';
+            if (w.type) line += ' (' + (w.type === 'full' ? 'Full interior & exterior' : 'Exterior only') + ')';
+            scopeLines.push(line);
+        }
+        if (jd.siding) {
+            const s = jd.siding;
+            let line = 'Siding (Soft Wash): ' + s.stories + '-storey';
+            if (s.condition) line += ', ' + s.condition + ' condition';
+            scopeLines.push(line);
+        }
+        if (jd.garden) {
+            const g = jd.garden;
+            const parts = [];
+            if (g.mulch) parts.push(g.mulch + ' yd³ mulch');
+            if (g.weeding && g.weeding !== 'none') parts.push(g.weeding + ' weeding');
+            if (g.overgrowth) parts.push(g.overgrowth + 'h overgrowth removal');
+            if (g.edging) parts.push(g.edging + ' lin ft edging');
+            if (parts.length) scopeLines.push('Garden Maintenance: ' + parts.join(', '));
+        }
+    }
+    if (scopeLines.length > 0) {
+        page.drawText('JOB SCOPE', { x: 50, y, size: 9, font: bold, color: blue });
+        y -= 12;
+        page.drawRectangle({ x: 45, y: y - (scopeLines.length * 14) - 4, width: width - 90, height: scopeLines.length * 14 + 10, color: softBg, borderColor: lightGray, borderWidth: 1 });
+        scopeLines.forEach(line => {
+            page.drawText('• ' + line, { x: 55, y, size: 9, font, color: black });
+            y -= 14;
+        });
+        y -= 10;
+    }
+
     // ─── PRICING SUMMARY ────────────────────────────────────────────────────
     page.drawLine({ start: { x: 350, y }, end: { x: width - 45, y }, thickness: 1, color: lightGray });
     y -= 18;
@@ -153,12 +213,17 @@ async function generateContractPDF(est, signatureData) {
     y -= 5;
 
     // Embed client signature image if available
-    if (signatureData && signatureData.startsWith('data:image/png;base64,')) {
+    const sigData = signatureData
+        ? (signatureData.includes(',') ? signatureData.split(',')[1] : signatureData)
+        : null;
+    if (sigData) {
         try {
-            const pngBytes = Buffer.from(signatureData.replace('data:image/png;base64,', ''), 'base64');
+            const pngBytes = Buffer.from(sigData, 'base64');
             const sigImg = await doc.embedPng(pngBytes);
-            const dims = sigImg.scaleToFit(200, 35);
-            page.drawImage(sigImg, { x: 55, y: y - 35, width: dims.width, height: dims.height });
+            const dims = sigImg.scaleToFit(200, 50);
+            // White background rect so transparent canvas PNG always shows clearly
+            page.drawRectangle({ x: 55, y: y - 55, width: dims.width, height: dims.height, color: white });
+            page.drawImage(sigImg, { x: 55, y: y - 55, width: dims.width, height: dims.height });
         } catch (_) {
             page.drawText('(Signed digitally)', { x: 55, y: y - 20, size: 9, font, color: gray });
         }

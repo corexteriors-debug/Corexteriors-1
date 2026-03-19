@@ -171,7 +171,7 @@
                 "name": "Are you fully insured?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Yes! We carry $10 Million in Liability Insurance and are fully WSIB compliant. This protects both you and our team."
+                    "text": "Yes. We carry $2M general liability insurance and are fully WSIB compliant on every job. This protects both you and our team — and means you cannot be held liable if a worker is injured on your property."
                 }
             },
             {
@@ -179,7 +179,7 @@
                 "name": "How much cheaper are you than franchises?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "On average, our prices are about 20% lower than major franchises. We have lower overhead since we don't pay franchise fees."
+                    "text": "On average, our prices are about 20% lower than major franchise exterior cleaning companies. Because we are locally owned and pay no franchise royalties, those savings go directly to our customers."
                 }
             },
             {
@@ -187,7 +187,15 @@
                 "name": "What areas do you serve?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "We serve London, St. Thomas, Strathroy, and Dorchester. Contact us to confirm service in your specific area."
+                    "text": "We serve London, St. Thomas, Strathroy, and Dorchester, Ontario. Contact us to confirm service availability for your specific address."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How long does a typical job take?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "It depends on the service and property size. Most deck restorations take one to two days. Gutter cleaning and window cleaning are typically same-day services. We provide a time estimate with every free quote."
                 }
             },
             {
@@ -195,11 +203,70 @@
                 "name": "What is your Job-Complete guarantee?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "We do not leave the job site until you are 100% satisfied with our work. If something isn't right, we fix it on the spot."
+                    "text": "We do not leave the job site until you are 100% satisfied with our work. If something isn't right, we fix it on the spot — no callbacks required."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you provide free quotes?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. All quotes are completely free with no obligation. We provide a detailed breakdown of costs before any work begins and respond to quote requests the same day."
                 }
             }
         ]
     }
+    </script>
+
+    <!-- Structured Data - Services -->
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Deck Restoration",
+        "description": "Professional deck restoration including pressure washing, sanding, and staining. We restore weathered, grey, or peeling decks to like-new condition. Serving London, St. Thomas, Strathroy, and Dorchester, Ontario.",
+        "provider": {"@type": "LocalBusiness", "name": "Core Exteriors", "url": "https://corexteriors.ca"},
+        "areaServed": ["London, ON", "St. Thomas, ON", "Strathroy, ON", "Dorchester, ON"],
+        "url": "https://corexteriors.ca/#services"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Soft Wash Siding Cleaning",
+        "description": "Low-pressure soft washing removes algae, mould, and grime from vinyl, aluminum, and wood siding without causing damage. Safe for all siding types. Serving London and surrounding Southwestern Ontario.",
+        "provider": {"@type": "LocalBusiness", "name": "Core Exteriors", "url": "https://corexteriors.ca"},
+        "areaServed": ["London, ON", "St. Thomas, ON", "Strathroy, ON", "Dorchester, ON"],
+        "url": "https://corexteriors.ca/#services"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Gutter and Eavestrough Cleaning",
+        "description": "Professional gutter cleaning including debris removal, downspout flushing, and flow testing. Prevents ice dams, fascia rot, and foundation water damage. Serving London, Ontario and area.",
+        "provider": {"@type": "LocalBusiness", "name": "Core Exteriors", "url": "https://corexteriors.ca"},
+        "areaServed": ["London, ON", "St. Thomas, ON", "Strathroy, ON", "Dorchester, ON"],
+        "url": "https://corexteriors.ca/#services"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Pressure Washing and Interlock Cleaning",
+        "description": "High-pressure washing for driveways, patios, walkways, and interlock pavers. Includes interlock re-levelling and polymeric sand installation. Serving London, Ontario and Southwestern Ontario.",
+        "provider": {"@type": "LocalBusiness", "name": "Core Exteriors", "url": "https://corexteriors.ca"},
+        "areaServed": ["London, ON", "St. Thomas, ON", "Strathroy, ON", "Dorchester, ON"],
+        "url": "https://corexteriors.ca/#services"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Window Cleaning",
+        "description": "Residential exterior and interior window cleaning including tracks and screens. Streak-free results for homes throughout London, Ontario and surrounding areas.",
+        "provider": {"@type": "LocalBusiness", "name": "Core Exteriors", "url": "https://corexteriors.ca"},
+        "areaServed": ["London, ON", "St. Thomas, ON", "Strathroy, ON", "Dorchester, ON"],
+        "url": "https://corexteriors.ca/#services"
+      }
+    ]
     </script>
 
     <!-- Fonts -->
@@ -207,7 +274,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=5">
 </head>
 
 <body>
@@ -264,6 +331,7 @@
                     <li><a href="gallery.html">Gallery</a></li>
                     <li><a href="#testimonials">Testimonials</a></li>
                     <li><a href="#faq">FAQ</a></li>
+                    <li><a href="blog.html">Blog</a></li>
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
 
@@ -633,12 +701,12 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/deck-before-homepage.jpg" alt="Deck Before Restoration" loading="lazy"
+                                <img src="images/deck-before-homepage.jpg" alt="Weathered grey deck on a London Ontario home before professional deck restoration by Core Exteriors" loading="lazy"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/deck-after-homepage.jpg" alt="Deck After Restoration" loading="lazy"
+                                <img src="images/deck-after-homepage.jpg" alt="Restored and freshly stained deck on a London Ontario home after professional deck restoration by Core Exteriors" loading="lazy"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">After</span>
                             </div>
@@ -652,13 +720,13 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/patio-levelling-before.jpg" alt="Patio Before Levelling" loading="lazy"
+                                <img src="images/patio-levelling-before.jpg" alt="Sunken and uneven interlock patio in London Ontario before professional relevelling and cleaning by Core Exteriors" loading="lazy"
                                     data-label="Patio Levelling - Before"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/patio-levelling-after.jpg" alt="Patio After Levelling" loading="lazy"
+                                <img src="images/patio-levelling-after.jpg" alt="Level and clean interlock patio in London Ontario after professional relevelling service by Core Exteriors" loading="lazy"
                                     data-label="Patio Levelling - After"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">After</span>
@@ -673,12 +741,12 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/sidewalk-byron-before.jpg" alt="Sidewalk Before Power Wash" loading="lazy"
+                                <img src="images/sidewalk-byron-before.jpg" alt="Stained algae-covered concrete sidewalk in Byron London Ontario before professional pressure washing" loading="lazy"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/sidewalk-byron-after.jpg" alt="Sidewalk After Power Wash" loading="lazy"
+                                <img src="images/sidewalk-byron-after.jpg" alt="Clean concrete sidewalk in Byron London Ontario after professional pressure washing by Core Exteriors" loading="lazy"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">After</span>
                             </div>
@@ -692,12 +760,12 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/siding-cleaning-before.jpg" alt="Siding Before" loading="lazy"
+                                <img src="images/siding-cleaning-before.jpg" alt="Vinyl siding covered in green algae and black mould on a London Ontario home before soft wash cleaning" loading="lazy"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/siding-cleaning-after.jpg" alt="Siding After" loading="lazy"
+                                <img src="images/siding-cleaning-after.jpg" alt="Clean white vinyl siding on a London Ontario home after professional soft wash service by Core Exteriors" loading="lazy"
                                     style="width:100%;height:100%;object-fit:cover;">
                                 <span class="image-label">After</span>
                             </div>

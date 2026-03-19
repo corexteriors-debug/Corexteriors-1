@@ -143,6 +143,7 @@ module.exports = async function handler(req, res) {
                 paymentStatus: body.paymentStatus || 'Unpaid',
                 paymentMethod: body.paymentMethod || '',
                 paymentAmount: parseFloat(body.paymentAmount) || 0,
+                jobDetails: body.jobDetails || null,
                 survey: body.survey || {},
                 legal: body.legal || {},
                 hasSignature: body.hasSignature || false,

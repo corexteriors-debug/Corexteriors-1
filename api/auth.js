@@ -42,11 +42,11 @@ module.exports = async function handler(req, res) {
         if (role === 'sales' && password === SALES_PASSWORD) {
             authenticated = true;
             token = 'sales_' + Buffer.from(Date.now().toString() + '_sales').toString('base64');
-            await kv.set(`token:${token}`, { role: 'sales', repName: repName || '', created: Date.now() }, { ex: 86400 });
+            await kv.set(`token:${token}`, { role: 'sales', repName: repName || '', created: Date.now() }, { ex: 604800 });
         } else if (role === 'admin' && password === ADMIN_PASSWORD) {
             authenticated = true;
             token = 'admin_' + Buffer.from(Date.now().toString() + '_admin').toString('base64');
-            await kv.set(`token:${token}`, { role: 'admin', created: Date.now() }, { ex: 86400 });
+            await kv.set(`token:${token}`, { role: 'admin', created: Date.now() }, { ex: 604800 });
         }
 
         if (authenticated) {

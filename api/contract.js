@@ -1,6 +1,7 @@
 const { kv } = require('@vercel/kv');
 const nodemailer = require('nodemailer');
 const { generateContractPDF } = require('./_contractPdf');
+const { generateContractDocx } = require('./_contractDocx');
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', 'https://corexteriors.ca');
@@ -20,18 +21,31 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: 'Estimate with client email required' });
         }
 
-        let pdfBytes;
+        // Generate filled DOCX (primary contract with all data + checked services)
+        let docxBytes = null;
+        try {
+            docxBytes = await generateContractDocx(estimate, signatureData);
+            console.log('Contract DOCX generated, size:', docxBytes.length);
+        } catch (docxErr) {
+            console.error('DOCX generation error:', docxErr.message);
+        }
+
+        // Generate PDF as backup/secondary (keeps the signature image)
+        let pdfBytes = null;
         try {
             pdfBytes = await generateContractPDF(estimate, signatureData);
             console.log('Contract PDF generated, size:', pdfBytes.length);
         } catch (pdfErr) {
             console.error('PDF generation error:', pdfErr.message);
-            return res.status(500).json({ error: 'PDF generation failed: ' + pdfErr.message });
+        }
+
+        if (!docxBytes && !pdfBytes) {
+            return res.status(500).json({ error: 'Contract generation failed' });
         }
 
         let emailSent;
         try {
-            emailSent = await sendContractEmail(estimate, pdfBytes);
+            emailSent = await sendContractEmail(estimate, pdfBytes, docxBytes);
             console.log('Contract email sent:', emailSent);
         } catch (emailErr) {
             console.error('Email send error:', emailErr.message);
@@ -45,7 +59,7 @@ module.exports = async (req, res) => {
     }
 };
 
-async function sendContractEmail(est, pdfBytes) {
+async function sendContractEmail(est, pdfBytes, docxBytes) {
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -98,7 +112,18 @@ async function sendContractEmail(est, pdfBytes) {
     <p style="color:#8899aa;font-size:11px;margin:0">203 Cambridge St, London, ON, N6H 1N6 &nbsp;|&nbsp; 606 616 2026 &nbsp;|&nbsp; corexteriors.ca</p>
   </div>
 </div>`,
-        attachments: [{ filename: fileName, content: Buffer.from(pdfBytes), contentType: 'application/pdf' }],
+        attachments: [
+            ...(docxBytes ? [{
+                filename: 'CoreExteriors_Contract_' + contractNum.replace(/ /g, '_') + '.docx',
+                content: docxBytes,
+                contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            }] : []),
+            ...(pdfBytes ? [{
+                filename: fileName,
+                content: Buffer.from(pdfBytes),
+                contentType: 'application/pdf',
+            }] : []),
+        ],
     });
 
     return true;

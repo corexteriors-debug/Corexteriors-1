@@ -1345,7 +1345,14 @@
         let repName = localStorage.getItem('sales_rep_name') || '';
         let estimateNumber = '';
 
-        if (authToken) showEstimator();
+        if (authToken) {
+            fetch(API_BASE + '/auth', { headers: { 'Authorization': 'Bearer ' + authToken } })
+                .then(r => {
+                    if (r.ok) showEstimator();
+                    else { localStorage.removeItem('sales_token'); authToken = ''; }
+                })
+                .catch(() => showEstimator());
+        }
 
         // Toggle password visibility
         function togglePw(inputId, btnId) {
@@ -1912,6 +1919,37 @@
                 paymentStatus: window._paymentInfo?.paymentStatus || 'Unpaid',
                 paymentMethod: window._paymentInfo?.paymentMethod || '',
                 paymentAmount: window._paymentInfo?.paymentAmount || 0,
+                jobDetails: {
+                    deck: document.getElementById('svc_deck').checked ? {
+                        sqft: parseFloat(document.getElementById('deck_sqft').value) || null,
+                        linft: parseFloat(document.getElementById('deck_linft').value) || null,
+                        condition: parseInt(document.getElementById('deck_condition').value),
+                        rails: document.getElementById('deck_rails').checked
+                    } : null,
+                    gutter: document.getElementById('svc_gutter').checked ? {
+                        stories: document.querySelector('input[name="gutter_stories"]:checked')?.value,
+                        deepClean: document.getElementById('gutter_deep').checked
+                    } : null,
+                    interlock: document.getElementById('svc_interlock').checked ? {
+                        sqft: parseFloat(document.getElementById('interlock_sqft').value) || null,
+                        severity: document.getElementById('interlock_severity').value,
+                        seal: document.getElementById('interlock_seal').checked
+                    } : null,
+                    window: document.getElementById('svc_window').checked ? {
+                        count: parseInt(document.getElementById('window_count').value) || null,
+                        type: document.querySelector('input[name="window_type"]:checked')?.value
+                    } : null,
+                    siding: document.getElementById('svc_siding').checked ? {
+                        stories: document.querySelector('input[name="siding_stories"]:checked')?.value,
+                        condition: document.querySelector('input[name="siding_cond"]:checked')?.value
+                    } : null,
+                    garden: document.getElementById('svc_garden').checked ? {
+                        mulch: parseFloat(document.getElementById('garden_mulch').value) || null,
+                        weeding: document.getElementById('garden_weeding').value,
+                        overgrowth: parseFloat(document.getElementById('garden_overgrowth').value) || null,
+                        edging: parseFloat(document.getElementById('garden_edging').value) || null
+                    } : null
+                },
                 survey: {
                     addressType: document.getElementById('addressType').value,
                     visitDate: document.getElementById('visitDate').value,
@@ -2087,6 +2125,13 @@ corexteriors.ca
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
                     body: JSON.stringify({ name, address, notes })
                 });
+                if (r.status === 401) {
+                    localStorage.removeItem('sales_token'); authToken = '';
+                    msg.style.display = 'block'; msg.style.background = 'rgba(231,76,60,.15)'; msg.style.color = '#e74c3c';
+                    msg.textContent = 'Session expired. Please log in again.';
+                    setTimeout(() => location.reload(), 2000);
+                    btn.disabled = false; btn.textContent = '+ Add Lead'; return;
+                }
                 const d = await r.json();
                 if (d.success) {
                     document.getElementById('qlName').value = '';

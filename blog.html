@@ -1,0 +1,445 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog — Exterior Maintenance Tips | Core Exteriors | London, Ontario</title>
+    <meta name="description" content="Expert advice on deck restoration, gutter cleaning, power washing, and exterior maintenance from Core Exteriors — London, Ontario's trusted pros.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://corexteriors.ca/blog">
+    <link rel="icon" type="image/png" href="images/logo-mark.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=5">
+
+    <style>
+        /* ── Blog page ── */
+        .blog-hero {
+            background: var(--gradient-blue);
+            padding: 100px 24px 70px;
+            text-align: center;
+            color: var(--white);
+        }
+        .blog-hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 14px; }
+        .blog-hero p  { font-size: 1.2rem; opacity: .85; max-width: 560px; margin: 0 auto; }
+
+        .blog-main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 64px 24px 80px;
+        }
+
+        /* ── Card grid ── */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            margin-bottom: 64px;
+        }
+
+        .blog-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,.08);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .blog-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,.14); }
+
+        .blog-card-img {
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .blog-card-body {
+            padding: 22px 22px 24px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .blog-cat {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .blog-card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .blog-card-excerpt {
+            font-size: 13.5px;
+            color: #6c757d;
+            line-height: 1.7;
+            flex: 1;
+            margin-bottom: 18px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .blog-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        .blog-read-btn {
+            background: none;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--sky-blue);
+            cursor: pointer;
+            padding: 0;
+            transition: color .15s;
+        }
+        .blog-read-btn:hover { color: var(--gold); }
+
+        /* Before/after image pairs inside articles */
+        .blog-img-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 24px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .blog-img-pair figure { margin: 0; position: relative; }
+        .blog-img-pair img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+        .blog-img-pair figcaption {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,.55);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: 6px 10px;
+        }
+
+        /* Single inline image */
+        .blog-img-single {
+            margin: 24px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .blog-img-single img { width: 100%; max-height: 320px; object-fit: cover; display: block; }
+        .blog-img-single figcaption {
+            font-size: 12px;
+            color: #999;
+            padding: 8px 4px 0;
+            font-style: italic;
+        }
+
+        /* CTA banner at bottom of page */
+        .blog-cta-banner {
+            background: var(--gradient-blue);
+            border-radius: 20px;
+            padding: 52px 40px;
+            text-align: center;
+            color: #fff;
+        }
+        .blog-cta-banner h2 { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
+        .blog-cta-banner p  { font-size: 1.1rem; opacity: .85; margin-bottom: 28px; }
+        .blog-cta-banner a  {
+            display: inline-block;
+            background: var(--gradient-gold);
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            padding: 14px 40px;
+            border-radius: 50px;
+            transition: all .2s;
+            box-shadow: 0 4px 16px rgba(201,168,76,.4);
+        }
+        .blog-cta-banner a:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,.5); }
+
+        /* Responsive */
+        @media (max-width: 900px) { .blog-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 580px) {
+            .blog-grid { grid-template-columns: 1fr; }
+            .blog-hero h1 { font-size: 2rem; }
+            .blog-img-pair { grid-template-columns: 1fr; }
+            .blog-cta-banner { padding: 36px 20px; }
+            .blog-cta-banner h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="utility-bar">
+            <div class="utility-container">
+                <div class="utility-left">
+                    <a href="mailto:info@corexteriors.com" class="utility-link">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <span>Email Us</span>
+                    </a>
+                    <a href="tel:519-712-1431" class="utility-link">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        <span>519-712-1431</span>
+                    </a>
+                </div>
+                <div class="utility-right">
+                    <div class="lang-buttons">
+                        <button class="lang-toggle lang-en active" id="langToggleEN" aria-label="Switch to English"><span class="lang-text">EN</span></button>
+                        <button class="lang-toggle lang-fr" id="langToggleFR" aria-label="Switch to French"><span class="lang-text">FR</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="main-nav">
+            <div class="nav-container">
+                <a href="index.html" class="logo">
+                    <img src="images/logo-letterform.png" alt="Core Exteriors" class="logo-image">
+                </a>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span class="hamburger"></span>
+                </button>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="index.html#services">Services</a></li>
+                    <li><a href="index.html#why-us">Why Us</a></li>
+                    <li><a href="gallery.html">Gallery</a></li>
+                    <li><a href="index.html#testimonials">Testimonials</a></li>
+                    <li><a href="index.html#faq">FAQ</a></li>
+                    <li><a href="blog.html" class="active">Blog</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <a href="contact.html" class="cta-button">GET A FREE ESTIMATE</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="blog-hero">
+        <h1>Expert Tips &amp; Insights</h1>
+        <p>Practical advice on exterior maintenance from London, Ontario's trusted pros. Click any article to read.</p>
+    </section>
+
+    <!-- Blog Grid -->
+    <main class="blog-main">
+        <div class="blog-grid">
+
+            <!-- Card 1 – Deck -->
+            <a href="/blog/signs-deck-needs-restoration-spring" class="blog-card" aria-label="Read: 5 Signs Your Deck Needs Restoration">
+                <img src="images/deck-after-homepage.jpg" alt="Professionally restored deck on a London Ontario home by Core Exteriors — before and after deck restoration" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Deck Care</span>
+                    <h2 class="blog-card-title">5 Signs Your Deck Needs Restoration This Spring</h2>
+                    <p class="blog-card-excerpt">After another London winter, your deck has taken a beating. Catching these warning signs early can save thousands in replacement costs.</p>
+                    <div class="blog-card-footer">
+                        <span>March 10, 2026 · 5 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 2 – Gutters -->
+            <a href="/blog/gutter-cleaning-frequency-london-ontario" class="blog-card" aria-label="Read: How Often Should You Clean Your Gutters">
+                <img src="images/gutter-after.jpg" alt="Clean eavestroughs on a London Ontario home after professional gutter cleaning service by Core Exteriors" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Gutter Maintenance</span>
+                    <h2 class="blog-card-title">How Often Should You Clean Your Gutters in London, Ontario?</h2>
+                    <p class="blog-card-excerpt">London's mature trees and heavy rainfall mean your eavestroughs need more attention than most homeowners realise.</p>
+                    <div class="blog-card-footer">
+                        <span>Feb 28, 2026 · 4 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 3 – Soft wash -->
+            <a href="/blog/soft-wash-vs-pressure-wash" class="blog-card" aria-label="Read: Soft Wash vs Pressure Wash">
+                <img src="images/siding-cleaning-after.jpg" alt="Clean vinyl siding on a London Ontario home after professional soft wash service by Core Exteriors" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Power Washing</span>
+                    <h2 class="blog-card-title">Soft Wash vs Pressure Wash: Which Is Right for Your Home?</h2>
+                    <p class="blog-card-excerpt">Using the wrong cleaning method on the wrong surface can cause real damage. Here's how the pros decide what to use and when.</p>
+                    <div class="blog-card-footer">
+                        <span>Feb 15, 2026 · 6 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 4 – WSIB -->
+            <a href="/blog/wsib-compliant-contractors-ontario" class="blog-card" aria-label="Read: Why WSIB Compliance Protects You">
+                <img src="images/siding-masonville-after.jpg" alt="Professional siding cleaning completed on a Masonville London Ontario home by Core Exteriors — fully WSIB compliant" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Home Advice</span>
+                    <h2 class="blog-card-title">Why Hiring WSIB-Compliant Contractors Protects You</h2>
+                    <p class="blog-card-excerpt">Most homeowners don't realise they can be held liable if an uninsured contractor gets hurt on their property. Here's what to look for.</p>
+                    <div class="blog-card-footer">
+                        <span>Feb 1, 2026 · 3 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 5 – Spring Checklist -->
+            <a href="/blog/spring-exterior-maintenance-checklist-london-ontario" class="blog-card" aria-label="Read: Spring Exterior Maintenance Checklist">
+                <img src="images/patio-levelling-after.jpg" alt="Relevelled and restored patio in London Ontario after spring exterior maintenance service by Core Exteriors" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Seasonal Tips</span>
+                    <h2 class="blog-card-title">The Complete Spring Exterior Maintenance Checklist</h2>
+                    <p class="blog-card-excerpt">Spring is the most important season for your home's exterior. Use this pro checklist to make sure nothing gets missed after London's winter.</p>
+                    <div class="blog-card-footer">
+                        <span>Jan 20, 2026 · 7 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 6 – Pricing -->
+            <a href="/blog/how-we-price-below-franchise-competitors" class="blog-card" aria-label="Read: How We Price 20% Below Franchises">
+                <img src="images/patio-komoka-after.jpg" alt="Restored natural stone patio in Komoka Ontario after professional cleaning and sealing by Core Exteriors" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">About Core Exteriors</span>
+                    <h2 class="blog-card-title">How We Price 20% Below Franchise Competitors</h2>
+                    <p class="blog-card-excerpt">Clients are often surprised by what they get for the price compared to national brands. The reason is straightforward — and it works in your favour.</p>
+                    <div class="blog-card-footer">
+                        <span>Jan 8, 2026 · 4 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 7 – St. Thomas -->
+            <a href="/blog/pressure-washing-st-thomas-ontario" class="blog-card" aria-label="Read: Pressure Washing in St. Thomas, ON">
+                <img src="images/siding-hydepark-after.jpg" alt="Clean vinyl siding on a St. Thomas Ontario home after professional soft wash exterior cleaning" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Service Areas</span>
+                    <h2 class="blog-card-title">Pressure Washing Services in St. Thomas, ON: What Homeowners Should Know</h2>
+                    <p class="blog-card-excerpt">St. Thomas homes face algae, clay soil grime, and aging siding. Here's what exterior cleaning looks like in Elgin County and when DIY falls short.</p>
+                    <div class="blog-card-footer">
+                        <span>Mar 15, 2026 · 4 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 8 – Strathroy -->
+            <a href="/blog/gutter-cleaning-strathroy-ontario" class="blog-card" aria-label="Read: Gutter Cleaning in Strathroy, ON">
+                <img src="images/gutter-after.jpg" alt="Clean eavestroughs on a Strathroy Ontario home after professional gutter cleaning by Core Exteriors" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Service Areas</span>
+                    <h2 class="blog-card-title">Gutter Cleaning in Strathroy, ON: Why Fall Maintenance Matters</h2>
+                    <p class="blog-card-excerpt">Agricultural pollen and dense tree cover mean Strathroy eavestroughs clog faster than most. Here's the schedule that prevents ice dams and fascia damage.</p>
+                    <div class="blog-card-footer">
+                        <span>Mar 15, 2026 · 4 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 9 – Dorchester -->
+            <a href="/blog/exterior-cleaning-dorchester-ontario" class="blog-card" aria-label="Read: Exterior Home Cleaning in Dorchester, ON">
+                <img src="images/patio-levelling-after.jpg" alt="Restored interlock patio in Dorchester Ontario after seasonal exterior cleaning service by Core Exteriors" class="blog-card-img">
+                <div class="blog-card-body">
+                    <span class="blog-cat">Service Areas</span>
+                    <h2 class="blog-card-title">Exterior Home Cleaning in Dorchester, Ontario: A Seasonal Guide</h2>
+                    <p class="blog-card-excerpt">Dorchester's Thames River humidity accelerates algae and mould on home exteriors. A season-by-season guide for keeping your home looking its best.</p>
+                    <div class="blog-card-footer">
+                        <span>Mar 15, 2026 · 5 min</span>
+                        <span class="blog-read-btn">Read Article →</span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Bottom CTA -->
+        <div class="blog-cta-banner">
+            <h2>Ready to Protect Your Home?</h2>
+            <p>Get a free, no-obligation estimate from London's trusted exterior pros. We respond within 24 hours.</p>
+            <a href="contact.html">Get Your Free Quote</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="footer-container">
+            <div class="footer-main">
+                <div class="footer-brand">
+                    <img src="images/logo-mark.png" alt="Core Exteriors" class="footer-logo">
+                    <p class="footer-tagline">Premium Exterior Maintenance.<br>London's Trusted Exterior Pros.</p>
+                </div>
+                <div class="footer-contact">
+                    <h3 class="footer-heading">Contact Us</h3>
+                    <div class="contact-item">
+                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span>203 Cambridge St, London, ON, N6H 1N6</span>
+                    </div>
+                    <div class="contact-item">
+                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                        </svg>
+                        <a href="tel:519-712-1431">519-712-1431</a>
+                    </div>
+                </div>
+                <div class="footer-areas">
+                    <h3 class="footer-heading">Service Areas</h3>
+                    <ul class="areas-list">
+                        <li>London</li>
+                        <li>St. Thomas</li>
+                        <li>Strathroy</li>
+                        <li>Dorchester</li>
+                    </ul>
+                </div>
+                <div class="footer-cta">
+                    <h3 class="footer-heading">Ready to Get Started?</h3>
+                    <a href="tel:519-712-1431" class="footer-cta-button">Get Your Free Quote</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p><a href="sales.html" style="color:inherit;text-decoration:none">&copy;</a> 2023-2026 Core Exteriors. All rights reserved.</p>
+                <p class="footer-legal-links">
+                    <a href="privacy-policy.html">Privacy Policy</a> |
+                    <a href="terms-of-service.html">Terms of Service</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="google_translate_element" style="display:none;"></div>
+    <script src="script.js"></script>
+
+
+</body>
+</html>

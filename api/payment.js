@@ -3,6 +3,7 @@ const Stripe = require('stripe');
 const nodemailer = require('nodemailer');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const { generateContractPDF } = require('./_contractPdf');
+const { generateContractDocx } = require('./_contractDocx');
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', 'https://corexteriors.ca');
@@ -102,7 +103,17 @@ module.exports = async (req, res) => {
             console.error('Payment PDF error:', err);
         }
 
-        // Generate contract PDF from lead data (no client signature at payment stage)
+        // Generate filled DOCX contract from lead data (no client signature at payment stage)
+        let contractDocxBytes = null;
+        if (leadData) {
+            try {
+                contractDocxBytes = await generateContractDocx(leadData, null);
+            } catch (err) {
+                console.error('Contract DOCX error:', err);
+            }
+        }
+
+        // Generate PDF contract as well (fallback / secondary)
         let contractPdfBytes = null;
         if (leadData) {
             try {
@@ -112,7 +123,7 @@ module.exports = async (req, res) => {
             }
         }
 
-        // Send email to customer (payment request + contract both attached)
+        // Send email to customer (payment request + DOCX contract + PDF both attached)
         let emailSent = false;
         try {
             emailSent = await sendPaymentEmail({
@@ -124,32 +135,17 @@ module.exports = async (req, res) => {
                 description: description || 'Exterior Services',
                 repName,
                 paymentPdfBytes,
+                contractDocxBytes,
                 contractPdfBytes,
             });
         } catch (err) {
             console.error('Payment email error:', err);
         }
 
-        // Send SMS — short notification only (no URL to avoid carrier filtering)
-        let smsSent = false;
-        if (clientPhone) {
-            try {
-                smsSent = await sendPaymentSms({
-                    clientName: clientName || 'there',
-                    clientPhone,
-                    amount: parseFloat(amount),
-                    isDeposit,
-                });
-            } catch (err) {
-                console.error('Payment SMS error:', err);
-            }
-        }
-
         // Return success WITHOUT exposing the checkout URL to the sales rep
         return res.status(200).json({
             success: true,
             emailSent,
-            smsSent,
             sessionId: session.id,
             // checkoutUrl intentionally omitted
         });
@@ -256,7 +252,7 @@ async function generatePaymentPDF({ clientName, clientEmail, amount, checkoutUrl
     return await doc.save();
 }
 
-async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, isDeposit, description, repName, paymentPdfBytes, contractPdfBytes }) {
+async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, isDeposit, description, repName, paymentPdfBytes, contractDocxBytes, contractPdfBytes }) {
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -277,6 +273,15 @@ async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, 
             contentType: 'application/pdf',
         });
     }
+    // Filled DOCX contract (primary — has checked services, timeline, all client info)
+    if (contractDocxBytes) {
+        attachments.push({
+            filename: 'CoreExteriors_Service_Agreement.docx',
+            content: contractDocxBytes,
+            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        });
+    }
+    // PDF contract as secondary/fallback
     if (contractPdfBytes) {
         attachments.push({
             filename: 'CoreExteriors_Service_Agreement.pdf',
@@ -323,40 +328,3 @@ async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, 
     return true;
 }
 
-async function sendPaymentSms({ clientName, clientPhone, amount, isDeposit }) {
-    const accountSid = (process.env.TWILIO_ACCOUNT_SID || '').trim();
-    const authToken = (process.env.TWILIO_AUTH_TOKEN || '').trim();
-    const fromPhone = (process.env.TWILIO_PHONE_NUMBER || '').trim();
-
-    if (!accountSid || !authToken || !fromPhone) return false;
-
-    const amountStr = '$' + amount.toFixed(2);
-    const label = isDeposit ? 'deposit' : 'payment';
-
-    // Clean phone number — ensure E.164 format
-    let to = clientPhone.replace(/\D/g, '');
-    if (to.length === 10) to = '+1' + to;
-    else if (!to.startsWith('+')) to = '+' + to;
-
-    // Short message — no URL (avoids carrier filtering & trial account URL restrictions)
-    // The payment link is in the email attachment and email body
-    const message = `Hi ${clientName}! Core Exteriors has sent your ${label} request of ${amountStr} CAD. Please check your email for the secure payment link. Questions? Call 519-712-1431.`;
-
-    const body = new URLSearchParams({ To: to, From: fromPhone, Body: message });
-
-    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-    });
-
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        console.error('Twilio SMS error:', err);
-    }
-
-    return response.ok;
-}
