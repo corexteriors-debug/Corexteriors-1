@@ -717,6 +717,189 @@
                 font-size: .78rem
             }
         }
+
+        /* ── MOBILE OVERRIDES ──────────────────────────────────────── */
+        @media (max-width: 640px) {
+            .dashboard-wrapper { padding: .75rem }
+
+            /* Tab bar: scrollable row */
+            .tab-bar {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                gap: .35rem;
+                padding-bottom: .25rem
+            }
+            .tab-bar::-webkit-scrollbar { display: none }
+            .tab-btn { white-space: nowrap; padding: 9px 16px; font-size: .82rem }
+
+            /* Header buttons: wrap tightly */
+            .header-actions { gap: .4rem }
+            .btn { padding: 9px 14px; font-size: .8rem }
+            .dashboard-header h1 { font-size: 1.4rem }
+
+            /* Filter bar: stack */
+            .filter-bar { flex-direction: column; gap: .4rem }
+            .filter-bar input, .filter-bar select { min-width: 0; width: 100% }
+
+            /* Hide desktop table on mobile */
+            .mobile-hidden { display: none !important }
+
+            /* Lead cards */
+            .lead-cards { display: flex; flex-direction: column; gap: .6rem; padding: .75rem }
+            .lead-card {
+                background: rgba(255,255,255,.05);
+                border: 1px solid rgba(255,255,255,.1);
+                border-radius: 14px;
+                padding: 1rem;
+                position: relative
+            }
+            .lead-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: .6rem;
+                gap: .5rem
+            }
+            .lead-card-name { font-weight: 700; font-size: 1rem; color: #fff }
+            .lead-card-date { font-size: .72rem; color: rgba(255,255,255,.35); white-space: nowrap }
+            .lead-card-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: .35rem;
+                flex-wrap: wrap;
+                gap: .3rem
+            }
+            .lead-card-label { font-size: .72rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .04em }
+            .lead-card-val { font-size: .85rem; color: rgba(255,255,255,.8) }
+            .lead-card-value { font-size: 1.1rem; font-weight: 700; color: #e67e22}
+            .lead-card-chips {
+                display: flex; flex-wrap: wrap; gap: .3rem; margin: .5rem 0
+            }
+            .lead-card-chip {
+                background: rgba(52,152,219,.1);
+                border: 1px solid rgba(52,152,219,.2);
+                color: rgba(255,255,255,.65);
+                border-radius: 20px;
+                padding: 2px 10px;
+                font-size: .7rem
+            }
+            .lead-card-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: .4rem;
+                margin-top: .75rem
+            }
+            .lead-card-actions .card-btn {
+                padding: 10px;
+                border-radius: 8px;
+                border: none;
+                font-family: 'Inter', sans-serif;
+                font-size: .82rem;
+                font-weight: 600;
+                cursor: pointer;
+                text-align: center
+            }
+            .card-btn-status  { background: rgba(230,126,34,.15); border: 1px solid rgba(230,126,34,.3)!important; color: #e67e22 }
+            .card-btn-pay     { background: rgba(46,204,113,.1);  border: 1px solid rgba(46,204,113,.3)!important; color: #2ecc71 }
+            .card-btn-edit    { background: rgba(52,152,219,.15); border: 1px solid rgba(52,152,219,.3)!important; color: #3498db }
+            .card-btn-sched   { background: rgba(155,89,182,.15); border: 1px solid rgba(155,89,182,.3)!important; color: #9b59b6 }
+            .card-btn-delete  { background: rgba(231,76,60,.1);   border: 1px solid rgba(231,76,60,.3)!important;  color: #e74c3c; grid-column: 1/-1 }
+
+            /* Action sheet (mobile dropdown replacement) */
+            .action-sheet-overlay {
+                display: none; position: fixed; inset: 0;
+                background: rgba(0,0,0,.6); z-index: 2000
+            }
+            .action-sheet-overlay.show { display: block }
+            .action-sheet {
+                position: fixed; bottom: 0; left: 0; right: 0;
+                background: #1a2a4a;
+                border-radius: 20px 20px 0 0;
+                border-top: 1px solid rgba(255,255,255,.15);
+                padding: .75rem 1rem 2rem;
+                z-index: 2001
+            }
+            .action-sheet-title {
+                text-align: center;
+                font-size: .82rem;
+                color: rgba(255,255,255,.4);
+                margin-bottom: .5rem;
+                padding-bottom: .5rem;
+                border-bottom: 1px solid rgba(255,255,255,.08)
+            }
+            .action-sheet button {
+                display: block; width: 100%;
+                padding: 14px 16px;
+                border: none; border-radius: 10px;
+                background: none; color: #fff;
+                font-family: 'Inter', sans-serif;
+                font-size: .95rem; font-weight: 500;
+                cursor: pointer; text-align: left;
+                margin-bottom: .25rem;
+                transition: background .15s
+            }
+            .action-sheet button:hover { background: rgba(255,255,255,.08) }
+            .action-sheet-cancel {
+                margin-top: .5rem;
+                color: #e74c3c !important;
+                text-align: center !important;
+                font-weight: 700 !important
+            }
+
+            /* Modals: full-screen-ish on mobile */
+            .modal-overlay { align-items: flex-end }
+
+            #newSaleModal,
+            #editQLModal,
+            #promoteToSaleModal,
+            #editLeadModal,
+            #scheduleModal,
+            #blockModal {
+                padding: .5rem .5rem 0 !important
+            }
+            #newSaleModal > div,
+            #editQLModal > div,
+            #promoteToSaleModal > div,
+            #editLeadModal > div,
+            #scheduleModal > div,
+            #blockModal > div {
+                max-width: 100% !important;
+                width: 100% !important;
+                border-radius: 20px 20px 0 0 !important;
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+                margin: 0 !important;
+                padding-bottom: 2rem !important
+            }
+
+            /* Payment grid: stack on mobile */
+            #newSaleModal [style*="grid-template-columns: 1fr 1fr 1fr"],
+            #newSaleModal [style*="grid-template-columns:1fr 1fr 1fr"] {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: .5rem !important
+            }
+
+            /* Stats: 2-col */
+            .stats-row { grid-template-columns: repeat(2, 1fr) }
+
+            /* Calendar: smaller font */
+            #calGrid [style*="font-size"] { font-size: .7rem }
+
+            /* Toast: full-width on mobile */
+            .toast { right: 1rem; left: 1rem; bottom: 1rem; text-align: center }
+        }
+
+        /* Show cards only on mobile, hide on desktop */
+        .lead-cards { display: none }
+        @media (max-width: 640px) {
+            .lead-cards { display: flex }
+            .table-scroll table thead,
+            .table-scroll table tbody { display: none }
+        }
     </style>
 </head>
 
@@ -871,6 +1054,8 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- MOBILE CARD VIEW (shown on phones instead of table) -->
+                    <div class="lead-cards" id="leadCards"></div>
                 </div>
             </div>
 
@@ -1014,6 +1199,15 @@
     </div>
 
 
+
+    <!-- MOBILE ACTION SHEET -->
+    <div class="action-sheet-overlay" id="actionSheetOverlay" onclick="closeActionSheet()">
+    </div>
+    <div class="action-sheet" id="actionSheet" style="display:none">
+        <div class="action-sheet-title" id="actionSheetTitle"></div>
+        <div id="actionSheetButtons"></div>
+        <button class="action-sheet-cancel" onclick="closeActionSheet()">Cancel</button>
+    </div>
 
     <!-- TOAST -->
     <div class="toast" id="toast"></div>
@@ -1412,6 +1606,7 @@
             });
 
             document.getElementById('leadCount').textContent = `(${filtered.length} of ${allLeads.length})`;
+            renderLeadsCards();
             const tbody = document.getElementById('leadsBody');
 
             if (filtered.length === 0) {
@@ -1539,7 +1734,139 @@
             return `<tr><td colspan="11" style="padding:.15rem 1rem .65rem;border-bottom:1px solid rgba(255,255,255,.06)"><div style="display:flex;flex-wrap:wrap;gap:.35rem">${chips.map(c => `<span style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.2);color:rgba(255,255,255,.65);border-radius:20px;padding:2px 11px;font-size:.72rem;white-space:nowrap">${esc(c)}</span>`).join('')}</div></td></tr>`;
         }
 
-        // DROPDOWN TOGGLE
+        // ── MOBILE CARD RENDER ────────────────────────────────────────
+        function renderLeadsCards() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const statusF = document.getElementById('statusFilter').value;
+            const payF = document.getElementById('payFilter').value;
+            const repF = document.getElementById('repFilter').value;
+            const dateF = document.getElementById('dateFilter').value;
+            const now = Date.now();
+
+            let filtered = allLeads.filter(l => {
+                if (statusF !== 'all' && l.status !== statusF) return false;
+                if (payF !== 'all' && (l.paymentStatus || 'Unpaid') !== payF) return false;
+                if (repF !== 'all' && l.salesRep !== repF) return false;
+                if (search) {
+                    const s = (l.clientName + ' ' + l.phone + ' ' + l.address + ' ' + l.email + ' ' + l.serviceType).toLowerCase();
+                    if (!s.includes(search)) return false;
+                }
+                if (dateF !== 'all') {
+                    const created = new Date(l.createdAt).getTime();
+                    const days = { today: 1, '7d': 7, '30d': 30, '90d': 90 }[dateF];
+                    if (now - created > days * 86400000) return false;
+                }
+                return true;
+            });
+
+            const container = document.getElementById('leadCards');
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="padding:2rem;text-align:center;color:rgba(255,255,255,.4)">No leads found</div>';
+                return;
+            }
+
+            const statusColors = { New: '#3498db', Contacted: '#f39c12', Quoted: '#9b59b6', Closed: '#2ecc71', Lost: '#e74c3c' };
+            const payColors = { Unpaid: '#e74c3c', Deposit: '#f39c12', Paid: '#2ecc71' };
+
+            container.innerHTML = filtered.map(lead => {
+                const rawDate = lead.saleDate || lead.createdAt;
+                const dateDisplay = rawDate ? new Date(rawDate.slice(0,10).replace(/-/g,'/')).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                const val = lead.total || (lead.estimatedValue ? '$' + parseFloat(lead.estimatedValue).toLocaleString() : '—');
+                const payStatus = lead.paymentStatus || 'Unpaid';
+                const paidNum = parseFloat(lead.paymentAmount) || 0;
+                const statusColor = statusColors[lead.status] || '#fff';
+                const payColor = payColors[payStatus] || '#fff';
+
+                // Job detail chips
+                const jd = lead.jobDetails || {};
+                const chips = [];
+                if (jd.deck?.sqft) chips.push('🪵 ' + jd.deck.sqft + ' sq ft deck');
+                if (jd.gutter?.stories) chips.push('🏠 ' + jd.gutter.stories + '-storey gutters');
+                if (jd.interlock?.sqft) chips.push('🧱 ' + jd.interlock.sqft + ' sq ft interlock');
+                if (jd.window?.count) chips.push('🪟 ' + jd.window.count + ' windows');
+                if (jd.siding?.stories) chips.push('🏡 ' + jd.siding.stories + '-storey siding');
+                if (jd.garden?.mulch) chips.push('🌿 ' + jd.garden.mulch + ' yd³ mulch');
+
+                return `<div class="lead-card">
+                    <div class="lead-card-header">
+                        <div>
+                            <div class="lead-card-name">${esc(lead.clientName)}</div>
+                            <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address || '')}</div>
+                        </div>
+                        <div class="lead-card-date">${dateDisplay}</div>
+                    </div>
+                    <div class="lead-card-row">
+                        <span class="lead-card-label">Phone</span>
+                        <a href="tel:${esc(lead.phone)}" style="color:#3498db;font-size:.9rem;text-decoration:none;font-weight:600">${esc(lead.phone)}</a>
+                    </div>
+                    <div class="lead-card-row">
+                        <span class="lead-card-label">Service</span>
+                        <span class="lead-card-val">${esc(lead.serviceType || '—')}</span>
+                    </div>
+                    <div class="lead-card-row">
+                        <span class="lead-card-label">Value</span>
+                        <span class="lead-card-value">${val}</span>
+                    </div>
+                    <div class="lead-card-row">
+                        <span class="lead-card-label">Rep</span>
+                        <span class="lead-card-val">${esc(lead.salesRep || '—')}</span>
+                    </div>
+                    <div class="lead-card-row" style="margin-top:.4rem">
+                        <span style="background:${statusColor}22;border:1px solid ${statusColor}55;color:${statusColor};border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:600">${lead.status}</span>
+                        <span style="background:${payColor}22;border:1px solid ${payColor}55;color:${payColor};border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:600">${payStatus}${paidNum > 0 ? ' · $'+paidNum.toFixed(2) : ''}</span>
+                    </div>
+                    ${chips.length ? '<div class="lead-card-chips">' + chips.map(c => `<span class="lead-card-chip">${c}</span>`).join('') + '</div>' : ''}
+                    ${lead.notes ? `<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-top:.4rem">📝 ${esc(lead.notes)}</div>` : ''}
+                    <div class="lead-card-actions">
+                        <button class="card-btn card-btn-status" onclick="openActionSheet('status','${lead.id}','${esc(lead.clientName)}')">⚡ Status</button>
+                        <button class="card-btn card-btn-pay"    onclick="openActionSheet('payment','${lead.id}','${esc(lead.clientName)}')">💳 Payment</button>
+                        <button class="card-btn card-btn-edit"   onclick="openEditLead('${lead.id}')">✏️ Edit Lead</button>
+                        <button class="card-btn card-btn-sched"  onclick="openScheduleModal('${lead.id}')">${lead.jobEventId ? '📅 Reschedule' : '📅 Schedule'}</button>
+                        <button class="card-btn card-btn-delete" onclick="deleteLead('${lead.id}')">🗑 Delete Lead</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ── ACTION SHEET (mobile dropdown replacement) ────────────────
+        let _actionSheetLeadId = null;
+
+        function openActionSheet(type, leadId, clientName) {
+            _actionSheetLeadId = leadId;
+            const title = document.getElementById('actionSheetTitle');
+            const btns  = document.getElementById('actionSheetButtons');
+            title.textContent = clientName;
+
+            if (type === 'status') {
+                btns.innerHTML = `
+                    <button onclick="setStatus('${leadId}','New');closeActionSheet()">🔵 New</button>
+                    <button onclick="setStatus('${leadId}','Contacted');closeActionSheet()">🟡 Contacted</button>
+                    <button onclick="setStatus('${leadId}','Quoted');closeActionSheet()">🟣 Quoted</button>
+                    <button onclick="setStatus('${leadId}','Closed');closeActionSheet()">🟢 Closed (Won)</button>
+                    <button onclick="setStatus('${leadId}','Lost');closeActionSheet()">🔴 Lost</button>`;
+            } else {
+                btns.innerHTML = `
+                    <button onclick="setPayment('${leadId}','Unpaid','');closeActionSheet()">❌ Unpaid</button>
+                    <button onclick="setPayment('${leadId}','Deposit','Cash');closeActionSheet()">💵 Deposit — Cash</button>
+                    <button onclick="setPayment('${leadId}','Deposit','E-transfer');closeActionSheet()">📲 Deposit — E-transfer</button>
+                    <button onclick="setPayment('${leadId}','Deposit','Credit Card');closeActionSheet()">💳 Deposit — Card</button>
+                    <button onclick="setPayment('${leadId}','Deposit','Cheque');closeActionSheet()">📝 Deposit — Cheque</button>
+                    <button onclick="setPayment('${leadId}','Paid','Cash');closeActionSheet()">✅ Paid in Full — Cash</button>
+                    <button onclick="setPayment('${leadId}','Paid','E-transfer');closeActionSheet()">✅ Paid in Full — E-transfer</button>
+                    <button onclick="setPayment('${leadId}','Paid','Credit Card');closeActionSheet()">✅ Paid in Full — Card</button>
+                    <button onclick="setPayment('${leadId}','Paid','Cheque');closeActionSheet()">✅ Paid in Full — Cheque</button>`;
+            }
+
+            document.getElementById('actionSheetOverlay').classList.add('show');
+            document.getElementById('actionSheet').style.display = 'block';
+        }
+
+        function closeActionSheet() {
+            document.getElementById('actionSheetOverlay').classList.remove('show');
+            document.getElementById('actionSheet').style.display = 'none';
+        }
+
+        // DROPDOWN TOGGLE (desktop)
         function toggleDrop(id) {
             document.querySelectorAll('.dropdown-menu').forEach(m => { if (m.id !== id) m.classList.remove('show') });
             document.getElementById(id).classList.toggle('show');
@@ -1754,34 +2081,28 @@
                 container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">No leads found.</div>';
                 return;
             }
-            container.innerHTML = `
-                <table style="width:100%;border-collapse:collapse">
-                    <thead>
-                        <tr style="border-bottom:1px solid rgba(255,255,255,.08)">
-                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Date</th>
-                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Name</th>
-                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Address</th>
-                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Notes</th>
-                            <th style="text-align:left;padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Rep</th>
-                            <th style="padding:.6rem 1rem;font-size:.78rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${leads.map(lead => `
-                        <tr id="qlrow-${lead.id}" style="border-bottom:1px solid rgba(255,255,255,.05)">
-                            <td style="padding:.7rem 1rem;font-size:.82rem;color:rgba(255,255,255,.4);white-space:nowrap">${new Date(lead.createdAt).toLocaleDateString('en-CA', {month:'short',day:'numeric',year:'numeric'})}</td>
-                            <td style="padding:.7rem 1rem;font-weight:600;color:#fff">${esc(lead.name)}</td>
-                            <td style="padding:.7rem 1rem;font-size:.85rem;color:rgba(255,255,255,.65)">📍 ${esc(lead.address)}</td>
-                            <td style="padding:.7rem 1rem;font-size:.82rem;color:rgba(255,255,255,.45);max-width:220px">${lead.notes ? esc(lead.notes) : '<span style="color:rgba(255,255,255,.2)">—</span>'}</td>
-                            <td style="padding:.7rem 1rem;font-size:.82rem;color:rgba(255,255,255,.5)">${esc(lead.salesRep || '—')}</td>
-                            <td style="padding:.7rem 1rem;white-space:nowrap">
-                                <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;margin-right:4px">✏️ Edit</button>
-                                <button onclick="openPromoteToSaleModal('${lead.id}')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;margin-right:4px" title="Promote to Sale">💰 To Sale</button>
-                                <button onclick="deleteQL('${lead.id}')" style="background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.75rem">🗑 Delete</button>
-                            </td>
-                        </tr>`).join('')}
-                    </tbody>
-                </table>`;
+            container.innerHTML = `<div style="display:flex;flex-direction:column;gap:.5rem;padding:.75rem">` +
+                leads.map(lead => {
+                    const dateStr = new Date(lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+                    return `<div id="qlrow-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.9rem 1rem">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:.5rem">
+                            <div>
+                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}</div>
+                                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">📍 ${esc(lead.address)}</div>
+                            </div>
+                            <div style="font-size:.72rem;color:rgba(255,255,255,.3);white-space:nowrap;text-align:right">
+                                ${dateStr}<br>
+                                <span style="color:rgba(255,255,255,.4)">${esc(lead.salesRep || '—')}</span>
+                            </div>
+                        </div>
+                        ${lead.notes ? `<div style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">📝 ${esc(lead.notes)}</div>` : ''}
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">
+                            <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">✏️ Edit</button>
+                            <button onclick="openPromoteToSaleModal('${lead.id}')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">💰 To Sale</button>
+                            <button onclick="deleteQL('${lead.id}')" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">🗑 Delete</button>
+                        </div>
+                    </div>`;
+                }).join('') + `</div>`;
         }
 
         function openEditQL(id) {
