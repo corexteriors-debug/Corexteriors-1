@@ -20,7 +20,7 @@ function s(text) {
 
 async function generateContractPDF(est, signatureData) {
     const doc  = await PDFDocument.create();
-    const page = doc.addPage([612, 792]); // Letter size
+    let page = doc.addPage([612, 792]); // Letter size — let so we can add page 2 for signatures
     const { width, height } = page.getSize();
 
     const font   = await doc.embedFont(StandardFonts.Helvetica);
@@ -320,6 +320,16 @@ async function generateContractPDF(est, signatureData) {
     y -= 18;
 
     // ─── SIGNATURES ──────────────────────────────────────────────────────────
+    // Need ~130px for signature block. If T&Cs pushed y too low, start page 2.
+    if (y < 130) {
+        page = doc.addPage([612, 792]);
+        y = height - 60;
+        page.drawText('Core Exteriors — Service Agreement (signatures)', {
+            x: L, y, size: 9, font: bold, color: gray,
+        });
+        y -= 24;
+    }
+
     const dateStr  = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
     const sigHalf  = (R - L) / 2 - 20;
 
@@ -328,18 +338,20 @@ async function generateContractPDF(est, signatureData) {
             const b64      = signatureData.includes(',') ? signatureData.split(',')[1] : signatureData;
             const pngBytes = Buffer.from(b64, 'base64');
             const sigImg   = await doc.embedPng(pngBytes);
-            const dims     = sigImg.scaleToFit(160, 44);
+            const dims     = sigImg.scaleToFit(180, 52);
             page.drawImage(sigImg, { x: L, y: y - dims.height, width: dims.width, height: dims.height });
-        } catch (_) { /* no signature — leave blank */ }
+        } catch (e) {
+            console.error('Signature embed error:', e.message);
+        }
     }
 
-    page.drawLine({ start: { x: L,            y: y - 46 }, end: { x: L + sigHalf,      y: y - 46 }, thickness: 0.7, color: black });
-    page.drawLine({ start: { x: R - sigHalf,  y: y - 46 }, end: { x: R,               y: y - 46 }, thickness: 0.7, color: black });
+    page.drawLine({ start: { x: L,            y: y - 58 }, end: { x: L + sigHalf,      y: y - 58 }, thickness: 0.7, color: black });
+    page.drawLine({ start: { x: R - sigHalf,  y: y - 58 }, end: { x: R,               y: y - 58 }, thickness: 0.7, color: black });
 
-    page.drawText('Client Signature', { x: L,           y: y - 57, size: 8, font, color: gray });
-    page.drawText('Date: ______________', { x: L + 90,  y: y - 57, size: 8, font, color: gray });
-    page.drawText('Contractor Signature', { x: R - sigHalf, y: y - 57, size: 8, font, color: gray });
-    page.drawText('Date: ______________', { x: R - sigHalf + 110, y: y - 57, size: 8, font, color: gray });
+    page.drawText('Client Signature', { x: L,           y: y - 70, size: 8, font, color: gray });
+    page.drawText('Date: ______________', { x: L + 100,  y: y - 70, size: 8, font, color: gray });
+    page.drawText('Contractor Signature', { x: R - sigHalf, y: y - 70, size: 8, font, color: gray });
+    page.drawText('Date: ______________', { x: R - sigHalf + 118, y: y - 70, size: 8, font, color: gray });
 
     return await doc.save();
 }
