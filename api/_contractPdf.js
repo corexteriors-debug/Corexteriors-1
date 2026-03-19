@@ -4,7 +4,7 @@
 // variable fields (client info, checkmarks, quantities, prices, dates, client sig).
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const path = require('path');
-const fs   = require('fs');
+const fs = require('fs');
 
 // Sanitize text for pdf-lib StandardFonts (Latin-1 only)
 function s(text) {
@@ -23,56 +23,56 @@ function s(text) {
 // Calibrated by measuring element positions in the blank template PDF.
 const C = {
     // Client info — values placed on the same line as the bold labels
-    clientNameX:  155,   // after "Client Full Name: " label text
-    clientNameY:  606,
-    addrX:        395,   // after "Service Address: " in right column
-    addrY:        606,
-    dateX:        145,   // after "Date of Service: " label
-    dateY:        580,
+    clientNameX: 155,   // after "Client Full Name: " label text
+    clientNameY: 630,
+    addrX: 395,   // after "Service Address: " in right column
+    addrY: 630,
+    dateX: 145,   // after "Date of Service: " label
+    dateY: 608,
 
     // Service table — text baseline y per row (Deck→Others)
-    rowsY: [522, 503, 484, 465, 446, 427, 408],
-    cbX:   60,    // checkbox x (draw ✓ over existing □)
-    qtyX:  372,   // quantity column text start
+    rowsY: [516, 494, 472, 450, 428, 406, 384],
+    cbX: 60,    // checkbox x (draw ✓ over existing □)
+    qtyX: 372,   // quantity column text start
     priceMaxX: 555, // price right-aligns to here (after template's "$")
 
     // Totals row (Contract Price / HST / Total Due)
-    totY:    385,
-    subtX:   170,  // after "Contract Price: $"
-    hstX:    333,  // after "HST (13%): $"
-    totalX:  470,  // after "Total Due: $"
+    totY: 348,
+    subtX: 170,  // after "Contract Price: $"
+    hstX: 333,  // after "HST (13%): $"
+    totalX: 470,  // after "Total Due: $"
 
     // Timeline boxes
-    tlY:      348,
-    startX:   115,  // after "Start Date:"
-    compX:    378,  // after "Completion:"
+    tlY: 289,
+    startX: 115,  // after "Start Date:"
+    compX: 378,  // after "Completion:"
 
     // Payment URL (tiny, above T&C section)
-    payY:     325,
+    payY: 265,
 
     // Client signature image & date labels
-    sigImgX:   54,
-    sigImgY:   78,   // bottom of image (just above the underline)
-    sigImgH:   46,   // max height for client signature image
-    dateStrY:  57,   // y for date text below signature line
+    sigImgX: 54,
+    sigImgY: 78,   // bottom of image (just above the underline)
+    sigImgH: 46,   // max height for client signature image
+    dateStrY: 57,   // y for date text below signature line
     clientDateX: 148,
-    contrDateX:  390,
+    contrDateX: 390,
 };
 
 async function generateContractPDF(est, signatureData, paymentUrl) {
     // Load the official template (static content + contractor signature already inside)
     const templateBytes = fs.readFileSync(path.join(__dirname, 'CONTRACT_BASE.pdf'));
-    const doc  = await PDFDocument.load(templateBytes);
+    const doc = await PDFDocument.load(templateBytes);
     const page = doc.getPage(0);
 
-    const font   = await doc.embedFont(StandardFonts.Helvetica);
-    const bold   = await doc.embedFont(StandardFonts.HelveticaBold);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
     const italic = await doc.embedFont(StandardFonts.HelveticaOblique);
 
-    const black = rgb(0,   0,   0);
-    const navy  = rgb(0.08, 0.12, 0.28);
-    const gray  = rgb(0.45, 0.45, 0.45);
-    const blue  = rgb(0.1,  0.3,  0.75);
+    const black = rgb(0, 0, 0);
+    const navy = rgb(0.08, 0.12, 0.28);
+    const gray = rgb(0.45, 0.45, 0.45);
+    const blue = rgb(0.1, 0.3, 0.75);
 
     // ── Client info ───────────────────────────────────────────────────────────
     page.drawText(s(est.clientName || ''), {
@@ -93,7 +93,7 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
     page.drawText(dateOfService, { x: C.dateX, y: C.dateY, size: 10, font, color: black });
 
     // ── Service table rows ────────────────────────────────────────────────────
-    const services   = Array.isArray(est.services) ? est.services : [];
+    const services = Array.isArray(est.services) ? est.services : [];
     const jobDetails = est.jobDetails || {};
 
     function isSelected(key) {
@@ -108,10 +108,10 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
     function deckQty() {
         const d = jobDetails.deck; if (!d) return '';
         const p = [];
-        if (d.sqft)      p.push(d.sqft + ' sq ft');
+        if (d.sqft) p.push(d.sqft + ' sq ft');
         if (d.condition) p.push('Cond ' + d.condition + '/5');
-        if (d.rails)     p.push('Rails');
-        if (d.linft)     p.push(d.linft + ' lin ft rotten');
+        if (d.rails) p.push('Rails');
+        if (d.linft) p.push(d.linft + ' lin ft rotten');
         return p.join(', ');
     }
     function gutterQty() {
@@ -121,15 +121,15 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
     function interlockQty() {
         const i = jobDetails.interlock; if (!i) return '';
         const p = [];
-        if (i.sqft)                              p.push(i.sqft + ' sq ft');
+        if (i.sqft) p.push(i.sqft + ' sq ft');
         if (i.severity && i.severity !== 'none') p.push(i.severity + ' re-level');
-        if (i.seal)                              p.push('Seal');
+        if (i.seal) p.push('Seal');
         return p.join(', ');
     }
     function windowQty() {
         const w = jobDetails.window; if (!w) return '';
         return (w.count ? w.count + ' units' : '') +
-               (w.type  ? ' (' + (w.type === 'full' ? 'Int+Ext' : 'Ext only') + ')' : '');
+            (w.type ? ' (' + (w.type === 'full' ? 'Int+Ext' : 'Ext only') + ')' : '');
     }
     function sidingQty() {
         const sv = jobDetails.siding; if (!sv) return '';
@@ -138,20 +138,20 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
     function gardenQty() {
         const g = jobDetails.garden; if (!g) return '';
         const p = [];
-        if (g.mulch)                            p.push(g.mulch + ' yd3 mulch');
-        if (g.weeding && g.weeding !== 'none')  p.push(g.weeding + ' weeding');
-        if (g.overgrowth)                       p.push(g.overgrowth + 'h overgrowth');
-        if (g.edging)                           p.push(g.edging + ' lin ft edging');
+        if (g.mulch) p.push(g.mulch + ' yd3 mulch');
+        if (g.weeding && g.weeding !== 'none') p.push(g.weeding + ' weeding');
+        if (g.overgrowth) p.push(g.overgrowth + 'h overgrowth');
+        if (g.edging) p.push(g.edging + ' lin ft edging');
         return p.join(', ');
     }
 
     const rowData = [
-        { sel: isSelected('deck'),      qty: deckQty(),      price: svcPrice('deck') },
-        { sel: isSelected('gutter'),    qty: gutterQty(),    price: svcPrice('gutter') },
+        { sel: isSelected('deck'), qty: deckQty(), price: svcPrice('deck') },
+        { sel: isSelected('gutter'), qty: gutterQty(), price: svcPrice('gutter') },
         { sel: isSelected('interlock') || isSelected('hardscape'), qty: interlockQty(), price: svcPrice('interlock') || svcPrice('hardscape') },
-        { sel: isSelected('window'),    qty: windowQty(),    price: svcPrice('window') },
-        { sel: isSelected('siding'),    qty: sidingQty(),    price: svcPrice('siding') },
-        { sel: isSelected('garden'),    qty: gardenQty(),    price: svcPrice('garden') },
+        { sel: isSelected('window'), qty: windowQty(), price: svcPrice('window') },
+        { sel: isSelected('siding'), qty: sidingQty(), price: svcPrice('siding') },
+        { sel: isSelected('garden'), qty: gardenQty(), price: svcPrice('garden') },
         { sel: false, qty: '', price: '' }, // Others
     ];
 
@@ -181,12 +181,12 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
 
     // ── Totals ────────────────────────────────────────────────────────────────
     const subtotal = s((est.subtotal || '0.00').replace(/^\$/, ''));
-    const hst      = s((est.hst      || '0.00').replace(/^\$/, ''));
-    const total    = s((est.total    || '0.00').replace(/^\$/, ''));
+    const hst = s((est.hst || '0.00').replace(/^\$/, ''));
+    const total = s((est.total || '0.00').replace(/^\$/, ''));
 
-    page.drawText(subtotal, { x: C.subtX,  y: C.totY, size: 9, font: bold, color: black });
-    page.drawText(hst,      { x: C.hstX,   y: C.totY, size: 9, font: bold, color: black });
-    page.drawText(total,    { x: C.totalX, y: C.totY, size: 9, font: bold, color: black });
+    page.drawText(subtotal, { x: C.subtX, y: C.totY, size: 9, font: bold, color: black });
+    page.drawText(hst, { x: C.hstX, y: C.totY, size: 9, font: bold, color: black });
+    page.drawText(total, { x: C.totalX, y: C.totY, size: 9, font: bold, color: black });
 
     // ── Timeline ──────────────────────────────────────────────────────────────
     let completionDate = 'TBD';
@@ -195,32 +195,32 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
         completionDate = new Date(yr, mo - 1, dy + 1)
             .toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
     }
-    page.drawText(dateOfService,  { x: C.startX, y: C.tlY, size: 9, font, color: black });
-    page.drawText(completionDate, { x: C.compX,  y: C.tlY, size: 9, font, color: black });
+    page.drawText(dateOfService, { x: C.startX, y: C.tlY, size: 9, font, color: black });
+    page.drawText(completionDate, { x: C.compX, y: C.tlY, size: 9, font, color: black });
 
     // ── Payment URL (if provided) ─────────────────────────────────────────────
     // Placed just above the Terms & Conditions heading in the small gap
     if (paymentUrl) {
-        const label  = 'Pay online: ';
+        const label = 'Pay online: ';
         const labelW = bold.widthOfTextAtSize(label, 7);
-        let urlTxt   = paymentUrl;
-        const maxW   = 558 - 54 - labelW;
+        let urlTxt = paymentUrl;
+        const maxW = 558 - 54 - labelW;
         while (urlTxt.length > 12 && font.widthOfTextAtSize(urlTxt, 6.5) > maxW) urlTxt = urlTxt.slice(0, -3) + '..';
-        page.drawText(label,  { x: 54,           y: C.payY, size: 7,   font: bold, color: navy });
-        page.drawText(urlTxt, { x: 54 + labelW,  y: C.payY, size: 6.5, font,       color: blue });
+        page.drawText(label, { x: 54, y: C.payY, size: 7, font: bold, color: navy });
+        page.drawText(urlTxt, { x: 54 + labelW, y: C.payY, size: 6.5, font, color: blue });
     }
 
     // ── Client signature ──────────────────────────────────────────────────────
     if (signatureData) {
         try {
-            const b64    = signatureData.includes(',') ? signatureData.split(',')[1] : signatureData;
+            const b64 = signatureData.includes(',') ? signatureData.split(',')[1] : signatureData;
             const sigImg = await doc.embedPng(Buffer.from(b64, 'base64'));
-            const dims   = sigImg.scaleToFit(200, C.sigImgH);
+            const dims = sigImg.scaleToFit(200, C.sigImgH);
             // Draw with bottom edge just above the signature line
             page.drawImage(sigImg, {
                 x: C.sigImgX,
                 y: C.sigImgY,
-                width:  dims.width,
+                width: dims.width,
                 height: dims.height,
             });
         } catch (e) {
@@ -231,7 +231,7 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
     // Today's date under each signature block
     const todayStr = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
     page.drawText(todayStr, { x: C.clientDateX, y: C.dateStrY, size: 7.5, font, color: gray });
-    page.drawText(todayStr, { x: C.contrDateX,  y: C.dateStrY, size: 7.5, font, color: gray });
+    page.drawText(todayStr, { x: C.contrDateX, y: C.dateStrY, size: 7.5, font, color: gray });
 
     return await doc.save();
 }
@@ -240,9 +240,9 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
 function drawCheckmark(page, x, baselineY) {
     const c = rgb(0, 0, 0);
     // Short stroke (bottom-left of tick)
-    page.drawLine({ start: { x: x + 1,   y: baselineY - 5 }, end: { x: x + 3,   y: baselineY - 7 }, thickness: 1.4, color: c });
+    page.drawLine({ start: { x: x + 1, y: baselineY - 5 }, end: { x: x + 3, y: baselineY - 7 }, thickness: 1.4, color: c });
     // Long stroke (up-right of tick)
-    page.drawLine({ start: { x: x + 3,   y: baselineY - 7 }, end: { x: x + 7.5, y: baselineY - 0.5 }, thickness: 1.4, color: c });
+    page.drawLine({ start: { x: x + 3, y: baselineY - 7 }, end: { x: x + 7.5, y: baselineY - 0.5 }, thickness: 1.4, color: c });
 }
 
 module.exports = { generateContractPDF };
