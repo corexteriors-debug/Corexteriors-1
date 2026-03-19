@@ -20,39 +20,39 @@ function s(text) {
 
 // ─── Coordinate map for CONTRACT_BASE.pdf (612 × 792 pt Letter) ─────────────
 // All y values are from the BOTTOM of the page (pdf-lib convention).
-// Calibrated from visual inspection of the template layout.
+// Calibrated by measuring element positions in the blank template PDF.
 const C = {
     // Client info — values placed on the same line as the bold labels
     clientNameX:  155,   // after "Client Full Name: " label text
-    clientNameY:  665,
+    clientNameY:  606,
     addrX:        395,   // after "Service Address: " in right column
-    addrY:        665,
+    addrY:        606,
     dateX:        145,   // after "Date of Service: " label
-    dateY:        628,
+    dateY:        580,
 
     // Service table — text baseline y per row (Deck→Others)
-    rowsY: [575, 561, 547, 533, 519, 506, 491],
+    rowsY: [522, 503, 484, 465, 446, 427, 408],
     cbX:   60,    // checkbox x (draw ✓ over existing □)
     qtyX:  372,   // quantity column text start
     priceMaxX: 555, // price right-aligns to here (after template's "$")
 
     // Totals row (Contract Price / HST / Total Due)
-    totY:    473,
+    totY:    385,
     subtX:   170,  // after "Contract Price: $"
     hstX:    333,  // after "HST (13%): $"
     totalX:  470,  // after "Total Due: $"
 
     // Timeline boxes
-    tlY:      444,
+    tlY:      348,
     startX:   115,  // after "Start Date:"
     compX:    378,  // after "Completion:"
 
     // Payment URL (tiny, above T&C section)
-    payY:     416,
+    payY:     325,
 
     // Client signature image & date labels
     sigImgX:   54,
-    sigImgY:   70,   // bottom of image (just above the underline)
+    sigImgY:   78,   // bottom of image (just above the underline)
     sigImgH:   46,   // max height for client signature image
     dateStrY:  57,   // y for date text below signature line
     clientDateX: 148,
