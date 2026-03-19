@@ -78,11 +78,11 @@ module.exports = async (req, res) => {
         const repName = tokenData.repName || 'Core Exteriors Team';
         const checkoutUrl = session.url; // kept server-side only — never returned to the sales rep
 
-        // Generate contract PDF from full estimate data
+        // Generate contract PDF with payment URL embedded so client can see it on paper
         let contractPdfBytes = null;
         const estData = estimate || { clientName, email: clientEmail };
         try {
-            contractPdfBytes = await generateContractPDF(estData, signatureData || null);
+            contractPdfBytes = await generateContractPDF(estData, signatureData || null, checkoutUrl);
             console.log('Contract PDF generated, size:', contractPdfBytes.length);
         } catch (err) {
             console.error('Contract PDF error:', err.message);

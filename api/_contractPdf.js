@@ -1,26 +1,28 @@
-// Generates a service agreement PDF matching the official Core Exteriors contract layout.
-// Checkboxes are auto-checked based on services selected by the sales technician.
+// Generates a single-page service agreement PDF matching the Core Exteriors contract layout.
+// Checkboxes are auto-checked from sales technician form data.
+// Contractor signature is loaded from api/contractor-sig.png if present.
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const path = require('path');
 const fs   = require('fs');
 
 // ─── Sanitize text for pdf-lib StandardFonts (Latin-1 only) ─────────────────
-// Replaces characters outside Latin-1 with safe ASCII equivalents so pdf-lib
-// never throws "WinAnsi cannot encode" errors from user-entered text.
 function s(text) {
     if (!text && text !== 0) return '';
     return String(text)
-        .replace(/[\u2018\u2019\u0060]/g, "'")   // curly/backtick quotes → '
-        .replace(/[\u201C\u201D]/g, '"')           // curly double quotes → "
-        .replace(/[\u2013\u2014]/g, '-')           // en/em dash → -
-        .replace(/\u2026/g, '...')                 // ellipsis → ...
-        .replace(/\u00B3/g, '3')                   // ³ → 3  (pdf-lib Helvetica misses it)
-        .replace(/[^\x00-\xFF]/g, '?');            // anything else non-Latin1 → ?
+        .replace(/[\u2018\u2019\u0060]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2013\u2014]/g, '-')
+        .replace(/\u2026/g, '...')
+        .replace(/\u00B3/g, '3')
+        .replace(/[^\x00-\xFF]/g, '?');
 }
 
-async function generateContractPDF(est, signatureData) {
+// generateContractPDF(est, signatureData, paymentUrl)
+// paymentUrl is optional — if provided it is printed in the PDF so the client
+// can see the payment link directly on the document.
+async function generateContractPDF(est, signatureData, paymentUrl) {
     const doc  = await PDFDocument.create();
-    let page = doc.addPage([612, 792]); // Letter size — let so we can add page 2 for signatures
+    const page = doc.addPage([612, 792]); // Letter — single page
     const { width, height } = page.getSize();
 
     const font   = await doc.embedFont(StandardFonts.Helvetica);
@@ -34,79 +36,62 @@ async function generateContractPDF(est, signatureData) {
     const rowAlt    = rgb(0.97, 0.97, 0.97);
     const white     = rgb(1, 1, 1);
 
-    const L = 54;   // left margin
-    const R = 558;  // right margin
-    let y = height - 44;
+    const L = 50;   // left margin
+    const R = 562;  // right margin
+    let y = height - 36;
 
     // ─── LOGO ────────────────────────────────────────────────────────────────
     try {
-        const logoPath = path.join(__dirname, '../images/logo-mark.png');
-        const logoBytes = fs.readFileSync(logoPath);
+        const logoBytes = fs.readFileSync(path.join(__dirname, '../images/logo-mark.png'));
         const logoImg   = await doc.embedPng(logoBytes);
-        const logoDims  = logoImg.scaleToFit(52, 52);
+        const logoDims  = logoImg.scaleToFit(40, 40);
         page.drawImage(logoImg, {
             x: (width - logoDims.width) / 2,
             y: y - logoDims.height,
             width: logoDims.width,
             height: logoDims.height,
         });
-        y -= logoDims.height + 8;
-    } catch (_) {
-        y -= 10;
-    }
+        y -= logoDims.height + 5;
+    } catch (_) { y -= 8; }
 
     // ─── HEADING ─────────────────────────────────────────────────────────────
     const heading = 'CORE EXTERIORS';
-    page.drawText(heading, {
-        x: (width - bold.widthOfTextAtSize(heading, 20)) / 2,
-        y, size: 20, font: bold, color: navy,
-    });
-    y -= 17;
-
-    const sub = 'Exterior Cleaning Service Agreement';
-    page.drawText(sub, {
-        x: (width - font.widthOfTextAtSize(sub, 11)) / 2,
-        y, size: 11, font, color: gray,
-    });
-    y -= 13;
-
-    const contact = '203 Cambridge St, London ON N6H 1N6  |  519-712-1431  |  corexteriors@gmail.com';
-    page.drawText(contact, {
-        x: (width - font.widthOfTextAtSize(contact, 8)) / 2,
-        y, size: 8, font, color: gray,
-    });
-    y -= 11;
-
-    const biz = 'ON Business No. 1001470729  |  HST 745847632 RT0001';
-    page.drawText(biz, {
-        x: (width - font.widthOfTextAtSize(biz, 8)) / 2,
-        y, size: 8, font, color: gray,
-    });
+    page.drawText(heading, { x: (width - bold.widthOfTextAtSize(heading, 18)) / 2, y, size: 18, font: bold, color: navy });
     y -= 14;
 
+    const sub = 'Exterior Cleaning Service Agreement';
+    page.drawText(sub, { x: (width - font.widthOfTextAtSize(sub, 10)) / 2, y, size: 10, font, color: gray });
+    y -= 11;
+
+    const contact = '203 Cambridge St, London ON N6H 1N6  |  519-712-1431  |  corexteriors@gmail.com';
+    page.drawText(contact, { x: (width - font.widthOfTextAtSize(contact, 7.5)) / 2, y, size: 7.5, font, color: gray });
+    y -= 10;
+
+    const biz = 'ON Business No. 1001470729  |  HST 745847632 RT0001';
+    page.drawText(biz, { x: (width - font.widthOfTextAtSize(biz, 7.5)) / 2, y, size: 7.5, font, color: gray });
+    y -= 12;
+
     page.drawLine({ start: { x: L, y }, end: { x: R, y }, thickness: 0.8, color: lightGray });
-    y -= 16;
+    y -= 12;
 
     // ─── CLIENT INFO ─────────────────────────────────────────────────────────
     const clientName     = s(est.clientName    || '');
     const serviceAddress = s(est.address       || est.clientAddress || '');
     const midX           = L + (R - L) / 2 + 10;
 
-    page.drawText('Client Full Name:', { x: L,    y, size: 9, font: bold, color: black });
-    page.drawText('Service Address:',  { x: midX, y, size: 9, font: bold, color: black });
-    y -= 14;
-    page.drawText(clientName,     { x: L,    y, size: 10, font, color: black });
-    page.drawText(serviceAddress, { x: midX, y, size: 10, font, color: black });
-    y -= 8;
-    page.drawLine({ start: { x: L,    y }, end: { x: midX - 14, y }, thickness: 0.5, color: lightGray });
+    page.drawText('Client Full Name:', { x: L,    y, size: 8.5, font: bold, color: black });
+    page.drawText('Service Address:',  { x: midX, y, size: 8.5, font: bold, color: black });
+    y -= 12;
+    page.drawText(clientName,     { x: L,    y, size: 9.5, font, color: black });
+    page.drawText(serviceAddress, { x: midX, y, size: 9.5, font, color: black });
+    y -= 7;
+    page.drawLine({ start: { x: L,    y }, end: { x: midX - 12, y }, thickness: 0.5, color: lightGray });
     page.drawLine({ start: { x: midX, y }, end: { x: R,          y }, thickness: 0.5, color: lightGray });
-    y -= 14;
+    y -= 10;
 
-    // Use visitDate from survey form, fall back to saleDate, then today
     const visitDateRaw = est.survey?.visitDate || est.saleDate || '';
     let dateOfService;
     if (visitDateRaw) {
-        // Parse as local date (YYYY-MM-DD) to avoid UTC timezone shift
         const parts = visitDateRaw.slice(0, 10).split('-').map(Number);
         dateOfService = new Date(parts[0], parts[1] - 1, parts[2])
             .toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -114,40 +99,36 @@ async function generateContractPDF(est, signatureData) {
         dateOfService = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 
-    page.drawText('Date of Service:', { x: L, y, size: 9, font: bold, color: black });
-    y -= 13;
-    page.drawText(dateOfService, { x: L, y, size: 10, font, color: black });
-    y -= 8;
-    page.drawLine({ start: { x: L, y }, end: { x: midX - 14, y }, thickness: 0.5, color: lightGray });
-    y -= 18;
-
-    // ─── SERVICE AND QUOTATION TABLE ─────────────────────────────────────────
-    page.drawText('Service and Quotation', { x: L, y, size: 11, font: bold, color: black });
+    page.drawText('Date of Service:', { x: L, y, size: 8.5, font: bold, color: black });
+    y -= 12;
+    page.drawText(dateOfService, { x: L, y, size: 9.5, font, color: black });
+    y -= 7;
+    page.drawLine({ start: { x: L, y }, end: { x: midX - 12, y }, thickness: 0.5, color: lightGray });
     y -= 14;
 
-    // Column positions
-    const cbX    = L + 6;      // checkbox x
-    const descX  = L + 26;     // service label x
-    const qtyX   = R - 166;    // quantity column start
-    const priceX = R - 48;     // price column (right-aligned anchor)
-    const rowH   = 22;
+    // ─── SERVICE AND QUOTATION TABLE ─────────────────────────────────────────
+    page.drawText('Service and Quotation', { x: L, y, size: 10, font: bold, color: black });
+    y -= 12;
 
-    // ── Table header ─────────────────────────────────────────────────────────
-    // Gray background
-    page.drawRectangle({ x: L, y: y - rowH + 6, width: R - L, height: rowH, color: rgb(0.93, 0.93, 0.93) });
-    // Border lines only (no fill — fixes the black-header bug)
-    page.drawLine({ start: { x: L, y: y + 6 },        end: { x: L, y: y - rowH + 6 },        thickness: 0.5, color: lightGray });
-    page.drawLine({ start: { x: R, y: y + 6 },        end: { x: R, y: y - rowH + 6 },        thickness: 0.5, color: lightGray });
-    page.drawLine({ start: { x: L, y: y - rowH + 6 }, end: { x: R, y: y - rowH + 6 },        thickness: 0.5, color: lightGray });
-    page.drawLine({ start: { x: qtyX - 6,   y: y + 6 }, end: { x: qtyX - 6,   y: y - rowH + 6 }, thickness: 0.4, color: lightGray });
-    page.drawLine({ start: { x: priceX - 6, y: y + 6 }, end: { x: priceX - 6, y: y - rowH + 6 }, thickness: 0.4, color: lightGray });
-    // Header text (bold, visible on gray background)
-    page.drawText('Service Description', { x: descX,  y: y - 11, size: 9, font: bold, color: black });
-    page.drawText('Quantity',            { x: qtyX,   y: y - 11, size: 9, font: bold, color: black });
-    page.drawText('Price',               { x: priceX, y: y - 11, size: 9, font: bold, color: black });
+    const cbX    = L + 5;
+    const descX  = L + 22;
+    const qtyX   = R - 160;
+    const priceX = R - 44;
+    const rowH   = 18; // tighter rows — key to fitting on one page
+
+    // Table header
+    page.drawRectangle({ x: L, y: y - rowH + 5, width: R - L, height: rowH, color: rgb(0.93, 0.93, 0.93) });
+    page.drawLine({ start: { x: L,          y: y + 5 }, end: { x: L,          y: y - rowH + 5 }, thickness: 0.5, color: lightGray });
+    page.drawLine({ start: { x: R,          y: y + 5 }, end: { x: R,          y: y - rowH + 5 }, thickness: 0.5, color: lightGray });
+    page.drawLine({ start: { x: L,          y: y - rowH + 5 }, end: { x: R,   y: y - rowH + 5 }, thickness: 0.5, color: lightGray });
+    page.drawLine({ start: { x: qtyX - 5,   y: y + 5 }, end: { x: qtyX - 5,  y: y - rowH + 5 }, thickness: 0.4, color: lightGray });
+    page.drawLine({ start: { x: priceX - 5, y: y + 5 }, end: { x: priceX - 5, y: y - rowH + 5 }, thickness: 0.4, color: lightGray });
+    page.drawText('Service Description', { x: descX,  y: y - 10, size: 8.5, font: bold, color: black });
+    page.drawText('Quantity',            { x: qtyX,   y: y - 10, size: 8.5, font: bold, color: black });
+    page.drawText('Price',               { x: priceX, y: y - 10, size: 8.5, font: bold, color: black });
     y -= rowH;
 
-    // ── Service rows ─────────────────────────────────────────────────────────
+    // Service row helpers
     const services   = Array.isArray(est.services)  ? est.services  : [];
     const jobDetails = est.jobDetails || {};
 
@@ -194,7 +175,7 @@ async function generateContractPDF(est, signatureData) {
     function gardenQty() {
         const g = jobDetails.garden; if (!g) return '';
         const p = [];
-        if (g.mulch)                            p.push(g.mulch + ' yd3 mulch');  // yd3 avoids encoding issue
+        if (g.mulch)                            p.push(g.mulch + ' yd3 mulch');
         if (g.weeding && g.weeding !== 'none')  p.push(g.weeding + ' weeding');
         if (g.overgrowth)                       p.push(g.overgrowth + 'h overgrowth');
         if (g.edging)                           p.push(g.edging + ' lin ft edging');
@@ -214,58 +195,51 @@ async function generateContractPDF(est, signatureData) {
     rows.forEach((row, i) => {
         const rowY = y;
         const bg   = i % 2 === 0 ? white : rowAlt;
-        page.drawRectangle({ x: L, y: rowY - rowH + 4, width: R - L, height: rowH, color: bg });
-        page.drawLine({ start: { x: L, y: rowY - rowH + 4 }, end: { x: R, y: rowY - rowH + 4 }, thickness: 0.3, color: lightGray });
-        page.drawLine({ start: { x: L, y: rowY + 4 },        end: { x: L, y: rowY - rowH + 4 }, thickness: 0.5, color: lightGray });
-        page.drawLine({ start: { x: R, y: rowY + 4 },        end: { x: R, y: rowY - rowH + 4 }, thickness: 0.5, color: lightGray });
-        page.drawLine({ start: { x: qtyX - 6,   y: rowY + 4 }, end: { x: qtyX - 6,   y: rowY - rowH + 4 }, thickness: 0.3, color: lightGray });
-        page.drawLine({ start: { x: priceX - 6, y: rowY + 4 }, end: { x: priceX - 6, y: rowY - rowH + 4 }, thickness: 0.3, color: lightGray });
+        page.drawRectangle({ x: L, y: rowY - rowH + 3, width: R - L, height: rowH, color: bg });
+        page.drawLine({ start: { x: L, y: rowY - rowH + 3 }, end: { x: R, y: rowY - rowH + 3 }, thickness: 0.3, color: lightGray });
+        page.drawLine({ start: { x: L, y: rowY + 3 }, end: { x: L, y: rowY - rowH + 3 }, thickness: 0.5, color: lightGray });
+        page.drawLine({ start: { x: R, y: rowY + 3 }, end: { x: R, y: rowY - rowH + 3 }, thickness: 0.5, color: lightGray });
+        page.drawLine({ start: { x: qtyX - 5,   y: rowY + 3 }, end: { x: qtyX - 5,   y: rowY - rowH + 3 }, thickness: 0.3, color: lightGray });
+        page.drawLine({ start: { x: priceX - 5, y: rowY + 3 }, end: { x: priceX - 5, y: rowY - rowH + 3 }, thickness: 0.3, color: lightGray });
 
-        drawCheckbox(page, cbX, rowY - 8, row.checked);
-        page.drawText(row.label, { x: descX, y: rowY - 12, size: 10, font: bold, color: black });
+        drawCheckbox(page, cbX, rowY - 6, row.checked);
+        page.drawText(row.label, { x: descX, y: rowY - 11, size: 9.5, font: bold, color: black });
 
         if (row.qty) {
-            const maxQtyW = priceX - qtyX - 10;
+            const maxQtyW = priceX - qtyX - 8;
             let qtyText = s(row.qty);
-            while (qtyText.length > 3 && font.widthOfTextAtSize(qtyText, 8) > maxQtyW) {
+            while (qtyText.length > 3 && font.widthOfTextAtSize(qtyText, 7.5) > maxQtyW) {
                 qtyText = qtyText.slice(0, -4) + '...';
             }
-            page.drawText(qtyText, { x: qtyX, y: rowY - 12, size: 8, font, color: gray });
+            page.drawText(qtyText, { x: qtyX, y: rowY - 11, size: 7.5, font, color: gray });
         }
 
         const priceText = row.price || '$';
-        const priceW    = font.widthOfTextAtSize(priceText, 10);
-        page.drawText(priceText, { x: R - priceW - 6, y: rowY - 12, size: 10, font, color: black });
-
+        page.drawText(priceText, { x: R - font.widthOfTextAtSize(priceText, 9.5) - 5, y: rowY - 11, size: 9.5, font, color: black });
         y -= rowH;
     });
 
     y -= 2;
 
     // ─── TOTALS ROW ──────────────────────────────────────────────────────────
-    const totalRowH = 24;
+    const totalRowH = 20;
     const colW = (R - L) / 3;
     [0, 1, 2].forEach(i => {
-        page.drawRectangle({
-            x: L + i * colW, y: y - totalRowH + 4,
-            width: colW, height: totalRowH,
-            borderColor: lightGray, borderWidth: 0.7, color: white,
-        });
+        page.drawRectangle({ x: L + i * colW, y: y - totalRowH + 3, width: colW, height: totalRowH, borderColor: lightGray, borderWidth: 0.7, color: white });
     });
 
     const subtotal = (est.subtotal || '$0.00').replace(/^\$/, '');
     const hst      = (est.hst      || '$0.00').replace(/^\$/, '');
     const total    = (est.total    || '$0.00').replace(/^\$/, '');
 
-    page.drawText('Contract Price: $' + subtotal,   { x: L + 6,              y: y - 13, size: 9, font: bold, color: black });
-    page.drawText('HST (13%): $'      + hst,        { x: L + colW + 6,       y: y - 13, size: 9, font: bold, color: black });
-    page.drawText('Total Due: $'      + total,       { x: L + colW * 2 + 6,  y: y - 13, size: 9, font: bold, color: black });
-
-    y -= totalRowH + 18;
+    page.drawText('Contract Price: $' + subtotal, { x: L + 5,             y: y - 12, size: 8.5, font: bold, color: black });
+    page.drawText('HST (13%): $'      + hst,      { x: L + colW + 5,      y: y - 12, size: 8.5, font: bold, color: black });
+    page.drawText('Total Due: $'      + total,     { x: L + colW * 2 + 5, y: y - 12, size: 8.5, font: bold, color: black });
+    y -= totalRowH + 12;
 
     // ─── TIMELINE ────────────────────────────────────────────────────────────
-    page.drawText('Timeline', { x: L, y, size: 11, font: bold, color: black });
-    y -= 14;
+    page.drawText('Timeline', { x: L, y, size: 10, font: bold, color: black });
+    y -= 12;
 
     let completionDate = 'TBD';
     if (visitDateRaw) {
@@ -275,83 +249,102 @@ async function generateContractPDF(est, signatureData) {
     }
 
     const halfW = (R - L) / 2 - 4;
-    page.drawRectangle({ x: L,              y: y - 20, width: halfW, height: 26, borderColor: lightGray, borderWidth: 0.5, color: white });
-    page.drawRectangle({ x: L + halfW + 8,  y: y - 20, width: halfW, height: 26, borderColor: lightGray, borderWidth: 0.5, color: white });
-    page.drawText('Start Date:   ' + dateOfService, { x: L + 7,          y: y - 11, size: 9, font: bold, color: black });
-    page.drawText('Completion:  ' + completionDate, { x: L + halfW + 15, y: y - 11, size: 9, font: bold, color: black });
-    y -= 34;
+    page.drawRectangle({ x: L,             y: y - 18, width: halfW, height: 22, borderColor: lightGray, borderWidth: 0.5, color: white });
+    page.drawRectangle({ x: L + halfW + 8, y: y - 18, width: halfW, height: 22, borderColor: lightGray, borderWidth: 0.5, color: white });
+    page.drawText('Start Date:  ' + dateOfService, { x: L + 6,          y: y - 10, size: 8.5, font: bold, color: black });
+    page.drawText('Completion: ' + completionDate, { x: L + halfW + 14, y: y - 10, size: 8.5, font: bold, color: black });
+    y -= 28;
 
-    const note = '25% deposit due at signing. Balance due upon completion.';
-    page.drawText(note, {
-        x: (width - italic.widthOfTextAtSize(note, 8.5)) / 2,
-        y, size: 8.5, font: italic, color: gray,
-    });
-    y -= 22;
+    const depositNote = '25% deposit due at signing. Balance due upon completion.';
+    page.drawText(depositNote, { x: (width - italic.widthOfTextAtSize(depositNote, 8)) / 2, y, size: 8, font: italic, color: gray });
+    y -= 16;
+
+    // ─── PAYMENT LINK (if provided) ──────────────────────────────────────────
+    if (paymentUrl) {
+        const payLabel = 'Pay online: ';
+        const payLabelW = bold.widthOfTextAtSize(payLabel, 7.5);
+        const maxUrlW = R - L - payLabelW - 2;
+        let urlText = paymentUrl;
+        while (urlText.length > 10 && font.widthOfTextAtSize(urlText, 7) > maxUrlW) {
+            urlText = urlText.slice(0, -3) + '..';
+        }
+        page.drawText(payLabel, { x: L, y, size: 7.5, font: bold, color: navy });
+        page.drawText(urlText, { x: L + payLabelW, y, size: 7, font, color: rgb(0.1, 0.3, 0.75) });
+        y -= 13;
+    }
 
     // ─── TERMS & CONDITIONS ──────────────────────────────────────────────────
-    page.drawText('Terms & Conditions', { x: L, y, size: 11, font: bold, color: black });
-    y -= 6;
+    page.drawText('Terms & Conditions', { x: L, y, size: 10, font: bold, color: black });
+    y -= 5;
     page.drawLine({ start: { x: L, y }, end: { x: R, y }, thickness: 0.5, color: lightGray });
-    y -= 12;
+    y -= 10;
 
     const termsList = [
-        { label: 'Insurance & Safety:',        text: 'CORE EXTERIORS maintains $10 million in General Liability Insurance and is fully covered by WSIB, ensuring protection for both the property and our workers.' },
-        { label: 'Weather & Site Conditions:',  text: 'Scheduled dates are subject to change based on weather or site accessibility.' },
-        { label: 'Amendments & Changes:',       text: 'If during the performance of services, the scope of work is found to differ significantly from the initial assessment (e.g., unexpected surface fragility or incorrect measurements), CORE EXTERIORS reserves the right to adjust the contract price. Any changes will be agreed upon with the Client before proceeding.' },
-        { label: 'Liability:',                  text: 'CORE EXTERIORS is not responsible for pre-existing defects, loose materials, or water intrusion from prior construction issues. Total liability is limited to the contract amount.' },
-        { label: 'Exclusions:',                 text: 'Structural repairs, paint touch-ups, sealing, or landscaping restoration are not included unless specified.' },
+        { label: 'Insurance & Safety:',       text: 'CORE EXTERIORS maintains $10 million in General Liability Insurance and is fully covered by WSIB, ensuring protection for both the property and our workers.' },
+        { label: 'Weather & Site Conditions:', text: 'Scheduled dates are subject to change based on weather or site accessibility.' },
+        { label: 'Amendments & Changes:',      text: 'If during the performance of services, the scope of work is found to differ significantly from the initial assessment (e.g., unexpected surface fragility or incorrect measurements), CORE EXTERIORS reserves the right to adjust the contract price. Any changes will be agreed upon with the Client before proceeding.' },
+        { label: 'Liability:',                 text: 'CORE EXTERIORS is not responsible for pre-existing defects, loose materials, or water intrusion from prior construction issues. Total liability is limited to the contract amount.' },
+        { label: 'Exclusions:',                text: 'Structural repairs, paint touch-ups, sealing, or landscaping restoration are not included unless specified.' },
     ];
 
     termsList.forEach(term => {
         const full    = term.label + ' ' + term.text;
-        const wrapped = wrapText(full, 105);
+        const wrapped = wrapText(full, 115); // wider wrap = fewer lines
         wrapped.forEach((line, idx) => {
             if (idx === 0) {
-                const lw = bold.widthOfTextAtSize(term.label, 8);
-                page.drawText(term.label,             { x: L,      y, size: 8, font: bold, color: black });
-                page.drawText(line.slice(term.label.length), { x: L + lw, y, size: 8, font,      color: black });
+                const lw = bold.widthOfTextAtSize(term.label, 7.5);
+                page.drawText(term.label,                    { x: L,      y, size: 7.5, font: bold, color: black });
+                page.drawText(line.slice(term.label.length), { x: L + lw, y, size: 7.5, font,       color: black });
             } else {
-                page.drawText(line, { x: L, y, size: 8, font, color: black });
+                page.drawText(line, { x: L, y, size: 7.5, font, color: black });
             }
-            y -= 11;
+            y -= 9; // tight line height — key to fitting T&Cs on one page
         });
     });
 
-    y -= 18;
+    y -= 12;
 
     // ─── SIGNATURES ──────────────────────────────────────────────────────────
-    // Need ~130px for signature block. If T&Cs pushed y too low, start page 2.
-    if (y < 130) {
-        page = doc.addPage([612, 792]);
-        y = height - 60;
-        page.drawText('Core Exteriors — Service Agreement (signatures)', {
-            x: L, y, size: 9, font: bold, color: gray,
-        });
-        y -= 24;
-    }
+    const dateStr = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+    const sigHalf = (R - L) / 2 - 16;
+    const sigAreaH = 44; // height reserved for signature images
 
-    const dateStr  = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
-    const sigHalf  = (R - L) / 2 - 20;
-
+    // ── Client signature (left) ───────────────────────────────────────────
     if (signatureData) {
         try {
             const b64      = signatureData.includes(',') ? signatureData.split(',')[1] : signatureData;
-            const pngBytes = Buffer.from(b64, 'base64');
-            const sigImg   = await doc.embedPng(pngBytes);
-            const dims     = sigImg.scaleToFit(180, 52);
+            const sigImg   = await doc.embedPng(Buffer.from(b64, 'base64'));
+            const dims     = sigImg.scaleToFit(sigHalf - 10, sigAreaH);
             page.drawImage(sigImg, { x: L, y: y - dims.height, width: dims.width, height: dims.height });
         } catch (e) {
-            console.error('Signature embed error:', e.message);
+            console.error('Client sig embed error:', e.message);
         }
     }
 
-    page.drawLine({ start: { x: L,            y: y - 58 }, end: { x: L + sigHalf,      y: y - 58 }, thickness: 0.7, color: black });
-    page.drawLine({ start: { x: R - sigHalf,  y: y - 58 }, end: { x: R,               y: y - 58 }, thickness: 0.7, color: black });
+    // ── Contractor signature (right) — loaded from api/contractor-sig.png ──
+    const contractorSigX = R - sigHalf;
+    try {
+        const cSigBytes = fs.readFileSync(path.join(__dirname, 'contractor-sig.png'));
+        const cSigImg   = await doc.embedPng(cSigBytes);
+        const dims      = cSigImg.scaleToFit(sigHalf - 10, sigAreaH);
+        page.drawImage(cSigImg, { x: contractorSigX, y: y - dims.height, width: dims.width, height: dims.height });
+    } catch (_) {
+        // Fallback: italic text signature if no image file exists
+        page.drawText('Core Exteriors Ltd.', {
+            x: contractorSigX, y: y - 28,
+            size: 14, font: italic, color: navy,
+        });
+    }
 
-    page.drawText('Client Signature', { x: L,           y: y - 70, size: 8, font, color: gray });
-    page.drawText('Date: ______________', { x: L + 100,  y: y - 70, size: 8, font, color: gray });
-    page.drawText('Contractor Signature', { x: R - sigHalf, y: y - 70, size: 8, font, color: gray });
-    page.drawText('Date: ______________', { x: R - sigHalf + 118, y: y - 70, size: 8, font, color: gray });
+    // Signature lines
+    page.drawLine({ start: { x: L,               y: y - sigAreaH }, end: { x: L + sigHalf,  y: y - sigAreaH }, thickness: 0.7, color: black });
+    page.drawLine({ start: { x: contractorSigX,  y: y - sigAreaH }, end: { x: R,             y: y - sigAreaH }, thickness: 0.7, color: black });
+
+    // Labels
+    page.drawText('Client Signature',            { x: L,                  y: y - sigAreaH - 10, size: 7.5, font, color: gray });
+    page.drawText('Date: ' + dateStr,            { x: L + 100,            y: y - sigAreaH - 10, size: 7.5, font, color: gray });
+    page.drawText('Contractor Signature',        { x: contractorSigX,     y: y - sigAreaH - 10, size: 7.5, font, color: gray });
+    page.drawText('Date: ' + dateStr,            { x: contractorSigX + 118, y: y - sigAreaH - 10, size: 7.5, font, color: gray });
 
     return await doc.save();
 }
@@ -359,11 +352,11 @@ async function generateContractPDF(est, signatureData) {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function drawCheckbox(page, x, y, checked) {
-    const sz = 8;
+    const sz = 7;
     page.drawRectangle({ x, y: y - sz, width: sz, height: sz, borderColor: rgb(0, 0, 0), borderWidth: 0.8, color: rgb(1, 1, 1) });
     if (checked) {
-        page.drawLine({ start: { x: x + 1.5, y: y - 5 }, end: { x: x + 3.5, y: y - 7 }, thickness: 1.3, color: rgb(0, 0, 0) });
-        page.drawLine({ start: { x: x + 3.5, y: y - 7 }, end: { x: x + 7,   y: y - 1 }, thickness: 1.3, color: rgb(0, 0, 0) });
+        page.drawLine({ start: { x: x + 1,   y: y - 4   }, end: { x: x + 3,   y: y - 6   }, thickness: 1.2, color: rgb(0, 0, 0) });
+        page.drawLine({ start: { x: x + 3,   y: y - 6   }, end: { x: x + 6.5, y: y - 0.5 }, thickness: 1.2, color: rgb(0, 0, 0) });
     }
 }
 
@@ -372,14 +365,9 @@ function wrapText(text, maxChars) {
     const lines = [];
     let cur = '';
     words.forEach(w => {
-        if (!cur) {
-            cur = w;
-        } else if ((cur + ' ' + w).length <= maxChars) {
-            cur += ' ' + w;
-        } else {
-            lines.push(cur);
-            cur = w;
-        }
+        if (!cur) { cur = w; }
+        else if ((cur + ' ' + w).length <= maxChars) { cur += ' ' + w; }
+        else { lines.push(cur); cur = w; }
     });
     if (cur) lines.push(cur);
     return lines;
