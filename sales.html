@@ -1754,7 +1754,7 @@
             btn.disabled = true;
 
             if (method === 'card') {
-                // Stripe checkout — link sent directly to client, never shown to rep
+                // Stripe checkout — link + contract PDF sent directly to client, never shown to rep
                 if (!clientEmail) { alert('Client email is required for card payment'); btn.disabled = false; return; }
                 const clientPhone = document.getElementById('clientPhone').value;
                 btn.textContent = '⏳ Sending to client...';
@@ -1762,18 +1762,18 @@
                     const serviceDesc = document.getElementById('clientAddress').value
                         ? ('Services at ' + document.getElementById('clientAddress').value)
                         : 'Exterior Services';
+                    // Build full estimate so payment.js can attach the contract PDF
+                    const payEstimate = buildEstimateObject();
+                    const paySigData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
                     const r = await fetch('/api/payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ clientName, clientEmail, clientPhone, amount, description: serviceDesc, paymentType: type })
+                        body: JSON.stringify({ clientName, clientEmail, clientPhone, amount, description: serviceDesc, paymentType: type, estimate: payEstimate, signatureData: paySigData })
                     });
                     const d = await r.json();
                     if (d.success) {
-                        let sentVia = [];
-                        if (d.emailSent) sentVia.push('email');
-                        if (d.smsSent) sentVia.push('text');
-                        const via = sentVia.length > 0 ? sentVia.join(' & ') : 'secure link';
-                        btn.textContent = '✅ Payment link sent to ' + clientName + ' via ' + via;
+                        window._cardPaymentSent = true; // flag: skip invoice + contract emails on submit
+                        btn.textContent = '✅ Contract & payment link sent to ' + clientName;
                         btn.style.background = '#27ae60';
                         btn.style.fontSize = '.8rem';
                     } else {
@@ -1887,7 +1887,47 @@
 
             const btn = document.getElementById('submitEstBtn'); btn.disabled = true; btn.textContent = 'Submitting...';
 
-            // Build services array
+            const estimate = buildEstimateObject();
+            // Override with validated values from the top of submitEstimate
+            estimate.clientName = name; estimate.phone = phone; estimate.email = email; estimate.address = address;
+            estimate.salesRep = rep;
+            estimate.legal = { cooling: l1, wsib: l2, deposit: l3 };
+            estimate.hasSignature = !isCanvasBlank();
+
+            // Capture signature (client signed on canvas)
+            const signatureData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
+
+            try {
+                const r = await fetch(API_BASE + '/leads', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken }, body: JSON.stringify(estimate) });
+                if (r.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired. Please log in again.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return }
+                const d = await r.json();
+                if (d.success) {
+                    // If card payment was already sent via payment.js, don't send another email
+                    if (window._cardPaymentSent) {
+                        msg.className = 'msg success';
+                        msg.textContent = '✅ Estimate #' + estimateNumber + ' saved! Contract & payment link already sent to ' + email;
+                        msg.style.display = 'block';
+                        localStorage.removeItem('estimate_draft');
+                    } else {
+                        // Non-card payment: send contract only (no invoice, no payment link)
+                        msg.className = 'msg success'; msg.textContent = '✅ Estimate saved! Sending contract to ' + email + '...'; msg.style.display = 'block';
+                        const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
+                        const conRes = await fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }).catch(() => null);
+                        const conData = conRes ? await conRes.json().catch(() => ({})) : {};
+                        if (conData.emailSent) {
+                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract emailed to ' + email;
+                        } else {
+                            msg.textContent = '✅ Estimate #' + estimateNumber + ' saved!' + (conData.error ? ' ⚠️ Email failed: ' + conData.error : '');
+                        }
+                        localStorage.removeItem('estimate_draft');
+                    }
+                } else { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to submit.'; msg.style.display = 'block' }
+            } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
+            finally { btn.disabled = false; btn.textContent = 'Submit Estimate' }
+        }
+
+        // Builds the estimate object from the current form state (shared by payment + submit)
+        function buildEstimateObject() {
             const services = [];
             const svcNames = { deck: 'Deck Restoration', gutter: 'Gutter Cleaning', interlock: 'Interlock Restoration', window: 'Window Cleaning', siding: 'Siding (Soft Wash)', garden: 'Garden Maintenance' };
             ['deck', 'gutter', 'interlock', 'window', 'siding', 'garden'].forEach(s => {
@@ -1895,29 +1935,25 @@
                     services.push({ name: svcNames[s], price: document.getElementById('price_' + s).textContent });
                 }
             });
-
-            const discount = getDiscount();
-
-            // Survey data
             const hazards = [];
             document.querySelectorAll('.hazard-item.checked input').forEach(h => hazards.push(h.value));
-
-            const estimate = {
-                clientName: name, phone,
+            return {
+                clientName: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value,
                 email: document.getElementById('clientEmail').value,
-                address,
+                address: document.getElementById('clientAddress').value,
                 serviceType: services.map(s => s.name).join(', '),
                 estimatedValue: document.getElementById('footerTotal').textContent.replace('$', ''),
                 notes: document.getElementById('estNotes').value,
-                salesRep: rep,
+                salesRep: document.getElementById('salesRep').value,
                 estimateNumber,
                 services,
-                discount: discount,
+                discount: getDiscount(),
                 subtotal: document.getElementById('footerSubtotal').textContent,
                 hst: document.getElementById('footerHST').textContent,
                 total: document.getElementById('footerTotal').textContent,
-                paymentStatus: window._paymentInfo?.paymentStatus || 'Unpaid',
-                paymentMethod: window._paymentInfo?.paymentMethod || '',
+                paymentStatus: window._paymentInfo?.paymentStatus || (window._cardPaymentSent ? 'Pending' : 'Unpaid'),
+                paymentMethod: window._paymentInfo?.paymentMethod || (window._cardPaymentSent ? 'Credit Card' : ''),
                 paymentAmount: window._paymentInfo?.paymentAmount || 0,
                 jobDetails: {
                     deck: document.getElementById('svc_deck').checked ? {
@@ -1957,46 +1993,7 @@
                     powerAccess: document.querySelector('input[name="power"]:checked')?.value,
                     hazards
                 },
-                legal: { cooling: l1, wsib: l2, deposit: l3 },
-                hasSignature: !isCanvasBlank()
             };
-
-            // Capture signature (client signed on canvas)
-            const signatureData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
-
-            try {
-                const r = await fetch(API_BASE + '/leads', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken }, body: JSON.stringify(estimate) });
-                if (r.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired. Please log in again.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return }
-                const d = await r.json();
-                if (d.success) {
-                    msg.className = 'msg success'; msg.textContent = '✅ Estimate saved! Sending documents to ' + email + '...'; msg.style.display = 'block';
-
-                    // Send invoice + contract in parallel
-                    const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
-                    const [invRes, conRes] = await Promise.allSettled([
-                        fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate }) }),
-                        fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }),
-                    ]);
-
-                    const invData = invRes.status === 'fulfilled' ? await invRes.value.json().catch(() => ({})) : {};
-                    const conData = conRes.status === 'fulfilled' ? await conRes.value.json().catch(() => ({})) : {};
-
-                    const sentParts = [];
-                    if (invData.emailSent) sentParts.push('estimate');
-                    if (conData.emailSent) sentParts.push('signed contract');
-
-                    if (sentParts.length > 0) {
-                        msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Emailed ' + sentParts.join(' & ') + ' to ' + email;
-                    } else {
-                        const invErr = invData.error ? ' Invoice: ' + invData.error : '';
-                        const conErr = conData.error ? ' Contract: ' + conData.error : '';
-                        msg.textContent = '✅ Estimate #' + estimateNumber + ' saved! ⚠️ Email failed —' + invErr + conErr;
-                    }
-
-                    localStorage.removeItem('estimate_draft');
-                } else { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to submit.'; msg.style.display = 'block' }
-            } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
-            finally { btn.disabled = false; btn.textContent = 'Submit Estimate' }
         }
 
         function isCanvasBlank() {
