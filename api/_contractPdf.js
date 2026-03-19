@@ -321,15 +321,15 @@ async function generateContractPDF(est, signatureData, paymentUrl) {
         }
     }
 
-    // ── Contractor signature (right) — loaded from api/contractor-sig.png ──
+    // ── Contractor signature (right) — loaded from api/contractor-sig.jpg ──
     const contractorSigX = R - sigHalf;
     try {
-        const cSigBytes = fs.readFileSync(path.join(__dirname, 'contractor-sig.png'));
-        const cSigImg   = await doc.embedPng(cSigBytes);
+        const cSigBytes = fs.readFileSync(path.join(__dirname, 'contractor-sig.jpg'));
+        const cSigImg   = await doc.embedJpg(cSigBytes);
         const dims      = cSigImg.scaleToFit(sigHalf - 10, sigAreaH);
         page.drawImage(cSigImg, { x: contractorSigX, y: y - dims.height, width: dims.width, height: dims.height });
     } catch (_) {
-        // Fallback: italic text signature if no image file exists
+        // Fallback: italic text if image missing
         page.drawText('Core Exteriors Ltd.', {
             x: contractorSigX, y: y - 28,
             size: 14, font: italic, color: navy,
