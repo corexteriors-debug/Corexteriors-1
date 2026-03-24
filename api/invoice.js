@@ -15,16 +15,17 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { estimate } = req.body;
+        const { estimate, documentType } = req.body;
+        const docType = documentType === 'invoice' ? 'invoice' : 'estimate';
         if (!estimate || !estimate.clientName || !estimate.email) {
-            return res.status(400).json({ error: 'Estimate data with client email is required' });
+            return res.status(400).json({ error: 'Client data with email is required' });
         }
 
         // Generate PDF
-        const pdfBytes = await generateInvoicePDF(estimate);
+        const pdfBytes = await generateInvoicePDF(estimate, docType);
 
         // Send email
-        const emailSent = await sendInvoiceEmail(estimate, pdfBytes);
+        const emailSent = await sendInvoiceEmail(estimate, pdfBytes, docType);
 
         return res.status(200).json({ success: true, emailSent });
     } catch (error) {
@@ -33,7 +34,8 @@ module.exports = async function handler(req, res) {
     }
 };
 
-async function generateInvoicePDF(est) {
+async function generateInvoicePDF(est, docType) {
+    const isInvoice = docType === 'invoice';
     const doc = await PDFDocument.create();
     const page = doc.addPage([612, 792]); // Letter size
     const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -54,7 +56,7 @@ async function generateInvoicePDF(est) {
     page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: darkBlue });
     page.drawText('CORE EXTERIORS', { x: 50, y: height - 45, size: 22, font: fontBold, color: white });
     page.drawText('Professional Exterior Services', { x: 50, y: height - 65, size: 10, font, color: rgb(0.6, 0.7, 0.8) });
-    page.drawText('ESTIMATE', { x: width - 150, y: height - 45, size: 20, font: fontBold, color: white });
+    page.drawText(isInvoice ? 'INVOICE' : 'ESTIMATE', { x: width - 150, y: height - 45, size: 20, font: fontBold, color: white });
     page.drawText(est.estimateNumber || '', { x: width - 150, y: height - 62, size: 9, font, color: rgb(0.6, 0.7, 0.8) });
 
     y = height - 110;
@@ -115,7 +117,7 @@ async function generateInvoicePDF(est) {
     y -= 20;
 
     // Total
-    page.drawText('TOTAL ESTIMATE:', { x: 350, y, size: 12, font: fontBold, color: darkBlue });
+    page.drawText(isInvoice ? 'TOTAL DUE:' : 'TOTAL ESTIMATE:', { x: 350, y, size: 12, font: fontBold, color: darkBlue });
     page.drawText(est.total || '$0.00', { x: width - 130, y, size: 14, font: fontBold, color: green });
     y -= 40;
 
@@ -137,7 +139,12 @@ async function generateInvoicePDF(est) {
     y -= 18;
     page.drawText('TERMS & CONDITIONS', { x: 55, y, size: 8, font: fontBold, color: blue });
     y -= 14;
-    const terms = [
+    const terms = isInvoice ? [
+        'Payment is due upon receipt unless otherwise agreed.',
+        'A 25% deposit is required to confirm the booking.',
+        '10 day cooling off period applies as per Ontario consumer protection.',
+        'Core Exteriors is fully insured and WSIB covered.',
+    ] : [
         'This estimate is valid for 30 days from the date of issue.',
         'A 25% deposit is required to confirm the booking.',
         '10 day cooling off period applies as per Ontario consumer protection.',
@@ -171,7 +178,8 @@ function wrapText(text, maxChars) {
     return lines;
 }
 
-async function sendInvoiceEmail(est, pdfBytes) {
+async function sendInvoiceEmail(est, pdfBytes, docType) {
+    const isInvoice = docType === 'invoice';
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
@@ -185,12 +193,15 @@ async function sendInvoiceEmail(est, pdfBytes) {
         auth: { user: gmailUser, pass: gmailPass }
     });
 
-    const fileName = 'CoreExteriors_Estimate_' + (est.estimateNumber || 'Unknown').replace(/ /g, '_') + '.pdf';
+    const filePrefix = isInvoice ? 'CoreExteriors_Invoice_' : 'CoreExteriors_Estimate_';
+    const fileName = filePrefix + (est.estimateNumber || 'Unknown').replace(/ /g, '_') + '.pdf';
 
     const mailOptions = {
         from: '"Core Exteriors" <' + gmailUser + '>',
         to: est.email,
-        subject: 'Your Estimate from Core Exteriors | ' + (est.estimateNumber || ''),
+        subject: isInvoice
+            ? 'Your Invoice from Core Exteriors | ' + (est.estimateNumber || '')
+            : 'Your Estimate from Core Exteriors | ' + (est.estimateNumber || ''),
         html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#333">
         <div style="background:#0a1628;padding:20px 30px;border-radius:12px 12px 0 0">
@@ -199,18 +210,24 @@ async function sendInvoiceEmail(est, pdfBytes) {
         </div>
         <div style="padding:30px;background:#f8f9fa;border:1px solid #e9ecef">
           <p>Hi <strong>${est.clientName}</strong>,</p>
-          <p>Thank you for your interest in Core Exteriors! Please find your estimate attached as a PDF.</p>
+          <p>${isInvoice
+              ? 'Thank you for choosing Core Exteriors! Please find your invoice attached as a PDF.'
+              : 'Thank you for your interest in Core Exteriors! Please find your estimate attached as a PDF.'
+          }</p>
           <table style="width:100%;margin:20px 0;border-collapse:collapse">
             <tr style="background:#0a1628;color:#fff">
-              <td style="padding:10px 15px;font-weight:bold;border-radius:8px 0 0 0">Estimate #</td>
+              <td style="padding:10px 15px;font-weight:bold;border-radius:8px 0 0 0">${isInvoice ? 'Invoice #' : 'Estimate #'}</td>
               <td style="padding:10px 15px;text-align:right;border-radius:0 8px 0 0">${est.estimateNumber || 'N/A'}</td>
             </tr>
             <tr>
-              <td style="padding:10px 15px;border-bottom:1px solid #e9ecef">Total Estimate</td>
+              <td style="padding:10px 15px;border-bottom:1px solid #e9ecef">${isInvoice ? 'Total Due' : 'Total Estimate'}</td>
               <td style="padding:10px 15px;text-align:right;font-weight:bold;color:#27ae60;font-size:18px;border-bottom:1px solid #e9ecef">${est.total || '$0.00'}</td>
             </tr>
           </table>
-          <p style="color:#666;font-size:13px">This estimate is valid for 30 days. A 25% deposit is required to confirm your booking.</p>
+          <p style="color:#666;font-size:13px">${isInvoice
+              ? 'Payment is due upon receipt unless otherwise agreed. Please contact us if you have any questions about this invoice.'
+              : 'This estimate is valid for 30 days. A 25% deposit is required to confirm your booking.'
+          }</p>
           <p>If you have any questions, feel free to reply to this email or call us at <strong>606 616 2026</strong>.</p>
           <p style="margin-top:20px">Best regards,<br><strong>${est.salesRep || 'Core Exteriors Team'}</strong><br>Core Exteriors</p>
         </div>

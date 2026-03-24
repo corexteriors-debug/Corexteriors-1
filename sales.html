@@ -1909,13 +1909,18 @@
                         msg.style.display = 'block';
                         localStorage.removeItem('estimate_draft');
                     } else {
-                        // Non-card payment: send contract only (no invoice, no payment link)
-                        msg.className = 'msg success'; msg.textContent = '✅ Estimate saved! Sending contract to ' + email + '...'; msg.style.display = 'block';
+                        // Non-card payment: send contract + estimate PDF to client
+                        msg.className = 'msg success'; msg.textContent = '✅ Estimate saved! Sending contract & estimate to ' + email + '...'; msg.style.display = 'block';
                         const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
                         const conRes = await fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }).catch(() => null);
                         const conData = conRes ? await conRes.json().catch(() => ({})) : {};
-                        if (conData.emailSent) {
-                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract emailed to ' + email;
+                        // Also send estimate PDF
+                        const estRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'estimate' }) }).catch(() => null);
+                        const estData = estRes ? await estRes.json().catch(() => ({})) : {};
+                        if (conData.emailSent && estData.emailSent) {
+                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract & estimate emailed to ' + email;
+                        } else if (conData.emailSent) {
+                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract emailed to ' + email + (estData.error ? ' ⚠️ Estimate PDF failed' : '');
                         } else {
                             msg.textContent = '✅ Estimate #' + estimateNumber + ' saved!' + (conData.error ? ' ⚠️ Email failed: ' + conData.error : '');
                         }
