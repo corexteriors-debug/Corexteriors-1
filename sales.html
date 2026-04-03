@@ -906,6 +906,9 @@
                     <div class="service-check"><input type="checkbox" id="svc_garden"
                             onchange="toggleService('garden')"><label for="svc_garden"><span
                                 class="check-icon"></span>Garden</label></div>
+                    <div class="service-check"><input type="checkbox" id="svc_other"
+                            onchange="toggleService('other')"><label for="svc_other"><span
+                                class="check-icon"></span>Other</label></div>
                 </div>
             </div>
 
@@ -1076,6 +1079,17 @@
                         <div class="field"><label>Edging (linear feet)</label><input type="number" id="garden_edging"
                                 min="0" oninput="calcAll()"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- OTHER SERVICE CARD -->
+            <div class="service-card" id="card_other">
+                <div class="section">
+                    <div class="card-header">
+                        <h3>📝 Other Service</h3><span class="card-price" id="price_other">$0.00</span>
+                    </div>
+                    <div id="otherItemsList"></div>
+                    <button type="button" onclick="addOtherItem()" style="margin-top:.75rem;background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit;font-weight:600">+ Add Item</button>
                 </div>
             </div>
 
@@ -1410,7 +1424,50 @@
             const card = document.getElementById('card_' + svc);
             const checked = document.getElementById('svc_' + svc).checked;
             if (checked) { card.classList.add('active') } else { card.classList.remove('active') }
+            if (svc === 'other' && checked && document.querySelectorAll('.other-item-row').length === 0) {
+                addOtherItem();
+            }
             updateBundle(); calcAll();
+        }
+
+        // OTHER SERVICE HELPERS
+        let otherItemCounter = 0;
+        function addOtherItem() {
+            otherItemCounter++;
+            const id = otherItemCounter;
+            const container = document.getElementById('otherItemsList');
+            const row = document.createElement('div');
+            row.className = 'other-item-row';
+            row.id = 'otherItem_' + id;
+            row.style.cssText = 'display:flex;gap:.5rem;align-items:flex-end;margin-bottom:.5rem';
+            row.innerHTML = `
+                <div style="flex:1">
+                    <label style="font-size:.78rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.25rem">Service Name</label>
+                    <input type="text" class="other-item-name" placeholder="e.g. Fence staining" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit">
+                </div>
+                <div style="width:120px">
+                    <label style="font-size:.78rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.25rem">Price ($)</label>
+                    <input type="number" class="other-item-price" min="0" step="0.01" placeholder="0.00" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit">
+                </div>
+                <button type="button" onclick="removeOtherItem(${id})" style="background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.9rem;margin-bottom:1px" title="Remove">✕</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeOtherItem(id) {
+            const row = document.getElementById('otherItem_' + id);
+            if (row) row.remove();
+            calcAll();
+        }
+
+        function getOtherItems() {
+            const items = [];
+            document.querySelectorAll('.other-item-row').forEach(row => {
+                const name = row.querySelector('.other-item-name')?.value?.trim() || '';
+                const price = parseFloat(row.querySelector('.other-item-price')?.value) || 0;
+                if (name || price > 0) items.push({ name, price });
+            });
+            return items;
         }
 
         function updateBundle() {
@@ -1528,6 +1585,16 @@
                 document.getElementById('price_garden').textContent = '$' + gardenPrice.toFixed(2);
                 subtotal += gardenPrice;
             } else { document.getElementById('price_garden').textContent = '$0.00' }
+
+            // OTHER
+            if (document.getElementById('svc_other').checked) {
+                let otherPrice = 0;
+                document.querySelectorAll('.other-item-price').forEach(el => {
+                    otherPrice += parseFloat(el.value) || 0;
+                });
+                document.getElementById('price_other').textContent = '$' + otherPrice.toFixed(2);
+                subtotal += otherPrice;
+            } else { document.getElementById('price_other').textContent = '$0.00' }
 
             const discount = getDiscount();
             const finalSubtotal = subtotal - discount;
@@ -1974,7 +2041,8 @@
                         weeding: document.getElementById('garden_weeding').value,
                         overgrowth: parseFloat(document.getElementById('garden_overgrowth').value) || null,
                         edging: parseFloat(document.getElementById('garden_edging').value) || null
-                    } : null
+                    } : null,
+                    other: document.getElementById('svc_other').checked ? getOtherItems() : null
                 },
                 survey: {
                     addressType: document.getElementById('addressType').value,
@@ -1999,6 +2067,11 @@
             ['deck', 'gutter', 'interlock', 'window', 'siding', 'garden'].forEach(s => {
                 if (document.getElementById('svc_' + s).checked) services.push(svcNames[s] + ': ' + document.getElementById('price_' + s).textContent);
             });
+            if (document.getElementById('svc_other').checked) {
+                getOtherItems().forEach(item => {
+                    services.push((item.name || 'Other') + ': $' + (item.price || 0).toFixed(2));
+                });
+            }
 
             const discAmt = getDiscount();
             const discount = discAmt > 0 ? `Discount: (-$${discAmt}.00)\n` : '';
