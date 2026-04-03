@@ -65,25 +65,26 @@
         </nav>
     </header>
 
-    <!-- Commercial Hero -->
-    <section class="hero" style="background: linear-gradient(135deg, #111822 0%, #1a2533 100%);">
-        <div class="hero-container" style="justify-content:center; text-align:center;">
-            <div class="hero-content" style="max-width:800px; margin:0 auto; padding-top:4rem; padding-bottom:2rem;">
+    <!-- Commercial Hero Section (Mimicking main hero with form) -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <img src="images/logo-wordmark-new.png" alt="Core Exteriors" class="hero-wordmark">
                 <h1 class="hero-headline">
-                    <span class="headline-line" style="font-size: 3rem; margin-bottom:.5rem;">Premium Commercial</span>
-                    <span class="headline-line accent" style="font-size: 3.5rem;">Exterior Maintenance.</span>
+                    <span class="headline-line">Premium Commercial</span>
+                    <span class="headline-line accent">Exterior Maintenance.</span>
                 </h1>
-                <p class="hero-subheadline" style="max-width:100%; font-size:1.25rem;">
-                    Serving property managers, developers, and building owners across Southern Ontario — Sarnia to Niagara Falls.
+                <p class="hero-subheadline">
+                    Serving property managers, developers, and building owners across Southern Ontario.
                 </p>
-                <div class="hero-features" style="justify-content:center;">
+                <div class="hero-features">
                     <div class="hero-feature">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
                         <span>No Franchise Fees</span>
                     </div>
                     <div class="hero-feature">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                        <span>$10M Insurance</span>
+                        <span>$10M Insurance coverage</span>
                     </div>
                     <div class="hero-feature">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
@@ -91,128 +92,228 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Who We Are Section -->
-    <section class="how-it-works" style="background:#f8fafc; padding:5rem 0;">
-        <div class="hiw-container">
-            <h2 class="hiw-title" style="color:#1e293b;">Who We Are</h2>
-            <div style="max-width:800px; margin:0 auto; text-align:center; color:#475569; font-size:1.1rem; line-height:1.8;">
-                <p style="margin-bottom:1.5rem;">Core Exteriors is an independently owned exterior maintenance company based in London, Ontario. We have grown into a full-service commercial and residential exterior maintenance company serving property managers, developers, and building owners across Southern Ontario.</p>
-                <p style="margin-bottom:1.5rem;"><strong>We operate with no franchise fees and no corporate overhead.</strong> That means competitive pricing without cutting corners on quality or coverage.</p>
-                <p>We operate a fleet of 6+ fully equipped trucks and trailers. With over 10 crew members, and 20+ people working across projects daily, we have the people and equipment to handle your property without delays.</p>
+            <div class="hero-form-wrapper">
+                <div class="quote-form-card">
+                    <div class="form-seal-wrap">
+                        <img src="images/logo-emblem.png" alt="Core Exteriors Seal" class="form-seal">
+                    </div>
+                    <h3 class="form-title">Get a Commercial Bid</h3>
+                    <p class="form-subtitle">Net 30 billing • Itemized clear quotes</p>
+                    <form class="quote-form" id="quoteForm">
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" placeholder="Contact Name / Property Manager" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="company" name="company" placeholder="Company / Property Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="Email Address" required>
+                        </div>
+                        <button type="submit" class="form-submit">Request Commercial Bid</button>
+                    </form>
+                    <p class="form-note">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                        Your info is 100% secure
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Services Grid -->
-    <section class="services" style="padding-top:4rem;">
+    <!-- Trust Bar -->
+    <section class="trust-bar">
+        <div class="trust-container">
+            <div class="trust-item">
+                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>6+ Fleet Trucks</span>
+            </div>
+            <div class="trust-divider"></div>
+            <div class="trust-item">
+                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                <span>10 Million Liability Insurance</span>
+            </div>
+            <div class="trust-divider"></div>
+            <div class="trust-item">
+                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                <span>WSIB Compliant</span>
+            </div>
+            <div class="trust-divider"></div>
+            <div class="trust-item">
+                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25c0 1.38 1.12 2.5 2.5 2.5.53 0 1.01-.16 1.42-.44l-.02.19c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5l-.02-.19c.4.28.89.44 1.42.44 1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.43-2.25.84-.4 1.43-1.25 1.43-2.25 0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l.02-.19C14.5 2.12 13.38 1 12 1S9.5 2.12 9.5 3.5l.02.19c-.4-.28-.89-.44-1.42-.44-1.38 0-2.5 1.12-2.5 2.5 0 1 .59 1.85 1.43 2.25-.84.4-1.43 1.25-1.43 2.25zM12 5.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8s1.12-2.5 2.5-2.5zM3 13c0 4.97 4.03 9 9 9 0-4.97-4.03-9-9-9z"/></svg>
+                <span>Eco-Friendly Products</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who We Are (Using How It Works Layout) -->
+    <section class="how-it-works">
+        <div class="hiw-container">
+            <h2 class="hiw-title">Who We Are</h2>
+            <p class="why-choose-subtitle">We don't cut corners on quality or coverage.</p>
+            <div class="hiw-steps">
+                <div class="hiw-step">
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 22h20L12 2zm0 3.8l7.2 14.2H4.8L12 5.8z"/></svg>
+                    </div>
+                    <h3 class="step-title">No Franchise Fees</h3>
+                    <p class="step-desc">Independently owned. No corporate royalties means our pricing is roughly 20% lower than the large franchises.</p>
+                </div>
+                <div class="hiw-connector"></div>
+                <div class="hiw-step">
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H8C6.9 1 6 1.9 6 3v18c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zM8 3h8v2H8V3zm8 18H8v-2h8v2zm0-4H8V5h8v12z"/></svg>
+                    </div>
+                    <h3 class="step-title">The Equipment</h3>
+                    <p class="step-desc">6+ fully equipped trucks and trailers. 10+ core crew members. 20+ people on jobs daily. We have the mass to handle your property.</p>
+                </div>
+                <div class="hiw-connector"></div>
+                <div class="hiw-step">
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    </div>
+                    <h3 class="step-title">Full Insurance</h3>
+                    <p class="step-desc">COIs provided before the first job. WSIB compliant. Working at Heights. Full commercial auto policies.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
         <div class="services-container">
             <h2 class="services-title">Commercial Services</h2>
-            <p class="services-subtitle">Everything your property needs to stay pristine and safe.</p>
+            <p class="services-subtitle">Everything your property needs to stay pristine and safe</p>
 
-            <div class="services-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                <!-- Cleaning & Windows -->
-                <div class="service-card">
-                    <h3 class="service-title" style="margin-top:0;">💦 Cleaning & Pressure Washing</h3>
-                    <ul style="color:rgba(255,255,255,0.7); font-size:0.95rem; line-height:1.6; padding-left:1.5rem; margin-top:1rem;">
-                        <li>Sidewalks, walkways, driveways & parking lots</li>
-                        <li>Building facades, siding & brick surfaces</li>
-                        <li>Storefronts and loading docks</li>
-                        <li>Parking garages & drive-thru lanes</li>
-                        <li>Dumpster pads & waste areas</li>
-                    </ul>
-                </div>
-
-                <div class="service-card">
-                    <h3 class="service-title" style="margin-top:0;">🪟 Window Cleaning</h3>
-                    <ul style="color:rgba(255,255,255,0.7); font-size:0.95rem; line-height:1.6; padding-left:1.5rem; margin-top:1rem;">
-                        <li>Low-rise & High-rise commercial windows</li>
-                        <li>Working at Heights certified crew</li>
-                        <li>Interior and exterior glass</li>
-                        <li>Storefront and retail glass</li>
-                        <li>Post-construction glass cleaning & detailing</li>
-                    </ul>
-                </div>
-
+            <div class="services-grid">
+                <!-- Cleaning -->
                 <div class="service-card popular">
                     <div class="popular-tag">Specialty</div>
-                    <h3 class="service-title" style="margin-top:0;">✨ Specialty Cleaning</h3>
-                    <ul style="color:rgba(255,255,255,0.7); font-size:0.95rem; line-height:1.6; padding-left:1.5rem; margin-top:1rem;">
-                        <li>Graffiti removal</li>
-                        <li>Oil and grease cleaning (restaurants/kitchens)</li>
-                        <li>Post-construction exterior cleanup</li>
-                        <li>Exterior sanitization & dumpster cleaning</li>
-                        <li>Rust removal & awning/canopy cleaning</li>
-                    </ul>
+                    <div class="service-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="8" y="40" width="16" height="16" />
+                            <rect x="24" y="40" width="16" height="16" />
+                            <rect x="40" y="40" width="16" height="16" />
+                            <rect x="16" y="24" width="16" height="16" />
+                            <rect x="32" y="24" width="16" height="16" />
+                            <rect x="24" y="8" width="16" height="16" />
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Pressure Cleaning & Washing</h3>
+                    <p class="service-description">Facades, sidewalks, driveways, loading docks, and parking garages. Expert graffiti removal and oil/grease sanitation.</p>
                 </div>
 
+                <!-- Windows -->
                 <div class="service-card">
-                    <h3 class="service-title" style="margin-top:0;">🔨 Property Maintenance</h3>
-                    <ul style="color:rgba(255,255,255,0.7); font-size:0.95rem; line-height:1.6; padding-left:1.5rem; margin-top:1rem;">
-                        <li>Exterior painting & caulking</li>
-                        <li>Gutter cleaning & flow testing</li>
-                        <li>Sign cleaning & exterior lighting replacement</li>
-                        <li>Fence repair & deck restoration</li>
-                        <li>Bird and pest deterrent installation</li>
-                    </ul>
+                    <div class="service-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="8" y="8" width="20" height="48" rx="1" />
+                            <rect x="36" y="16" width="20" height="40" rx="1" />
+                            <line x1="14" y1="16" x2="22" y2="16" />
+                            <line x1="14" y1="26" x2="22" y2="26" />
+                            <line x1="42" y1="24" x2="50" y2="24" />
+                            <line x1="42" y1="34" x2="50" y2="34" />
+                        </svg>
+                    </div>
+                    <h3 class="service-title">High & Low Rise Windows</h3>
+                    <p class="service-description">Working at Heights certified exterior glass cleaning. Interior/Exterior retail storefronts and post-construction detailing.</p>
                 </div>
 
+                <!-- Maintenance -->
                 <div class="service-card">
-                    <h3 class="service-title" style="margin-top:0;">🌿 Landscaping & Hardscaping</h3>
-                    <ul style="color:rgba(255,255,255,0.7); font-size:0.95rem; line-height:1.6; padding-left:1.5rem; margin-top:1rem;">
-                        <li>Paver leveling & interlock restoration</li>
-                        <li>Pothole patching & line painting</li>
-                        <li>Lawn care, weed control & mulching</li>
-                        <li>Tree/shrub trimming & garden bed maintenance</li>
-                        <li>Driveway & concrete sealing</li>
-                    </ul>
+                    <div class="service-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 20 L32 8 L56 20" />
+                            <path d="M12 20 L12 24 L52 24 L52 20" />
+                            <rect x="12" y="24" width="40" height="6" />
+                            <path d="M48 30 L48 44 L44 48 L44 56" />
+                            <circle cx="44" cy="40" r="2" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Property Maintenance</h3>
+                    <p class="service-description">Exterior painting, caulking, commercial gutter testing, sign cleaning, and bird/pest deterrent installations.</p>
                 </div>
 
+                <!-- Landscape -->
                 <div class="service-card">
-                    <h3 class="service-title" style="margin-top:0;">❄️ Seasonal Services</h3>
-                    <ul style="color:rgba(255,255,255,0.7); font-size:0.95rem; line-height:1.6; padding-left:1.5rem; margin-top:1rem;">
-                        <li>Snow clearing and plowing</li>
-                        <li>Ice management and salting</li>
-                        <li>Salt damage cleaning</li>
-                        <li>Holiday lighting installation and removal</li>
-                        <li>Spring/Fall property refresh & leaf removal</li>
-                    </ul>
+                    <div class="service-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 56 L60 56 M8 56 L8 20 L56 20 L56 56 M4 20 L32 4 L60 20" />
+                            <rect x="24" y="36" width="16" height="20" />
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Landscaping & Hardscaping</h3>
+                    <p class="service-description">Interlock restoration, pothole patching, line painting, lawn care, mulching, and massive property refreshes.</p>
                 </div>
+            </div>
+            
+            <div class="services-cta">
+                <a href="#quoteForm" class="cta-button-commercial" onclick="document.getElementById('name').focus()">REQUEST A BID</a>
             </div>
         </div>
     </section>
 
-    <!-- Process & Billing -->
-    <section class="why-choose-us" style="background:#0f172a;">
+    <!-- Why Choose Us / Bidding Section -->
+    <section class="why-choose-us" id="why-us">
         <div class="why-choose-container">
-            <h2 class="why-choose-title">How We Work</h2>
-            <p class="why-choose-subtitle">Straightforward process, professional bidding.</p>
+            <h2 class="why-choose-title">The Commercial Bid Process</h2>
+            <p class="why-choose-subtitle">We make your vendor decisions easy.</p>
 
-            <div class="advantages-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="advantages-grid">
+                <!-- On-Call -->
                 <div class="advantage-card">
-                    <h3 class="advantage-title">Flexible Service Models</h3>
-                    <p class="advantage-description" style="margin-bottom:1rem;"><strong>On-Call Service:</strong> Same day or next day availability. You call, we show up. Perfect for one-off jobs, emergencies, or irregular maintenance. No long-term commitment required.</p>
-                    <p class="advantage-description"><strong>Contract Service:</strong> Scheduled recurring maintenance. Weekly, bi-weekly, monthly, or seasonal. One point of contact, consistent crew, predictable pricing.</p>
+                    <div class="advantage-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="32" cy="32" r="24" />
+                            <path d="M20 32 L28 40 L44 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3 class="advantage-title">Flexible Agreements<span class="title-accent">On-Call or Contract</span></h3>
+                    <p class="advantage-description">
+                        We offer <strong>On-Call Service</strong> for same/next-day emergencies with no long-term commitment. Or, choose our <strong>Scheduled Contract Service</strong> for recurring, predictable maintenance with a single point of contact.
+                    </p>
                 </div>
-                <!-- Bidding -->
+
+                <!-- Fully Insured -->
                 <div class="advantage-card">
-                    <h3 class="advantage-title">Transparent Bidding & Billing</h3>
-                    <p class="advantage-description" style="margin-bottom:1rem;">Everything starts with a free on-site walkthrough. You receive a detailed written quote within 48 hours, fully itemized with no hidden fees.</p>
-                    <p class="advantage-description">We understand commercial work runs on a bid system. When you send us a scope, we provide a thorough, professional bid with proof of insurance so we can be the easy choice. Payment terms are Net 30.</p>
+                    <div class="advantage-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M32 4 L8 16 L8 32 C8 48 32 60 32 60 C32 60 56 48 56 32 L56 16 L32 4Z" />
+                            <path d="M22 32 L28 38 L42 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3 class="advantage-title">Transparent Bidding<span class="title-accent">100% Itemized</span></h3>
+                    <p class="advantage-description">
+                        We welcome the standard 3-bid process. Once you provide the scope of work, we respond with a fully itemized written bid within 48 hours, detailing timelines and costs with no hidden fees. Net 30 payment terms available.
+                    </p>
+                </div>
+
+                 <!-- Properties -->
+                 <div class="advantage-card">
+                    <div class="advantage-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 56 L60 56 M8 56 L8 20 L56 20 L56 56 M4 20 L32 4 L60 20" />
+                            <rect x="24" y="36" width="16" height="20" />
+                        </svg>
+                    </div>
+                    <h3 class="advantage-title">Who We Serve<span class="title-accent">Across Ontario</span></h3>
+                    <p class="advantage-description">
+                        We service <strong>High-rises, multi-unit condos, retail plazas, shopping centres, office buildings, restaurants, industrial facilities, and hotels.</strong>
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Commercial Gallery -->
-    <section class="gallery">
+    <!-- Gallery Section -->
+    <section class="gallery" id="gallery">
         <div class="gallery-container">
             <h2 class="gallery-title">Commercial Work Gallery</h2>
-            <p class="gallery-subtitle">A few examples of our specialty treatments and cleanups</p>
+            <p class="gallery-subtitle">See the industrial transformations</p>
 
-            <div class="gallery-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="gallery-grid">
                 <!-- Graffiti -->
                 <div class="gallery-item">
                     <div class="gallery-card">
@@ -281,43 +382,9 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Properties Served & Safety -->
-    <section class="how-it-works" style="background:#f8fafc; padding:4rem 0;">
-        <div class="hiw-container">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4rem; max-width:1000px; margin:0 auto; text-align:left;">
-                
-                <div>
-                    <h2 class="hiw-title" style="color:#1e293b; text-align:left; margin-bottom:2rem;">Properties We Serve</h2>
-                    <ul style="color:#475569; font-size:1.05rem; line-height:2; padding-left:1.5rem;">
-                        <li>High-rise and mid-rise residential buildings</li>
-                        <li>Retail plazas and shopping centres</li>
-                        <li>Multi-unit residential complexes</li>
-                        <li>Office buildings and corporate campuses</li>
-                        <li>Restaurants and food service properties</li>
-                        <li>Industrial and warehouse facilities</li>
-                        <li>Medical and dental offices</li>
-                        <li>Hotels and condominiums</li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h2 class="hiw-title" style="color:#1e293b; text-align:left; margin-bottom:2rem;">Insurance & Compliance</h2>
-                    <p style="color:#475569; font-size:1.05rem; line-height:1.6; margin-bottom:1.5rem;">Insurance and compliance are not something we cut corners on. We send our COI, WSIB clearance, and Working at Heights certificates to you before our crew sets foot on property.</p>
-                    <ul style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem 1.5rem 1.5rem 2.5rem; color:#0f172a; font-size:1.05rem; line-height:2; font-weight:600; box-shadow:0 10px 15px -3px rgba(0,0,0,0.05);">
-                        <li>Commercial General Liability: $10,000,000</li>
-                        <li>WSIB: Fully compliant</li>
-                        <li>Working at Heights: All crew certified</li>
-                        <li>Full Commercial Auto & Equipment coverage</li>
-                        <li>Additional Insured available on request</li>
-                    </ul>
-                </div>
-
-            </div>
-            <div style="text-align:center; margin-top:4rem;">
-                <a href="contact.html" class="cta-button" style="padding:16px 40px; font-size:1.1rem; border-radius:50px;">GET A COMMERCIAL ESTIMATE</a>
+            <div class="gallery-cta">
+                <a href="#quoteForm" onclick="document.getElementById('name').focus()" class="cta-button-large">Request Commercial Quote</a>
             </div>
         </div>
     </section>
