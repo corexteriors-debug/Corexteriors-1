@@ -24,14 +24,27 @@ module.exports = async function handler(req, res) {
 
         // ── Create Stripe Checkout Session for invoices ──────────────
         let checkoutUrl = null;
+        let stripeAmount = null;
+        let isDeposit = false;
         if (docType === 'invoice') {
             const stripeKey = (process.env.STRIPE_SECRET_KEY || '').trim();
             if (stripeKey) {
                 try {
                     const stripe = new Stripe(stripeKey);
                     const totalNum = parseFloat(String(estimate.total || '0').replace(/[$,]/g, '')) || 0;
-                    if (totalNum >= 0.50) {
-                        const amountCents = Math.round(totalNum * 100);
+
+                    // Use deposit amount if admin selected Deposit and specified an amount
+                    const { paymentStatus, paymentAmount } = req.body;
+                    isDeposit = paymentStatus === 'Deposit';
+                    if (isDeposit && paymentAmount && parseFloat(paymentAmount) > 0) {
+                        stripeAmount = parseFloat(paymentAmount);
+                    } else {
+                        stripeAmount = totalNum;
+                    }
+
+                    if (stripeAmount >= 0.50) {
+                        const amountCents = Math.round(stripeAmount * 100);
+                        const productLabel = isDeposit ? 'Deposit — Core Exteriors' : 'Invoice Payment — Core Exteriors';
                         const session = await stripe.checkout.sessions.create({
                             payment_method_types: ['card'],
                             customer_email: estimate.email,
@@ -39,7 +52,7 @@ module.exports = async function handler(req, res) {
                                 price_data: {
                                     currency: 'cad',
                                     product_data: {
-                                        name: 'Invoice Payment — Core Exteriors',
+                                        name: productLabel,
                                         description: estimate.serviceType
                                             ? `Services: ${estimate.serviceType}`
                                             : `Invoice ${estimate.estimateNumber || ''} for ${estimate.clientName}`,
@@ -54,11 +67,11 @@ module.exports = async function handler(req, res) {
                             metadata: {
                                 leadId: leadId || '',
                                 clientName: estimate.clientName || '',
-                                paymentType: 'full',
+                                paymentType: isDeposit ? 'deposit' : 'full',
                             },
                         });
                         checkoutUrl = session.url;
-                        console.log('Stripe session created for invoice:', session.id);
+                        console.log('Stripe session created for invoice:', session.id, isDeposit ? '(deposit)' : '(full)');
                     }
                 } catch (stripeErr) {
                     console.error('Stripe session error (non-fatal):', stripeErr.message);
@@ -73,7 +86,7 @@ module.exports = async function handler(req, res) {
         const pdfBytes = await generateInvoicePDF(estimate, docType, checkoutUrl);
 
         // Send email
-        const emailSent = await sendInvoiceEmail(estimate, pdfBytes, docType, checkoutUrl);
+        const emailSent = await sendInvoiceEmail(estimate, pdfBytes, docType, checkoutUrl, isDeposit, stripeAmount);
 
         return res.status(200).json({ success: true, emailSent });
     } catch (error) {
@@ -234,7 +247,7 @@ function wrapText(text, maxChars) {
     return lines;
 }
 
-async function sendInvoiceEmail(est, pdfBytes, docType, checkoutUrl) {
+async function sendInvoiceEmail(est, pdfBytes, docType, checkoutUrl, isDeposit, stripeAmount) {
     const isInvoice = docType === 'invoice';
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
@@ -252,13 +265,15 @@ async function sendInvoiceEmail(est, pdfBytes, docType, checkoutUrl) {
     const filePrefix = isInvoice ? 'CoreExteriors_Invoice_' : 'CoreExteriors_Estimate_';
     const fileName = filePrefix + (est.estimateNumber || 'Unknown').replace(/ /g, '_') + '.pdf';
     const totalDisplay = est.total || '$0.00';
+    const payAmountDisplay = stripeAmount ? '$' + stripeAmount.toFixed(2) : totalDisplay;
+    const payLabel = isDeposit ? 'Pay Deposit' : 'Pay Now';
 
     // Build payment button HTML (only for invoices with a checkout URL)
     const paymentButtonHtml = (isInvoice && checkoutUrl) ? `
           <div style="text-align:center;margin:28px 0">
             <a href="${checkoutUrl}"
                style="display:inline-block;background:#F5B800;color:#1A1A1A;font-size:17px;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;letter-spacing:.3px">
-              &#128179; Pay Now — ${totalDisplay} CAD
+              &#128179; ${payLabel} — ${payAmountDisplay} CAD
             </a>
           </div>
           <div style="background:#fff8e8;border:1px solid #F5B800;border-radius:8px;padding:14px;font-size:13px;color:#7a5500;margin:16px 0">
