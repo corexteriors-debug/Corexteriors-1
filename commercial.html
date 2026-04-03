@@ -92,7 +92,7 @@
                     </div>
                 </div>
             </div>
-            <div class="hero-form-wrapper">
+            <div class="hero-form-wrapper" id="quoteFormContainer">
                 <div class="quote-form-card">
                     <div class="form-seal-wrap">
                         <img src="images/logo-emblem.png" alt="Core Exteriors Seal" class="form-seal">
@@ -202,7 +202,24 @@
                         </svg>
                     </div>
                     <h3 class="service-title">Pressure Cleaning & Washing</h3>
-                    <p class="service-description">Facades, sidewalks, driveways, loading docks, and parking garages. Expert graffiti removal and oil/grease sanitation.</p>
+                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
+                        <li>Sidewalks and walkways</li>
+                        <li>Building facades and exteriors</li>
+                        <li>Driveways and parking lots</li>
+                        <li>Storefronts and entrance areas</li>
+                        <li>Loading docks and ramps</li>
+                        <li>Siding cleaning</li>
+                        <li>Parking garages</li>
+                        <li>Concrete and brick surfaces</li>
+                        <li>Dumpster pads and waste areas</li>
+                        <li>Drive-thru lanes</li>
+                        <li>Graffiti removal</li>
+                        <li>Oil and grease cleaning (restaurants/commercial kitchens)</li>
+                        <li>Post-construction exterior cleanup</li>
+                        <li>Exterior sanitization and disinfection</li>
+                        <li>Rust removal and surface treatment</li>
+                        <li>Awning and canopy cleaning</li>
+                    </ul>
                 </div>
 
                 <!-- Windows -->
@@ -218,7 +235,14 @@
                         </svg>
                     </div>
                     <h3 class="service-title">High & Low Rise Windows</h3>
-                    <p class="service-description">Working at Heights certified exterior glass cleaning. Interior/Exterior retail storefronts and post-construction detailing.</p>
+                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
+                        <li>Low-rise commercial windows</li>
+                        <li>High-rise window cleaning (Working at Heights certified)</li>
+                        <li>Interior and exterior glass</li>
+                        <li>Storefront and retail glass</li>
+                        <li>Post-construction glass cleaning</li>
+                        <li>Frame and sill detailing</li>
+                    </ul>
                 </div>
 
                 <!-- Maintenance -->
@@ -233,7 +257,19 @@
                         </svg>
                     </div>
                     <h3 class="service-title">Property Maintenance</h3>
-                    <p class="service-description">Exterior painting, caulking, commercial gutter testing, sign cleaning, and bird/pest deterrent installations.</p>
+                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
+                        <li>Exterior painting (commercial and residential)</li>
+                        <li>Caulking and weather sealing</li>
+                        <li>Fence and railing maintenance</li>
+                        <li>Deck restoration (power washing, sanding, staining)</li>
+                        <li>Gutter cleaning and flow testing</li>
+                        <li>Catch basin and drain cleaning</li>
+                        <li>Roof inspections and minor repairs</li>
+                        <li>Sign cleaning and maintenance</li>
+                        <li>Exterior lighting and bulb replacement</li>
+                        <li>Bird and pest deterrent installation</li>
+                        <li>Balcony cleaning for multi-unit residential</li>
+                    </ul>
                 </div>
 
                 <!-- Landscape -->
@@ -245,12 +281,75 @@
                         </svg>
                     </div>
                     <h3 class="service-title">Landscaping & Hardscaping</h3>
-                    <p class="service-description">Interlock restoration, pothole patching, line painting, lawn care, mulching, and massive property refreshes.</p>
+                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
+                        <li>Lawn care and grass cutting</li>
+                        <li>Tree and shrub trimming</li>
+                        <li>Weed control and mulching</li>
+                        <li>Paver leveling and resetting</li>
+                        <li>Pothole patching and asphalt repair</li>
+                        <li>Parking lot sweeping and line painting</li>
+                        <li>Driveway and concrete sealing</li>
+                        <li>Curb repair and painting</li>
+                    </ul>
+                </div>
+                
+                <!-- Seasonal -->
+                <div class="service-card">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="32" cy="32" r="24" stroke-dasharray="4 4" />
+                            <path d="M32 16 L32 48 M16 32 L48 32 M21 21 L43 43 M21 43 L43 21" />
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Seasonal Services</h3>
+                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
+                        <li>Snow clearing and plowing</li>
+                        <li>Ice management and salting</li>
+                        <li>Salt damage cleaning</li>
+                        <li>Holiday lighting installation and removal</li>
+                        <li>Spring exterior property refresh</li>
+                        <li>Leaf removal and fall cleanup</li>
+                        <li>Winter property inspections</li>
+                    </ul>
                 </div>
             </div>
             
             <div class="services-cta">
-                <a href="#quoteForm" class="cta-button-commercial" onclick="document.getElementById('name').focus()">REQUEST A BID</a>
+                <a href="#quoteFormContainer" onclick="document.getElementById('name').focus()" class="cta-button-commercial">REQUEST A BID</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Process Section -->
+    <section class="how-it-works" style="background:#f8fafc;">
+        <div class="hiw-container">
+            <h2 class="hiw-title">Our Process</h2>
+            <p class="why-choose-subtitle">From first conversation to final follow-up.</p>
+            <div class="hiw-steps" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left;">
+                <div class="advantage-card" style="margin:0; padding:1.5rem;">
+                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">01. Contact</h3>
+                    <p class="advantage-description">You reach out or we connect. We learn about your property and what you need.</p>
+                </div>
+                <div class="advantage-card" style="margin:0; padding:1.5rem;">
+                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">02. Walkthrough</h3>
+                    <p class="advantage-description">We visit your property in person, assess the scope, identify problem areas, and take notes.</p>
+                </div>
+                <div class="advantage-card" style="margin:0; padding:1.5rem;">
+                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">03. Custom Quote</h3>
+                    <p class="advantage-description">You receive a detailed written quote within 48 hours. Itemized, transparent, no hidden fees.</p>
+                </div>
+                <div class="advantage-card" style="margin:0; padding:1.5rem;">
+                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">04. Scheduling</h3>
+                    <p class="advantage-description">Once approved, we lock in a schedule that works for your tenants. One point of contact.</p>
+                </div>
+                <div class="advantage-card" style="margin:0; padding:1.5rem;">
+                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">05. Execution</h3>
+                    <p class="advantage-description">Our crew shows up on time, completes the work to our standard, and does not leave until it is done right.</p>
+                </div>
+                <div class="advantage-card" style="margin:0; padding:1.5rem;">
+                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">06. Documentation</h3>
+                    <p class="advantage-description">You receive a completion report with before-and-after photos and an itemized invoice. We follow up within 48 hours.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -258,7 +357,7 @@
     <!-- Why Choose Us / Bidding Section -->
     <section class="why-choose-us" id="why-us">
         <div class="why-choose-container">
-            <h2 class="why-choose-title">The Commercial Bid Process</h2>
+            <h2 class="why-choose-title">Why Property Managers Choose Core Exteriors</h2>
             <p class="why-choose-subtitle">We make your vendor decisions easy.</p>
 
             <div class="advantages-grid">
@@ -270,9 +369,9 @@
                             <path d="M20 32 L28 40 L44 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </div>
-                    <h3 class="advantage-title">Flexible Agreements<span class="title-accent">On-Call or Contract</span></h3>
+                    <h3 class="advantage-title">Quality & Pricing<span class="title-accent">No Franchise Fees</span></h3>
                     <p class="advantage-description">
-                        We offer <strong>On-Call Service</strong> for same/next-day emergencies with no long-term commitment. Or, choose our <strong>Scheduled Contract Service</strong> for recurring, predictable maintenance with a single point of contact.
+                        We are independently owned with no franchise fees, meaning our pricing comes in around 20% lower than big names. You get <strong>one company and one point of contact</strong> for every exterior service. Our Job Complete guarantee means we do not leave a site until the work meets our standard.
                     </p>
                 </div>
 
@@ -286,7 +385,7 @@
                     </div>
                     <h3 class="advantage-title">Transparent Bidding<span class="title-accent">100% Itemized</span></h3>
                     <p class="advantage-description">
-                        We welcome the standard 3-bid process. Once you provide the scope of work, we respond with a fully itemized written bid within 48 hours, detailing timelines and costs with no hidden fees. Net 30 payment terms available.
+                        We welcome the standard 3-bid process. Once you provide the scope of work, we respond with a fully itemized written bid within 48 hours, detailing timelines and costs with no hidden fees. Every job includes before-and-after documentation.
                     </p>
                 </div>
 
@@ -298,9 +397,9 @@
                             <rect x="24" y="36" width="16" height="20" />
                         </svg>
                     </div>
-                    <h3 class="advantage-title">Who We Serve<span class="title-accent">Across Ontario</span></h3>
+                    <h3 class="advantage-title">Flexible Agreements<span class="title-accent">On-Call or Contract</span></h3>
                     <p class="advantage-description">
-                        We service <strong>High-rises, multi-unit condos, retail plazas, shopping centres, office buildings, restaurants, industrial facilities, and hotels.</strong>
+                        We offer <strong>On-Call Service</strong> for same/next-day emergencies with no long-term commitment. Or, choose our <strong>Scheduled Contract Service</strong> for recurring, predictable maintenance with a single point of contact.
                     </p>
                 </div>
             </div>
@@ -384,7 +483,7 @@
             </div>
 
             <div class="gallery-cta">
-                <a href="#quoteForm" onclick="document.getElementById('name').focus()" class="cta-button-large">Request Commercial Quote</a>
+                <a href="#quoteFormContainer" onclick="document.getElementById('name').focus()" class="cta-button-large">Request Commercial Quote</a>
             </div>
         </div>
     </section>
