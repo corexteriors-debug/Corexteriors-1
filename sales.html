@@ -1043,21 +1043,10 @@
                                         value="1" onchange="calcAll()" checked><label for="siding_1">1 Story
                                         ($250)</label></div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_2"
-                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($350)</label>
+                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($300)</label>
                                 </div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_3"
-                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($450)</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Condition</label>
-                            <div class="radio-group">
-                                <div class="radio-pill"><input type="radio" name="siding_cond" id="siding_good"
-                                        value="good" onchange="calcAll()" checked><label for="siding_good">Good
-                                        (+$150)</label></div>
-                                <div class="radio-pill"><input type="radio" name="siding_cond" id="siding_poor"
-                                        value="poor" onchange="calcAll()"><label for="siding_poor">Poor (+$250)</label>
+                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($375)</label>
                                 </div>
                             </div>
                         </div>
@@ -1519,10 +1508,7 @@
             // SIDING
             if (document.getElementById('svc_siding').checked) {
                 const stories = document.querySelector('input[name="siding_stories"]:checked').value;
-                const base = { 1: 250, 2: 350, 3: 450 }[stories] || 250;
-                const cond = document.querySelector('input[name="siding_cond"]:checked').value;
-                const condAdd = cond === 'poor' ? 250 : 150;
-                let sidPrice = base + condAdd;
+                let sidPrice = { 1: 250, 2: 300, 3: 375 }[stories] || 250;
                 document.getElementById('price_siding').textContent = '$' + sidPrice.toFixed(2);
                 subtotal += sidPrice;
             } else { document.getElementById('price_siding').textContent = '$0.00' }
@@ -1981,8 +1967,7 @@
                         type: document.querySelector('input[name="window_type"]:checked')?.value
                     } : null,
                     siding: document.getElementById('svc_siding').checked ? {
-                        stories: document.querySelector('input[name="siding_stories"]:checked')?.value,
-                        condition: document.querySelector('input[name="siding_cond"]:checked')?.value
+                        stories: document.querySelector('input[name="siding_stories"]:checked')?.value
                     } : null,
                     garden: document.getElementById('svc_garden').checked ? {
                         mulch: parseFloat(document.getElementById('garden_mulch').value) || null,
