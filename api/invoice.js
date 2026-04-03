@@ -1,5 +1,6 @@
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const nodemailer = require('nodemailer');
+const Stripe = require('stripe');
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,17 +16,64 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { estimate, documentType } = req.body;
+        const { estimate, documentType, leadId } = req.body;
         const docType = documentType === 'invoice' ? 'invoice' : 'estimate';
         if (!estimate || !estimate.clientName || !estimate.email) {
             return res.status(400).json({ error: 'Client data with email is required' });
         }
 
+        // ── Create Stripe Checkout Session for invoices ──────────────
+        let checkoutUrl = null;
+        if (docType === 'invoice') {
+            const stripeKey = (process.env.STRIPE_SECRET_KEY || '').trim();
+            if (stripeKey) {
+                try {
+                    const stripe = new Stripe(stripeKey);
+                    const totalNum = parseFloat(String(estimate.total || '0').replace(/[$,]/g, '')) || 0;
+                    if (totalNum >= 0.50) {
+                        const amountCents = Math.round(totalNum * 100);
+                        const session = await stripe.checkout.sessions.create({
+                            payment_method_types: ['card'],
+                            customer_email: estimate.email,
+                            line_items: [{
+                                price_data: {
+                                    currency: 'cad',
+                                    product_data: {
+                                        name: 'Invoice Payment — Core Exteriors',
+                                        description: estimate.serviceType
+                                            ? `Services: ${estimate.serviceType}`
+                                            : `Invoice ${estimate.estimateNumber || ''} for ${estimate.clientName}`,
+                                    },
+                                    unit_amount: amountCents,
+                                },
+                                quantity: 1,
+                            }],
+                            mode: 'payment',
+                            success_url: 'https://corexteriors.ca/?payment=success',
+                            cancel_url: 'https://corexteriors.ca/?payment=cancelled',
+                            metadata: {
+                                leadId: leadId || '',
+                                clientName: estimate.clientName || '',
+                                paymentType: 'full',
+                            },
+                        });
+                        checkoutUrl = session.url;
+                        console.log('Stripe session created for invoice:', session.id);
+                    }
+                } catch (stripeErr) {
+                    console.error('Stripe session error (non-fatal):', stripeErr.message);
+                    // Continue without payment link — email will still be sent
+                }
+            } else {
+                console.warn('STRIPE_SECRET_KEY not set — invoice sent without payment link');
+            }
+        }
+
         // Generate PDF
-        const pdfBytes = await generateInvoicePDF(estimate, docType);
+        const pdfBytes = await generateInvoicePDF(estimate, docType, checkoutUrl);
 
         // Send email
-        const emailSent = await sendInvoiceEmail(estimate, pdfBytes, docType);
+        const emailSent = await sendInvoiceEmail(estimate, pdfBytes, docType, checkoutUrl);
 
         return res.status(200).json({ success: true, emailSent });
     } catch (error) {
@@ -34,7 +82,7 @@ module.exports = async function handler(req, res) {
     }
 };
 
-async function generateInvoicePDF(est, docType) {
+async function generateInvoicePDF(est, docType, checkoutUrl) {
     const isInvoice = docType === 'invoice';
     const doc = await PDFDocument.create();
     const page = doc.addPage([612, 792]); // Letter size
@@ -121,6 +169,14 @@ async function generateInvoicePDF(est, docType) {
     page.drawText(est.total || '$0.00', { x: width - 130, y, size: 14, font: fontBold, color: green });
     y -= 40;
 
+    // Payment link notice on PDF
+    if (checkoutUrl && isInvoice) {
+        page.drawRectangle({ x: 45, y: y - 25, width: width - 90, height: 30, color: rgb(0.96, 0.93, 0.84), borderColor: rgb(0.95, 0.72, 0), borderWidth: 1 });
+        page.drawText('PAY ONLINE:', { x: 55, y: y - 10, size: 9, font: fontBold, color: rgb(0.48, 0.33, 0) });
+        page.drawText('Check your email for a secure payment link, or visit corexteriors.ca', { x: 145, y: y - 10, size: 9, font, color: rgb(0.48, 0.33, 0) });
+        y -= 45;
+    }
+
     // Notes
     if (est.notes) {
         page.drawText('NOTES', { x: 55, y, size: 9, font: fontBold, color: blue });
@@ -178,7 +234,7 @@ function wrapText(text, maxChars) {
     return lines;
 }
 
-async function sendInvoiceEmail(est, pdfBytes, docType) {
+async function sendInvoiceEmail(est, pdfBytes, docType, checkoutUrl) {
     const isInvoice = docType === 'invoice';
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
@@ -195,6 +251,26 @@ async function sendInvoiceEmail(est, pdfBytes, docType) {
 
     const filePrefix = isInvoice ? 'CoreExteriors_Invoice_' : 'CoreExteriors_Estimate_';
     const fileName = filePrefix + (est.estimateNumber || 'Unknown').replace(/ /g, '_') + '.pdf';
+    const totalDisplay = est.total || '$0.00';
+
+    // Build payment button HTML (only for invoices with a checkout URL)
+    const paymentButtonHtml = (isInvoice && checkoutUrl) ? `
+          <div style="text-align:center;margin:28px 0">
+            <a href="${checkoutUrl}"
+               style="display:inline-block;background:#F5B800;color:#1A1A1A;font-size:17px;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;letter-spacing:.3px">
+              &#128179; Pay Now — ${totalDisplay} CAD
+            </a>
+          </div>
+          <div style="background:#fff8e8;border:1px solid #F5B800;border-radius:8px;padding:14px;font-size:13px;color:#7a5500;margin:16px 0">
+            <strong>Secure Payment:</strong> Click the button above to pay securely via Stripe. Your card details are never shared with us.
+          </div>
+    ` : '';
+
+    const paymentNote = (isInvoice && checkoutUrl)
+        ? 'You can pay securely online using the button above, or contact us to arrange an alternative payment method.'
+        : (isInvoice
+            ? 'Payment is due upon receipt unless otherwise agreed. Please contact us if you have any questions about this invoice.'
+            : 'This estimate is valid for 30 days. A 25% deposit is required to confirm your booking.');
 
     const mailOptions = {
         from: '"Core Exteriors" <' + gmailUser + '>',
@@ -221,13 +297,11 @@ async function sendInvoiceEmail(est, pdfBytes, docType) {
             </tr>
             <tr>
               <td style="padding:10px 15px;border-bottom:1px solid #e9ecef">${isInvoice ? 'Total Due' : 'Total Estimate'}</td>
-              <td style="padding:10px 15px;text-align:right;font-weight:bold;color:#27ae60;font-size:18px;border-bottom:1px solid #e9ecef">${est.total || '$0.00'}</td>
+              <td style="padding:10px 15px;text-align:right;font-weight:bold;color:#27ae60;font-size:18px;border-bottom:1px solid #e9ecef">${totalDisplay}</td>
             </tr>
           </table>
-          <p style="color:#666;font-size:13px">${isInvoice
-              ? 'Payment is due upon receipt unless otherwise agreed. Please contact us if you have any questions about this invoice.'
-              : 'This estimate is valid for 30 days. A 25% deposit is required to confirm your booking.'
-          }</p>
+          ${paymentButtonHtml}
+          <p style="color:#666;font-size:13px">${paymentNote}</p>
           <p>If you have any questions, feel free to reply to this email or call us at <strong>606 616 2026</strong>.</p>
           <p style="margin-top:20px">Best regards,<br><strong>${est.salesRep || 'Core Exteriors Team'}</strong><br>Core Exteriors</p>
         </div>

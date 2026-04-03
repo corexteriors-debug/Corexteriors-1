@@ -2006,7 +2006,7 @@
                         const er = await fetch(`${API_BASE}/invoice`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                            body: JSON.stringify({ estimate, documentType: 'invoice' })
+                            body: JSON.stringify({ estimate, documentType: 'invoice', leadId: d.lead.id })
                         });
                         const ed = await er.json();
                         if (ed.emailSent) {
