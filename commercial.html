@@ -54,13 +54,13 @@
 
                 <ul class="nav-links" id="navLinks">
                     <li><a href="index.html#services">Services</a></li>
-                    <li><a href="commercial.html" class="active">Commercial</a></li>
-                    <li><a href="gallery.html">Gallery</a></li>
+                    <li><a href="commercial.html">Commercial</a></li>
+                    <li><a href="index.html#gallery">Gallery</a></li>
                     <li><a href="index.html#testimonials">Testimonials</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#contact">Contact</a></li>
                 </ul>
 
-                <a href="contact.html" class="cta-button">GET A FREE ESTIMATE</a>
+                <a href="#quoteFormContainer" class="cta-button" onclick="document.getElementById('name').focus()">GET A FREE ESTIMATE</a>
             </div>
         </nav>
     </header>
@@ -488,26 +488,74 @@
         </div>
     </section>
 
+    <!-- Sticky Mobile CTA -->
+    <div class="sticky-cta" id="stickyCta">
+        <a href="tel:519-712-1431" class="sticky-call">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+            </svg>
+            <span>Call Now</span>
+        </a>
+        <a href="#quoteFormContainer" class="sticky-quote">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+            </svg>
+            <span>Free Quote</span>
+        </a>
+    </div>
+
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" id="contact">
         <div class="footer-container">
             <div class="footer-main">
                 <div class="footer-brand">
-                    <img src="images/logo-letterform.png" alt="Core Exteriors" class="footer-logo">
-                    <p class="footer-desc">Premium exterior maintenance for residential and commercial properties in Southern Ontario.</p>
+                    <img src="images/logo-mark.png" alt="Core Exteriors" class="footer-logo">
+                    <p class="footer-tagline">Premium Exterior Maintenance.<br>London's Trusted Exterior Pros.</p>
                 </div>
-                
+
                 <div class="footer-contact">
-                    <h4 class="footer-heading">Contact Information</h4>
-                    <p class="contact-info"><strong>Phone:</strong> 519-712-1431</p>
-                    <p class="contact-info"><strong>Emergency:</strong> 647-764-7799</p>
-                    <p class="contact-info"><strong>Email:</strong> corexteriors@gmail.com</p>
-                    <p class="contact-info"><strong>Address:</strong><br>203 Cambridge St<br>London, ON N6H 1N6</p>
+                    <h3 class="footer-heading">Contact Us</h3>
+                    <div class="contact-item">
+                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                        </svg>
+                        <span>203 Cambridge St, London, ON, N6H 1N6</span>
+                    </div>
+                    <div class="contact-item">
+                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                        </svg>
+                        <a href="tel:519-712-1431">519-712-1431</a>
+                    </div>
+                </div>
+
+                <div class="footer-areas">
+                    <h3 class="footer-heading">Service Areas</h3>
+                    <ul class="areas-list">
+                        <li>London</li>
+                        <li>St. Thomas</li>
+                        <li>Strathroy</li>
+                        <li>Dorchester</li>
+                    </ul>
+                </div>
+
+                <div class="footer-cta">
+                    <h3 class="footer-heading">Ready to Get Started?</h3>
+                    <a href="tel:519-712-1431" class="footer-cta-button">Get Your Free Quote</a>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
-                <p>&copy; 2026 Core Exteriors. All rights reserved.</p>
+                <p><a href="sales.html" style="color:inherit;text-decoration:none">&copy;</a> 2023-2026 Core Exteriors.
+                    All rights reserved.</p>
+                <p class="footer-legal-links">
+                    <a href="privacy-policy.html">Privacy Policy</a> |
+                    <a href="terms-of-service.html">Terms of Service</a>
+                </p>
             </div>
         </div>
     </footer>
