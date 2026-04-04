@@ -1,5 +1,6 @@
-const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+const { kv } = require('@vercel/kv');
 const nodemailer = require('nodemailer');
+const { generateEstimatePDF } = require('./_estimatePdf');
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,18 +15,18 @@ module.exports = async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    const token = authHeader.split(' ')[1];
+    const tokenData = await kv.get(`token:${token}`);
+    if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
+
     try {
-        const { estimate, documentType } = req.body;
-        const docType = documentType === 'invoice' ? 'invoice' : 'estimate';
+        const { estimate } = req.body;
         if (!estimate || !estimate.clientName || !estimate.email) {
-            return res.status(400).json({ error: 'Client data with email is required' });
+            return res.status(400).json({ error: 'Estimate data with client email is required' });
         }
 
-        // Generate PDF
-        const pdfBytes = await generateInvoicePDF(estimate, docType);
-
-        // Send email
-        const emailSent = await sendInvoiceEmail(estimate, pdfBytes, docType);
+        const pdfBytes = await generateEstimatePDF(estimate, { docType: 'INVOICE' });
+        const emailSent = await sendInvoiceEmail(estimate, pdfBytes);
 
         return res.status(200).json({ success: true, emailSent });
     } catch (error) {
@@ -34,215 +35,60 @@ module.exports = async function handler(req, res) {
     }
 };
 
-async function generateInvoicePDF(est, docType) {
-    const isInvoice = docType === 'invoice';
-    const doc = await PDFDocument.create();
-    const page = doc.addPage([612, 792]); // Letter size
-    const font = await doc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
-    const { width, height } = page.getSize();
-
-    const blue = rgb(0.2, 0.4, 0.7);
-    const darkBlue = rgb(0.04, 0.09, 0.16);
-    const green = rgb(0.18, 0.68, 0.34);
-    const gray = rgb(0.4, 0.4, 0.4);
-    const lightGray = rgb(0.85, 0.85, 0.85);
-    const black = rgb(0, 0, 0);
-    const white = rgb(1, 1, 1);
-
-    let y = height - 50;
-
-    // Header bar
-    page.drawRectangle({ x: 0, y: height - 80, width, height: 80, color: darkBlue });
-    page.drawText('CORE EXTERIORS', { x: 50, y: height - 45, size: 22, font: fontBold, color: white });
-    page.drawText('Professional Exterior Services', { x: 50, y: height - 65, size: 10, font, color: rgb(0.6, 0.7, 0.8) });
-    page.drawText(isInvoice ? 'INVOICE' : 'ESTIMATE', { x: width - 150, y: height - 45, size: 20, font: fontBold, color: white });
-    page.drawText(est.estimateNumber || '', { x: width - 150, y: height - 62, size: 9, font, color: rgb(0.6, 0.7, 0.8) });
-
-    y = height - 110;
-
-    // Date & Rep
-    page.drawText('Date: ' + new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' }), { x: 50, y, size: 9, font, color: gray });
-    page.drawText('Sales Rep: ' + (est.salesRep || ''), { x: 350, y, size: 9, font, color: gray });
-    y -= 30;
-
-    // Client info box
-    page.drawRectangle({ x: 45, y: y - 55, width: width - 90, height: 60, color: rgb(0.96, 0.96, 0.98), borderColor: lightGray, borderWidth: 1 });
-    page.drawText('PREPARED FOR', { x: 55, y: y - 5, size: 8, font: fontBold, color: blue });
-    page.drawText(est.clientName || '', { x: 55, y: y - 20, size: 11, font: fontBold, color: black });
-    const clientDetails = [est.address, est.phone, est.email].filter(Boolean).join('  |  ');
-    page.drawText(clientDetails, { x: 55, y: y - 35, size: 9, font, color: gray });
-    y -= 85;
-
-    // Services table header
-    page.drawRectangle({ x: 45, y: y - 15, width: width - 90, height: 20, color: darkBlue });
-    page.drawText('SERVICE', { x: 55, y: y - 10, size: 9, font: fontBold, color: white });
-    page.drawText('AMOUNT', { x: width - 130, y: y - 10, size: 9, font: fontBold, color: white });
-    y -= 30;
-
-    // Service rows
-    const services = est.services || [];
-    services.forEach((svc, i) => {
-        const bgColor = i % 2 === 0 ? rgb(0.98, 0.98, 1) : white;
-        page.drawRectangle({ x: 45, y: y - 12, width: width - 90, height: 22, color: bgColor });
-        page.drawText(svc.name || '', { x: 55, y: y - 7, size: 10, font, color: black });
-        page.drawText(svc.price || '', { x: width - 130, y: y - 7, size: 10, font, color: black });
-        y -= 22;
-    });
-
-    y -= 15;
-
-    // Divider
-    page.drawLine({ start: { x: 350, y }, end: { x: width - 45, y }, thickness: 1, color: lightGray });
-    y -= 20;
-
-    // Bundle discount
-    if (est.bundleDiscount && est.bundleDiscount > 0) {
-        page.drawText('Bundle Discount:', { x: 350, y, size: 10, font, color: gray });
-        page.drawText('($' + est.bundleDiscount.toFixed(2) + ')', { x: width - 130, y, size: 10, font, color: rgb(0.9, 0.5, 0.1) });
-        y -= 18;
-    }
-
-    // Subtotal
-    page.drawText('Subtotal:', { x: 350, y, size: 10, font, color: gray });
-    page.drawText(est.subtotal || '$0.00', { x: width - 130, y, size: 10, font, color: black });
-    y -= 18;
-
-    // HST
-    page.drawText('HST (13%):', { x: 350, y, size: 10, font, color: gray });
-    page.drawText(est.hst || '$0.00', { x: width - 130, y, size: 10, font, color: black });
-    y -= 5;
-
-    page.drawLine({ start: { x: 350, y }, end: { x: width - 45, y }, thickness: 1, color: blue });
-    y -= 20;
-
-    // Total
-    page.drawText(isInvoice ? 'TOTAL DUE:' : 'TOTAL ESTIMATE:', { x: 350, y, size: 12, font: fontBold, color: darkBlue });
-    page.drawText(est.total || '$0.00', { x: width - 130, y, size: 14, font: fontBold, color: green });
-    y -= 40;
-
-    // Notes
-    if (est.notes) {
-        page.drawText('NOTES', { x: 55, y, size: 9, font: fontBold, color: blue });
-        y -= 15;
-        const noteLines = wrapText(est.notes, 80);
-        noteLines.forEach(line => {
-            page.drawText(line, { x: 55, y, size: 9, font, color: gray });
-            y -= 14;
-        });
-        y -= 10;
-    }
-
-    // Terms
-    y = Math.min(y, 150);
-    page.drawLine({ start: { x: 45, y }, end: { x: width - 45, y }, thickness: 1, color: lightGray });
-    y -= 18;
-    page.drawText('TERMS & CONDITIONS', { x: 55, y, size: 8, font: fontBold, color: blue });
-    y -= 14;
-    const terms = isInvoice ? [
-        'Payment is due upon receipt unless otherwise agreed.',
-        'A 25% deposit is required to confirm the booking.',
-        '10 day cooling off period applies as per Ontario consumer protection.',
-        'Core Exteriors is fully insured and WSIB covered.',
-    ] : [
-        'This estimate is valid for 30 days from the date of issue.',
-        'A 25% deposit is required to confirm the booking.',
-        '10 day cooling off period applies as per Ontario consumer protection.',
-        'Core Exteriors is fully insured and WSIB covered.',
-    ];
-    terms.forEach(t => {
-        page.drawText('• ' + t, { x: 55, y, size: 7.5, font, color: gray });
-        y -= 12;
-    });
-
-    // Footer
-    page.drawRectangle({ x: 0, y: 0, width, height: 35, color: darkBlue });
-    page.drawText('Core Exteriors  |  203 Cambridge St, London, ON, N6H 1N6  |  606 616 2026  |  corexteriors.ca', { x: 80, y: 14, size: 8, font, color: rgb(0.6, 0.7, 0.8) });
-
-    return await doc.save();
-}
-
-function wrapText(text, maxChars) {
-    const words = text.split(' ');
-    const lines = [];
-    let current = '';
-    words.forEach(w => {
-        if ((current + ' ' + w).length > maxChars) {
-            lines.push(current.trim());
-            current = w;
-        } else {
-            current += ' ' + w;
-        }
-    });
-    if (current.trim()) lines.push(current.trim());
-    return lines;
-}
-
-async function sendInvoiceEmail(est, pdfBytes, docType) {
-    const isInvoice = docType === 'invoice';
-    const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
-    const gmailPass = process.env.GMAIL_APP_PASSWORD;
-
-    if (!gmailPass) {
-        console.error('GMAIL_APP_PASSWORD not set');
-        return false;
-    }
+async function sendInvoiceEmail(est, pdfBytes) {
+    const gmailUser  = process.env.GMAIL_USER || 'corexteriors@gmail.com';
+    const gmailPass  = process.env.GMAIL_APP_PASSWORD;
+    if (!gmailPass) return false;
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
-        auth: { user: gmailUser, pass: gmailPass }
+        auth: { user: gmailUser, pass: gmailPass },
     });
 
-    const filePrefix = isInvoice ? 'CoreExteriors_Invoice_' : 'CoreExteriors_Estimate_';
-    const fileName = filePrefix + (est.estimateNumber || 'Unknown').replace(/ /g, '_') + '.pdf';
+    const invoiceRef = est.invoiceNumber || est.estimateNumber || 'N/A';
+    const repName    = est.salesRep || 'Core Exteriors Team';
+    const adminEmail = process.env.ADMIN_EMAIL || gmailUser;
+    const services   = (est.services || []).map(s => s.name).filter(Boolean).join(', ') || 'Exterior Services';
 
-    const mailOptions = {
+    await transporter.sendMail({
         from: '"Core Exteriors" <' + gmailUser + '>',
         to: est.email,
-        subject: isInvoice
-            ? 'Your Invoice from Core Exteriors | ' + (est.estimateNumber || '')
-            : 'Your Estimate from Core Exteriors | ' + (est.estimateNumber || ''),
+        cc: adminEmail,
+        subject: 'Your Invoice from Core Exteriors — ' + invoiceRef,
         html: `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#333">
-        <div style="background:#0a1628;padding:20px 30px;border-radius:12px 12px 0 0">
-          <h1 style="color:#fff;margin:0;font-size:22px">Core Exteriors</h1>
-          <p style="color:#8899aa;margin:5px 0 0;font-size:13px">Professional Exterior Services</p>
-        </div>
-        <div style="padding:30px;background:#f8f9fa;border:1px solid #e9ecef">
-          <p>Hi <strong>${est.clientName}</strong>,</p>
-          <p>${isInvoice
-              ? 'Thank you for choosing Core Exteriors! Please find your invoice attached as a PDF.'
-              : 'Thank you for your interest in Core Exteriors! Please find your estimate attached as a PDF.'
-          }</p>
-          <table style="width:100%;margin:20px 0;border-collapse:collapse">
-            <tr style="background:#0a1628;color:#fff">
-              <td style="padding:10px 15px;font-weight:bold;border-radius:8px 0 0 0">${isInvoice ? 'Invoice #' : 'Estimate #'}</td>
-              <td style="padding:10px 15px;text-align:right;border-radius:0 8px 0 0">${est.estimateNumber || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td style="padding:10px 15px;border-bottom:1px solid #e9ecef">${isInvoice ? 'Total Due' : 'Total Estimate'}</td>
-              <td style="padding:10px 15px;text-align:right;font-weight:bold;color:#27ae60;font-size:18px;border-bottom:1px solid #e9ecef">${est.total || '$0.00'}</td>
-            </tr>
-          </table>
-          <p style="color:#666;font-size:13px">${isInvoice
-              ? 'Payment is due upon receipt unless otherwise agreed. Please contact us if you have any questions about this invoice.'
-              : 'This estimate is valid for 30 days. A 25% deposit is required to confirm your booking.'
-          }</p>
-          <p>If you have any questions, feel free to reply to this email or call us at <strong>606 616 2026</strong>.</p>
-          <p style="margin-top:20px">Best regards,<br><strong>${est.salesRep || 'Core Exteriors Team'}</strong><br>Core Exteriors</p>
-        </div>
-        <div style="background:#0a1628;padding:15px 30px;border-radius:0 0 12px 12px;text-align:center">
-          <p style="color:#8899aa;font-size:11px;margin:0">203 Cambridge St, London, ON, N6H 1N6 | 606 616 2026 | corexteriors.ca</p>
-        </div>
-      </div>
-    `,
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#333">
+  <div style="background:#0a1628;padding:24px 32px;border-radius:12px 12px 0 0;border-bottom:4px solid #e67e22">
+    <h1 style="color:#fff;margin:0;font-size:22px">Core Exteriors</h1>
+    <p style="color:#8899aa;margin:6px 0 0;font-size:13px">Professional Exterior Services — London, Ontario</p>
+  </div>
+  <div style="padding:32px;background:#f8f9fa;border:1px solid #e9ecef;border-top:none">
+    <p style="font-size:16px">Hi <strong>${est.clientName || 'Valued Customer'}</strong>,</p>
+    <p>Thank you for choosing Core Exteriors! Please find your invoice attached. It's been a pleasure working with you.</p>
+    <table style="width:100%;margin:20px 0;border-collapse:collapse;border-radius:8px;overflow:hidden">
+      <tr style="background:#0a1628;color:#fff">
+        <td style="padding:10px 16px;font-weight:bold">Invoice #</td>
+        <td style="padding:10px 16px;text-align:right">${invoiceRef}</td>
+      </tr>
+      <tr><td style="padding:10px 16px;border-bottom:1px solid #e9ecef">Services</td><td style="padding:10px 16px;text-align:right;border-bottom:1px solid #e9ecef">${services}</td></tr>
+      <tr><td style="padding:10px 16px;border-bottom:1px solid #e9ecef">Subtotal</td><td style="padding:10px 16px;text-align:right;border-bottom:1px solid #e9ecef">${est.subtotal || '$0.00'}</td></tr>
+      <tr><td style="padding:10px 16px;border-bottom:1px solid #e9ecef">HST (13%)</td><td style="padding:10px 16px;text-align:right;border-bottom:1px solid #e9ecef">${est.hst || '$0.00'}</td></tr>
+      <tr style="background:#f0f0f0"><td style="padding:10px 16px;font-weight:bold">Total Due</td><td style="padding:10px 16px;text-align:right;font-weight:bold;color:#0a1628;font-size:18px">${est.total || '$0.00'}</td></tr>
+    </table>
+    <div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:14px;font-size:13px;color:#1b5e20;margin:16px 0">
+      <strong>Payment:</strong> E-transfer to <strong>corexteriors@gmail.com</strong> or call us to arrange payment. Cash and cheques accepted.
+    </div>
+    <p>Questions? Reply to this email or call <strong>519-712-1431</strong>.</p>
+    <p style="margin-top:16px">Best regards,<br><strong>${repName}</strong><br>Core Exteriors</p>
+  </div>
+  <div style="background:#0a1628;padding:14px 32px;border-radius:0 0 12px 12px;text-align:center">
+    <p style="color:#8899aa;font-size:11px;margin:0">203 Cambridge St, London, ON &nbsp;|&nbsp; 519-712-1431 &nbsp;|&nbsp; corexteriors.ca</p>
+  </div>
+</div>`,
         attachments: [{
-            filename: fileName,
+            filename: 'CoreExteriors_Invoice_' + invoiceRef.replace(/ /g, '_') + '.pdf',
             content: Buffer.from(pdfBytes),
-            contentType: 'application/pdf'
-        }]
-    };
-
-    await transporter.sendMail(mailOptions);
+            contentType: 'application/pdf',
+        }],
+    });
     return true;
 }

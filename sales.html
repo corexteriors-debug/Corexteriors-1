@@ -775,6 +775,30 @@
             transform: none
         }
 
+        .invoice-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: transform .2s, box-shadow .2s
+        }
+
+        .invoice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, .4)
+        }
+
+        .invoice-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none
+        }
+
         .pdf-btn {
             padding: 12px 20px;
             background: rgba(255, 255, 255, .1);
@@ -1285,7 +1309,8 @@
             </div>
             <div class="footer-actions">
                 <button class="pdf-btn" onclick="exportPDF()">📄 PDF</button>
-                <button class="submit-btn" id="submitEstBtn" onclick="submitEstimate()">Submit Estimate</button>
+                <button class="submit-btn" id="submitEstBtn" onclick="submitEstimate()">📧 Send Estimate</button>
+                <button class="invoice-btn" id="submitInvBtn" onclick="submitInvoice()">📄 Send Invoice</button>
             </div>
             <div style="text-align:right;padding:.5rem 1rem .25rem;display:flex;gap:.5rem;justify-content:flex-end">
                 <button onclick="openLeadListModal()" style="background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.25);color:#e67e22;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">📋 Lead List</button>
@@ -1982,6 +2007,74 @@
                 } else { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to submit.'; msg.style.display = 'block' }
             } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
             finally { btn.disabled = false; btn.textContent = 'Submit Estimate' }
+        }
+
+        // INVOICE — full validation, requires signature + legal, sends contract PDF
+        async function submitInvoice() {
+            const name      = document.getElementById('clientName').value.trim();
+            const phone     = document.getElementById('clientPhone').value.trim();
+            const email     = document.getElementById('clientEmail').value.trim();
+            const address   = document.getElementById('clientAddress').value.trim();
+            const rep       = document.getElementById('salesRep').value.trim();
+            const visitDate = document.getElementById('visitDate').value;
+            const msg       = document.getElementById('submitMsg');
+
+            const missing = [];
+            if (!name)      missing.push('Client Name');
+            if (!phone)     missing.push('Phone');
+            if (!email)     missing.push('Email');
+            if (!address)   missing.push('Address');
+            if (!rep)       missing.push('Sales Rep');
+            if (!visitDate) missing.push('Date of Service');
+            if (!document.getElementById('clientEmail').value.includes('@')) missing.push('Valid Email');
+
+            const services = buildEstimateObject().services;
+            if (!services || !services.length) missing.push('At least one Service');
+
+            if (missing.length) {
+                msg.className = 'msg error';
+                msg.textContent = 'Invoice requires: ' + missing.join(', ');
+                msg.style.display = 'block';
+                return;
+            }
+
+            const l1 = document.getElementById('legal_cooling').checked;
+            const l2 = document.getElementById('legal_wsib').checked;
+            const l3 = document.getElementById('legal_deposit').checked;
+            if (!l1 || !l2 || !l3) {
+                msg.className = 'msg error'; msg.textContent = 'All legal checkpoints must be acknowledged before sending an invoice.'; msg.style.display = 'block';
+                if (!l1) document.getElementById('legal1wrap').classList.add('error');
+                if (!l2) document.getElementById('legal2wrap').classList.add('error');
+                if (!l3) document.getElementById('legal3wrap').classList.add('error');
+                return;
+            }
+
+            const btn = document.getElementById('submitInvBtn'); btn.disabled = true; btn.textContent = 'Sending...';
+            const signatureData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
+
+            const estimate = buildEstimateObject();
+            estimate.type = 'invoice';
+            estimate.legal = { cooling: l1, wsib: l2, deposit: l3 };
+            estimate.hasSignature = !isCanvasBlank();
+
+            try {
+                const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
+
+                msg.className = 'msg success'; msg.textContent = '📄 Saving and sending invoice...'; msg.style.display = 'block';
+                const lr = await fetch(API_BASE + '/leads', { method: 'POST', headers, body: JSON.stringify(estimate) });
+                if (lr.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return; }
+
+                const conRes = await fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }).catch(() => null);
+                const conData = conRes ? await conRes.json().catch(() => ({})) : {};
+
+                msg.className = 'msg success';
+                msg.textContent = conData.emailSent
+                    ? '✅ Invoice #' + estimateNumber + ' sent to ' + email + ' and saved!'
+                    : '✅ Invoice #' + estimateNumber + ' saved!' + (conData.error ? ' ⚠️ Email failed: ' + conData.error : ' (check email config)');
+                msg.style.display = 'block';
+                localStorage.removeItem('estimate_draft');
+            } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
+            finally { btn.disabled = false; btn.textContent = '📄 Send Invoice' }
         }
 
         // Builds the estimate object from the current form state (shared by payment + submit)
