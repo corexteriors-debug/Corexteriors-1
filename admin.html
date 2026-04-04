@@ -2084,22 +2084,28 @@
             container.innerHTML = `<div style="display:flex;flex-direction:column;gap:.5rem;padding:.75rem">` +
                 leads.map(lead => {
                     const dateStr = new Date(lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const svcList = (lead.services || []).map(s => s.name).filter(Boolean).join(', ');
+                    const visitStr = lead.visitDate ? new Date(lead.visitDate + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                     return `<div id="qlrow-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.9rem 1rem">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:.5rem">
                             <div>
-                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}</div>
-                                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">📍 ${esc(lead.address)}</div>
+                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}</div>
+                                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address)}</div>
+                                ${lead.phone || lead.email ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(lead.phone||'') + (lead.phone&&lead.email?' &middot; ':'') + esc(lead.email||'') + '</div>' : ''}
                             </div>
                             <div style="font-size:.72rem;color:rgba(255,255,255,.3);white-space:nowrap;text-align:right">
                                 ${dateStr}<br>
-                                <span style="color:rgba(255,255,255,.4)">${esc(lead.salesRep || '—')}</span>
+                                <span style="color:rgba(255,255,255,.4)">${esc(lead.salesRep || '-')}</span>
+                                ${lead.total ? '<br><span style="color:#2ecc71;font-weight:700;font-size:.8rem">' + esc(lead.total) + '</span>' : ''}
                             </div>
                         </div>
-                        ${lead.notes ? `<div style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">📝 ${esc(lead.notes)}</div>` : ''}
+                        ${svcList ? '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.4rem">' + esc(svcList) + '</div>' : ''}
+                        ${visitStr ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:.4rem">Service date: ' + visitStr + '</div>' : ''}
+                        ${lead.notes ? '<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.6rem">' + esc(lead.notes) + '</div>' : ''}
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">
-                            <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">✏️ Edit</button>
-                            <button onclick="openPromoteToSaleModal('${lead.id}')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">💰 To Sale</button>
-                            <button onclick="deleteQL('${lead.id}')" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">🗑 Delete</button>
+                            <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">Edit</button>
+                            <button onclick="openPromoteToSaleModal('${lead.id}')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">To Sale</button>
+                            <button onclick="deleteQL('${lead.id}')" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">Delete</button>
                         </div>
                     </div>`;
                 }).join('') + `</div>`;

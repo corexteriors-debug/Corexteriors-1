@@ -1313,36 +1313,11 @@
                 <button class="invoice-btn" id="submitInvBtn" onclick="submitInvoice()">📄 Send Invoice</button>
             </div>
             <div style="text-align:right;padding:.5rem 1rem .25rem;display:flex;gap:.5rem;justify-content:flex-end">
-                <button onclick="openLeadListModal()" style="background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.25);color:#e67e22;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">📋 Lead List</button>
                 <button onclick="openAvailModal()" style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:#2ecc71;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">📅 Set My Availability</button>
             </div>
         </div>
     </div>
 
-    <!-- LEAD LIST MODAL -->
-    <div id="leadListModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1.5rem 1rem">
-        <div style="background:#0f1f38;border:1px solid rgba(230,126,34,.25);border-radius:16px;padding:1.75rem;width:100%;max-width:520px;margin:auto">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
-                <h3 style="margin:0;color:#fff">📋 Lead List</h3>
-                <button onclick="closeLeadListModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:1.2rem;cursor:pointer">✕</button>
-            </div>
-
-            <!-- Add Lead Form -->
-            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;margin-bottom:1.25rem">
-                <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Add New Lead</p>
-                <input id="qlName" type="text" placeholder="Client Name *" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;margin-bottom:.5rem;outline:none">
-                <input id="qlAddress" type="text" placeholder="Address *" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;margin-bottom:.5rem;outline:none">
-                <textarea id="qlNotes" placeholder="Notes" rows="2" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;resize:vertical;outline:none;font-family:inherit"></textarea>
-                <button onclick="addQuickLead()" id="qlAddBtn" style="margin-top:.6rem;width:100%;background:#e67e22;border:none;color:#fff;font-weight:700;padding:.65rem;border-radius:8px;cursor:pointer;font-size:.9rem">+ Add Lead</button>
-                <div id="qlMsg" style="display:none;margin-top:.5rem;font-size:.82rem;padding:.5rem .75rem;border-radius:6px"></div>
-            </div>
-
-            <!-- Lead List -->
-            <div id="qlList" style="display:flex;flex-direction:column;gap:.6rem;max-height:320px;overflow-y:auto">
-                <p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">Loading leads...</p>
-            </div>
-        </div>
-    </div>
 
     <!-- AVAILABILITY MODAL -->
     <div id="availModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1.5rem 1rem">
@@ -1933,7 +1908,7 @@
             calcAll();
         }
 
-        // SUBMIT
+        // SUBMIT — saves to Leads tab (quick-leads), sends estimate PDF to client
         async function submitEstimate() {
             const name = document.getElementById('clientName').value.trim();
             const phone = document.getElementById('clientPhone').value.trim();
@@ -1951,7 +1926,6 @@
                 return;
             }
 
-            // Check legal
             const l1 = document.getElementById('legal_cooling').checked;
             const l2 = document.getElementById('legal_wsib').checked;
             const l3 = document.getElementById('legal_deposit').checked;
@@ -1966,47 +1940,31 @@
             const btn = document.getElementById('submitEstBtn'); btn.disabled = true; btn.textContent = 'Submitting...';
 
             const estimate = buildEstimateObject();
-            // Override with validated values from the top of submitEstimate
             estimate.clientName = name; estimate.phone = phone; estimate.email = email; estimate.address = address;
             estimate.salesRep = rep;
             estimate.legal = { cooling: l1, wsib: l2, deposit: l3 };
-            estimate.hasSignature = !isCanvasBlank();
-
-            // Capture signature (client signed on canvas)
-            const signatureData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
 
             try {
-                const r = await fetch(API_BASE + '/leads', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken }, body: JSON.stringify(estimate) });
-                if (r.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired. Please log in again.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return }
+                msg.className = 'msg success'; msg.textContent = '⏳ Saving estimate...'; msg.style.display = 'block';
+                const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
+
+                // Save to Leads tab (quick-leads)
+                const r = await fetch(API_BASE + '/quick-leads', { method: 'POST', headers, body: JSON.stringify(estimate) });
+                if (r.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired. Please log in again.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return; }
                 const d = await r.json();
-                if (d.success) {
-                    // If card payment was already sent via payment.js, don't send another email
-                    if (window._cardPaymentSent) {
-                        msg.className = 'msg success';
-                        msg.textContent = '✅ Estimate #' + estimateNumber + ' saved! Contract & payment link already sent to ' + email;
-                        msg.style.display = 'block';
-                        localStorage.removeItem('estimate_draft');
-                    } else {
-                        // Non-card payment: send contract + estimate PDF to client
-                        msg.className = 'msg success'; msg.textContent = '✅ Estimate saved! Sending contract & estimate to ' + email + '...'; msg.style.display = 'block';
-                        const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
-                        const conRes = await fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }).catch(() => null);
-                        const conData = conRes ? await conRes.json().catch(() => ({})) : {};
-                        // Also send estimate PDF
-                        const estRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'estimate' }) }).catch(() => null);
-                        const estData = estRes ? await estRes.json().catch(() => ({})) : {};
-                        if (conData.emailSent && estData.emailSent) {
-                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract & estimate emailed to ' + email;
-                        } else if (conData.emailSent) {
-                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract emailed to ' + email + (estData.error ? ' ⚠️ Estimate PDF failed' : '');
-                        } else {
-                            msg.textContent = '✅ Estimate #' + estimateNumber + ' saved!' + (conData.error ? ' ⚠️ Email failed: ' + conData.error : '');
-                        }
-                        localStorage.removeItem('estimate_draft');
-                    }
-                } else { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to submit.'; msg.style.display = 'block' }
-            } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
-            finally { btn.disabled = false; btn.textContent = 'Submit Estimate' }
+                if (!d.success) { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to save.'; msg.style.display = 'block'; return; }
+
+                // Send estimate PDF to client
+                msg.textContent = '⏳ Sending estimate to ' + email + '...';
+                const estRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'estimate' }) }).catch(() => null);
+                const estData = estRes ? await estRes.json().catch(() => ({})) : {};
+
+                msg.textContent = estData.emailSent
+                    ? '✅ Estimate #' + estimateNumber + ' saved to Leads and emailed to ' + email
+                    : '✅ Estimate #' + estimateNumber + ' saved to Leads!' + (estData.error ? ' ⚠️ Email failed: ' + estData.error : ' (check email config)');
+                localStorage.removeItem('estimate_draft');
+            } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block'; }
+            finally { btn.disabled = false; btn.textContent = '📧 Send Estimate'; }
         }
 
         // INVOICE — full validation, requires signature + legal, sends contract PDF
@@ -2211,130 +2169,11 @@ corexteriors.ca
 
         // ── AVAILABILITY ───────────────────────────────────────────────────
         // ── LEAD LIST ──────────────────────────────────────────────
-        function openLeadListModal() {
-            const modal = document.getElementById('leadListModal');
-            modal.style.display = 'flex';
-            loadQuickLeads();
-        }
-
-        function closeLeadListModal() {
-            document.getElementById('leadListModal').style.display = 'none';
-            document.getElementById('qlName').value = '';
-            document.getElementById('qlAddress').value = '';
-            document.getElementById('qlNotes').value = '';
-            document.getElementById('qlMsg').style.display = 'none';
-        }
-
-        async function loadQuickLeads() {
-            const list = document.getElementById('qlList');
-            list.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">Loading...</p>';
-            try {
-                const r = await fetch(API_BASE + '/quick-leads', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
-                });
-                const d = await r.json();
-                if (!d.success || !d.leads.length) {
-                    list.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">No leads yet. Add your first one above.</p>';
-                    return;
-                }
-                list.innerHTML = d.leads.map(lead => `
-                    <div id="ql-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.85rem 1rem;position:relative">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
-                            <div style="flex:1;min-width:0">
-                                <div style="font-weight:700;color:#fff;font-size:.95rem;margin-bottom:.2rem">${escHtml(lead.name)}</div>
-                                <div style="font-size:.82rem;color:rgba(255,255,255,.55);margin-bottom:${lead.notes ? '.3rem' : '0'}">📍 ${escHtml(lead.address)}</div>
-                                ${lead.notes ? `<div style="font-size:.82rem;color:rgba(255,255,255,.45);white-space:pre-wrap">${escHtml(lead.notes)}</div>` : ''}
-                                <div style="font-size:.72rem;color:rgba(255,255,255,.25);margin-top:.4rem">${new Date(lead.createdAt).toLocaleDateString('en-CA', {month:'short',day:'numeric',year:'numeric'})}</div>
-                            </div>
-                            <button onclick="deleteQuickLead('${lead.id}')" style="background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:1rem;padding:2px 4px;flex-shrink:0" title="Delete">✕</button>
-                        </div>
-                    </div>`).join('');
-            } catch (e) {
-                list.innerHTML = '<p style="text-align:center;color:#e74c3c;font-size:.85rem;padding:1rem 0">Failed to load leads.</p>';
-            }
-        }
-
-        async function addQuickLead() {
-            const name = document.getElementById('qlName').value.trim();
-            const address = document.getElementById('qlAddress').value.trim();
-            const notes = document.getElementById('qlNotes').value.trim();
-            const msg = document.getElementById('qlMsg');
-            const btn = document.getElementById('qlAddBtn');
-
-            if (!name || !address) {
-                msg.style.display = 'block';
-                msg.style.background = 'rgba(231,76,60,.15)';
-                msg.style.color = '#e74c3c';
-                msg.textContent = 'Name and address are required.';
-                return;
-            }
-
-            btn.disabled = true; btn.textContent = 'Saving...';
-            msg.style.display = 'none';
-
-            try {
-                const r = await fetch(API_BASE + '/quick-leads', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ name, address, notes })
-                });
-                if (r.status === 401) {
-                    localStorage.removeItem('sales_token'); authToken = '';
-                    msg.style.display = 'block'; msg.style.background = 'rgba(231,76,60,.15)'; msg.style.color = '#e74c3c';
-                    msg.textContent = 'Session expired. Please log in again.';
-                    setTimeout(() => location.reload(), 2000);
-                    btn.disabled = false; btn.textContent = '+ Add Lead'; return;
-                }
-                const d = await r.json();
-                if (d.success) {
-                    document.getElementById('qlName').value = '';
-                    document.getElementById('qlAddress').value = '';
-                    document.getElementById('qlNotes').value = '';
-                    msg.style.display = 'block';
-                    msg.style.background = 'rgba(46,204,113,.12)';
-                    msg.style.color = '#2ecc71';
-                    msg.textContent = 'Lead added!';
-                    setTimeout(() => { msg.style.display = 'none'; }, 2000);
-                    loadQuickLeads();
-                } else {
-                    throw new Error(d.error || 'Failed');
-                }
-            } catch (e) {
-                msg.style.display = 'block';
-                msg.style.background = 'rgba(231,76,60,.15)';
-                msg.style.color = '#e74c3c';
-                msg.textContent = e.message || 'Error saving lead.';
-            }
-            btn.disabled = false; btn.textContent = '+ Add Lead';
-        }
-
-        async function deleteQuickLead(id) {
-            if (!confirm('Delete this lead?')) return;
-            try {
-                const r = await fetch(API_BASE + '/quick-leads', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ id })
-                });
-                const d = await r.json();
-                if (d.success) {
-                    const el = document.getElementById('ql-' + id);
-                    if (el) el.remove();
-                    const list = document.getElementById('qlList');
-                    if (!list.children.length) list.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">No leads yet.</p>';
-                }
-            } catch (e) { alert('Error deleting lead.'); }
-        }
-
-        function escHtml(str) {
-            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        }
-        // ── END LEAD LIST ──────────────────────────────────────────
 
         function openAvailModal() {
             document.getElementById('availSlots').innerHTML = '';
             document.getElementById('availMsg').style.display = 'none';
-            addAvailSlot(); // start with one slot
+            addAvailSlot();
             document.getElementById('availModal').style.display = 'flex';
         }
 
@@ -2358,9 +2197,7 @@ corexteriors.ca
         async function submitAvailability() {
             const rep = repName || document.getElementById('salesRep')?.value?.trim() || 'Rep';
             const slots = document.querySelectorAll('#availSlots > div');
-
             if (slots.length === 0) { showAvailMsg('Add at least one date', 'error'); return; }
-
             const entries = [];
             for (const slot of slots) {
                 const date = slot.querySelector('.avail-date').value;
@@ -2369,10 +2206,8 @@ corexteriors.ca
                 if (!date) { showAvailMsg('Fill in all dates', 'error'); return; }
                 entries.push({ date, start, end });
             }
-
             const btn = document.getElementById('availSubmitBtn');
             btn.disabled = true; btn.textContent = 'Saving...';
-
             let saved = 0;
             try {
                 for (const e of entries) {
@@ -2382,12 +2217,8 @@ corexteriors.ca
                         body: JSON.stringify({
                             title: '✅ AVAILABLE — ' + rep,
                             description: rep + ' available ' + e.start + '–' + e.end,
-                            date: e.date,
-                            startTime: e.start,
-                            endTime: e.end,
-                            allDay: false,
-                            repName: rep,
-                            eventType: 'available',
+                            date: e.date, startTime: e.start, endTime: e.end,
+                            allDay: false, repName: rep, eventType: 'available',
                         }),
                     });
                     const d = await r.json();
@@ -2412,5 +2243,4 @@ corexteriors.ca
         }
     </script>
 </body>
-
 </html>
