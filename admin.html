@@ -1313,9 +1313,19 @@
                     </div>
                 </div>
 
-                <div style="grid-column:1/-1;display:flex;align-items:center;gap:.5rem">
-                    <input type="checkbox" id="ns_sendemail" checked style="width:16px;height:16px;cursor:pointer">
-                    <label for="ns_sendemail" style="font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">Send invoice email to customer</label>
+                <div style="grid-column:1/-1">
+                    <label style="font-size:.75rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">📧 Email to Customer</label>
+                    <div style="display:flex;gap:.5rem">
+                        <label style="flex:1;display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.5rem .75rem;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.55)">
+                            <input type="radio" name="ns_emailtype" value="none" style="accent-color:#e67e22"> None
+                        </label>
+                        <label style="flex:1;display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.5rem .75rem;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.55)">
+                            <input type="radio" name="ns_emailtype" value="estimate" style="accent-color:#3498db"> Estimate
+                        </label>
+                        <label style="flex:1;display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.5rem .75rem;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.55)">
+                            <input type="radio" name="ns_emailtype" value="invoice" checked style="accent-color:#2ecc71"> Invoice
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -1886,7 +1896,8 @@
             const now = new Date();
             document.getElementById('ns_date').value = now.toISOString().split('T')[0];
             document.getElementById('ns_time').value = now.toTimeString().slice(0,5);
-            document.getElementById('ns_sendemail').checked = true;
+            const invoiceRadio = document.querySelector('input[name="ns_emailtype"][value="invoice"]');
+            if (invoiceRadio) invoiceRadio.checked = true;
             document.getElementById('nsSaleMsg').style.display = 'none';
             calcNSTotal();
             document.getElementById('newSaleModal').style.display = 'flex';
@@ -1955,7 +1966,7 @@
             const payStatus = document.getElementById('ns_pay_status').value;
             const payMethod = document.getElementById('ns_pay_method').value;
             const payAmount = parseFloat(document.getElementById('ns_pay_amount').value) || 0;
-            const sendEmail = document.getElementById('ns_sendemail').checked;
+            const emailType = document.querySelector('input[name="ns_emailtype"]:checked')?.value || 'none';
 
             const estimate = {
                 clientName: name,
@@ -1999,24 +2010,24 @@
                 allLeads.unshift(d.lead);
                 renderLeads(); updateStats(); renderCharts();
 
-                // Send invoice email
-                if (sendEmail) {
+                // Send estimate or invoice email
+                if (emailType !== 'none' && email) {
                     btn.textContent = 'Sending email...';
+                    const docLabel = emailType === 'estimate' ? 'Estimate' : 'Invoice';
                     try {
                         const er = await fetch(`${API_BASE}/invoice`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                            body: JSON.stringify({ estimate, documentType: 'invoice' })
+                            body: JSON.stringify({ estimate, documentType: emailType })
                         });
                         const ed = await er.json();
+                        msg.style.display = 'block';
                         if (ed.emailSent) {
-                            msg.style.display = 'block';
                             msg.style.background = 'rgba(46,204,113,.12)'; msg.style.color = '#2ecc71';
-                            msg.textContent = `✅ Sale saved & invoice emailed to ${email}`;
+                            msg.textContent = `✅ Sale saved & ${docLabel} emailed to ${email}`;
                         } else {
-                            msg.style.display = 'block';
                             msg.style.background = 'rgba(230,126,34,.12)'; msg.style.color = '#e67e22';
-                            msg.textContent = '✅ Sale saved. ⚠️ Email failed — check SMTP config.';
+                            msg.textContent = `✅ Sale saved. ⚠️ ${docLabel} email failed — check SMTP config.`;
                         }
                     } catch {
                         msg.style.display = 'block';
@@ -2993,7 +3004,22 @@
                 document.querySelector('[data-tab="leads"]').classList.add('active');
                 document.getElementById('tab-leads').classList.add('active');
 
-                toast(`${name} promoted to Sales`, 'success');
+                // Send invoice PDF if email was provided
+                const promoteEmail = document.getElementById('promoteEmail').value.trim();
+                if (promoteEmail) {
+                    try {
+                        await fetch(`${API_BASE}/invoice`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                            body: JSON.stringify({ estimate: createD.lead, documentType: 'invoice' })
+                        });
+                        toast(`${name} promoted to Sales & invoice emailed`, 'success');
+                    } catch {
+                        toast(`${name} promoted to Sales (email failed)`, 'success');
+                    }
+                } else {
+                    toast(`${name} promoted to Sales`, 'success');
+                }
             } catch (e) {
                 msg.style.display = 'block';
                 msg.style.background = 'rgba(231,76,60,.15)';
