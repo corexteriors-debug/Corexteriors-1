@@ -1418,100 +1418,11 @@ img {
     margin-bottom: 48px;
 }
 
-.testimonials-carousel {
-    position: relative;
-    overflow: hidden;
-}
-
-.testimonials-track {
-    display: flex;
-    gap: 24px;
-    transition: transform 0.5s ease;
-}
-
-.testimonial-card {
-    flex: 0 0 calc(33.333% - 16px);
-    background: var(--white);
-    padding: 32px;
-    border-radius: 16px;
-    box-shadow: var(--shadow-md);
-    text-align: center;
-}
-
-.stars {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    margin-bottom: 16px;
-}
-
-.stars svg {
-    width: 24px;
-    height: 24px;
-    color: #FFB800;
-}
-
-.testimonial-text {
-    font-size: 16px;
-    line-height: 1.7;
-    color: var(--dark-gray);
-    font-style: italic;
-    margin-bottom: 20px;
-}
-
-.testimonial-author {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.author-name {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--black);
-}
-
-.author-location {
-    font-size: 14px;
-    color: var(--medium-gray);
-}
-
-.carousel-controls {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin-top: 32px;
-}
-
-.carousel-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 2px solid var(--gold);
-    background: var(--white);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
-    box-shadow: 0 4px 16px rgba(201, 168, 76, 0.2);
-}
-
-.carousel-btn:hover {
-    background: var(--gold);
-    transform: scale(1.08);
-    box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
-}
-
-.carousel-btn svg {
-    width: 26px;
-    height: 26px;
-    color: var(--gold);
-    transition: color var(--transition-fast);
-}
-
-.carousel-btn:hover svg {
-    color: var(--white);
+/* Shapo reviews widget */
+#shapo-widget-5b02d10f51097ecc9ac9 {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* Gallery Responsive */
@@ -1524,17 +1435,7 @@ img {
 }
 
 /* Testimonials Responsive */
-@media (max-width: 900px) {
-    .testimonial-card {
-        flex: 0 0 calc(50% - 12px);
-    }
-}
-
 @media (max-width: 600px) {
-    .testimonial-card {
-        flex: 0 0 100%;
-    }
-
     .gallery-title,
     .testimonials-title {
         font-size: 32px;
