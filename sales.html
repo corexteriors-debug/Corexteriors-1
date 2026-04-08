@@ -2022,13 +2022,13 @@
                 const lr = await fetch(API_BASE + '/leads', { method: 'POST', headers, body: JSON.stringify(estimate) });
                 if (lr.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return; }
 
-                const conRes = await fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }).catch(() => null);
-                const conData = conRes ? await conRes.json().catch(() => ({})) : {};
+                const invRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'invoice', signatureData }) }).catch(() => null);
+                const invData = invRes ? await invRes.json().catch(() => ({})) : {};
 
                 msg.className = 'msg success';
-                msg.textContent = conData.emailSent
+                msg.textContent = invData.emailSent
                     ? '✅ Invoice #' + estimateNumber + ' sent to ' + email + ' and saved!'
-                    : '✅ Invoice #' + estimateNumber + ' saved!' + (conData.error ? ' ⚠️ Email failed: ' + conData.error : ' (check email config)');
+                    : '✅ Invoice #' + estimateNumber + ' saved!' + (invData.error ? ' ⚠️ Email failed: ' + invData.error : ' (check email config)');
                 msg.style.display = 'block';
                 localStorage.removeItem('estimate_draft');
             } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
