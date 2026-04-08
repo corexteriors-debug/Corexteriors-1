@@ -1068,12 +1068,12 @@
                             <div class="radio-group">
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_1"
                                         value="1" onchange="calcAll()" checked><label for="siding_1">1 Story
-                                        ($250)</label></div>
+                                        ($145)</label></div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_2"
-                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($300)</label>
+                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($220)</label>
                                 </div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_3"
-                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($375)</label>
+                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($275)</label>
                                 </div>
                             </div>
                         </div>
@@ -1565,7 +1565,7 @@
             // SIDING
             if (document.getElementById('svc_siding').checked) {
                 const stories = document.querySelector('input[name="siding_stories"]:checked').value;
-                let sidPrice = { 1: 250, 2: 300, 3: 375 }[stories] || 250;
+                let sidPrice = { 1: 145, 2: 220, 3: 275 }[stories] || 145;
                 document.getElementById('price_siding').textContent = '$' + sidPrice.toFixed(2);
                 subtotal += sidPrice;
             } else { document.getElementById('price_siding').textContent = '$0.00' }
