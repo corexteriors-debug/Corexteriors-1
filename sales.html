@@ -2044,6 +2044,13 @@
                     services.push({ name: svcNames[s], price: document.getElementById('price_' + s).textContent });
                 }
             });
+            if (document.getElementById('svc_other').checked) {
+                getOtherItems().forEach(item => {
+                    if (item.name || item.price > 0) {
+                        services.push({ name: item.name || 'Other', price: '$' + (item.price || 0).toFixed(2) });
+                    }
+                });
+            }
             const hazards = [];
             document.querySelectorAll('.hazard-item.checked input').forEach(h => hazards.push(h.value));
             return {
