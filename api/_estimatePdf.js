@@ -25,7 +25,7 @@ function fmtDate(iso) {
 // ── Public entry point ────────────────────────────────────────────────────────
 async function generateEstimatePDF(est, opts = {}) {
     const docType = (opts.docType || 'ESTIMATE').toUpperCase();
-    return docType === 'INVOICE' ? buildInvoice(est) : buildEstimate(est);
+    return docType === 'INVOICE' ? buildInvoice(est, opts.signatureData || null) : buildEstimate(est);
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -194,7 +194,7 @@ async function buildEstimate(est) {
 // ═════════════════════════════════════════════════════════════════════════════
 //  INVOICE — clean professional layout with HST# prominently shown
 // ═════════════════════════════════════════════════════════════════════════════
-async function buildInvoice(est) {
+async function buildInvoice(est, signatureData = null) {
     const doc  = await PDFDocument.create();
     const page = doc.addPage([612, 792]);
     const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -282,11 +282,11 @@ async function buildInvoice(est) {
     const rX = ML + halfW + 16;
     page.drawRectangle({ x: rX, y: y - boxH, width: halfW, height: boxH, color: lightGray });
     page.drawRectangle({ x: rX, y: y - boxH, width: 4,     height: boxH, color: navy });
-    page.drawText('FROM',                             { x: rX + 14, y: y - 15, size: 7.5, font: bold, color: navy });
-    page.drawText('Core Exteriors',                   { x: rX + 14, y: y - 31, size: 12,  font: bold, color: navy });
-    page.drawText('203 Cambridge St, London, ON',     { x: rX + 14, y: y - 48, size: 8.5, font,       color: darkGray });
-    page.drawText('519-712-1431  |  corexteriors.ca', { x: rX + 14, y: y - 63, size: 8.5, font,       color: darkGray });
-    page.drawText('HST# 745847632 RT0001',            { x: rX + 14, y: y - 78, size: 8.5, font: bold, color: navy });
+    page.drawText('FROM',                                               { x: rX + 14, y: y - 15, size: 7.5, font: bold, color: navy });
+    page.drawText('Core Exteriors',                                     { x: rX + 14, y: y - 31, size: 12,  font: bold, color: navy });
+    page.drawText('Rep: ' + s(est.salesRep || 'Core Exteriors Team'),   { x: rX + 14, y: y - 48, size: 8.5, font,       color: darkGray });
+    page.drawText('519-712-1431  |  corexteriors.ca',                   { x: rX + 14, y: y - 63, size: 8.5, font,       color: darkGray });
+    page.drawText('HST# 745847632 RT0001',                              { x: rX + 14, y: y - 78, size: 8.5, font: bold, color: navy });
 
     y -= boxH + 20;
 
@@ -339,6 +339,8 @@ async function buildInvoice(est) {
     }
 
     totRow('Subtotal',  '$' + subtotalVal, null,   null);
+    const discAmt = parseFloat(est.discount) || 0;
+    if (discAmt > 0) totRow('Discount', '-$' + discAmt.toFixed(2), null, green);
     totRow('HST (13%)', '$' + hstVal,      null,   null);
     totRow('TOTAL',     '$' + totalVal,    navy,   null);
 
@@ -371,6 +373,24 @@ async function buildInvoice(est) {
             page.drawText(s(line.trim()), { x: ML, y, size: 8, font, color: gray });
             y -= 12;
         });
+        y -= 6;
+    }
+
+    // ── CLIENT SIGNATURE ─────────────────────────────────────────────────────
+    if (signatureData && y > 110) {
+        try {
+            const b64 = signatureData.includes(',') ? signatureData.split(',')[1] : signatureData;
+            const sigImg = await doc.embedPng(Buffer.from(b64, 'base64'));
+            const sigBoxW = 220, sigBoxH = 64;
+            page.drawRectangle({ x: ML, y: y - sigBoxH, width: sigBoxW, height: sigBoxH, color: lightGray });
+            page.drawRectangle({ x: ML, y: y - sigBoxH, width: 4,       height: sigBoxH, color: orange });
+            page.drawText('CLIENT SIGNATURE', { x: ML + 14, y: y - 14, size: 7, font: bold, color: orange });
+            page.drawText(s(est.clientName || ''), { x: ML + 14, y: y - 26, size: 8.5, font, color: darkGray });
+            const dims = sigImg.scaleToFit(sigBoxW - 24, 28);
+            page.drawImage(sigImg, { x: ML + 14, y: y - sigBoxH + 8, width: dims.width, height: dims.height });
+            page.drawLine({ start: { x: ML + 14, y: y - sigBoxH + 18 }, end: { x: ML + sigBoxW - 14, y: y - sigBoxH + 18 }, thickness: 0.5, color: midGray });
+            y -= sigBoxH + 12;
+        } catch (_) {}
     }
 
     // ── FOOTER ───────────────────────────────────────────────────────────────

@@ -92,7 +92,7 @@ module.exports = async (req, res) => {
         // Generate invoice PDF to attach alongside the contract
         let invoicePdfBytes = null;
         try {
-            invoicePdfBytes = await generateEstimatePDF(estData, { docType: 'INVOICE' });
+            invoicePdfBytes = await generateEstimatePDF(estData, { docType: 'INVOICE', signatureData: signatureData || null });
         } catch (err) {
             console.error('Invoice PDF error in payment:', err.message);
         }

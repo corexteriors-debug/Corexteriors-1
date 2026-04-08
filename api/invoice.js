@@ -20,14 +20,14 @@ module.exports = async function handler(req, res) {
     if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
 
     try {
-        const { estimate, documentType } = req.body;
+        const { estimate, documentType, signatureData } = req.body;
         if (!estimate || !estimate.clientName || !estimate.email) {
             return res.status(400).json({ error: 'Estimate data with client email is required' });
         }
 
         const isInvoice = documentType === 'invoice';
         const docType   = isInvoice ? 'INVOICE' : 'ESTIMATE';
-        const pdfBytes  = await generateEstimatePDF(estimate, { docType });
+        const pdfBytes  = await generateEstimatePDF(estimate, { docType, signatureData: signatureData || null });
         const emailSent = await sendDocEmail(estimate, pdfBytes, docType);
 
         return res.status(200).json({ success: true, emailSent });
