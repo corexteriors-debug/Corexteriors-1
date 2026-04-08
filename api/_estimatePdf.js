@@ -192,8 +192,7 @@ async function buildEstimate(est) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  INVOICE — matches INV-822425 sample: orange top bar, logo, two-column info
-//            boxes, 3-col service table, deposit/balance rows, authorized by
+//  INVOICE — clean professional layout with HST# prominently shown
 // ═════════════════════════════════════════════════════════════════════════════
 async function buildInvoice(est) {
     const doc  = await PDFDocument.create();
@@ -202,7 +201,7 @@ async function buildInvoice(est) {
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
     const W = 612, H = 792;
-    const ML = 42, MR = 42;
+    const ML = 48, MR = 48;
     const CW = W - ML - MR;
 
     const navy      = rgb(0.04, 0.09, 0.20);
@@ -218,142 +217,107 @@ async function buildInvoice(est) {
     const issueDate = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
     const docNum    = s(est.invoiceNumber || est.estimateNumber || '—');
     const services  = (Array.isArray(est.services) ? est.services : []).filter(sv => sv.name && sv.price);
+    const visitRaw  = est.survey?.visitDate || est.saleDate || '';
+    const dateSvc   = visitRaw ? fmtDate(visitRaw) : 'To Be Confirmed';
 
-    const visitRaw      = est.survey?.visitDate || est.saleDate || '';
-    const dateOfService = visitRaw ? fmtDate(visitRaw) : 'To Be Confirmed';
+    // ── HEADER: orange stripe + navy bar ─────────────────────────────────────
+    page.drawRectangle({ x: 0, y: H - 8,        width: W,  height: 8,  color: orange });
+    page.drawRectangle({ x: 0, y: H - 8 - 82,   width: W,  height: 82, color: navy });
 
-    // ── ORANGE TOP STRIPE ────────────────────────────────────────────────────
-    page.drawRectangle({ x: 0, y: H - 6, width: W, height: 6, color: orange });
-
-    // ── LOGO (left) ──────────────────────────────────────────────────────────
-    const logoH = 54;
-    const logoPaths = [
-        path.join(__dirname, '../images/logo-wordmark.png'),
-        path.join(process.cwd(), 'images/logo-wordmark.png'),
-        path.join(process.cwd(), 'src/images/logo-wordmark.png'),
-    ];
-    let logoEmbedded = false;
-    for (const logoPath of logoPaths) {
-        try {
-            const logoBytes = fs.readFileSync(logoPath);
-            const logoImg   = await doc.embedPng(logoBytes);
-            const logoW     = Math.round(logoH * 1024 / 546);
-            page.drawImage(logoImg, { x: ML, y: H - 6 - logoH - 14, width: logoW, height: logoH });
-            logoEmbedded = true;
-            break;
-        } catch (_) {}
-    }
-    if (!logoEmbedded) {
-        page.drawText('CORE EXTERIORS', { x: ML, y: H - 6 - 28, size: 18, font: bold, color: navy });
-    }
-
-    // ── INVOICE TITLE + METADATA (right) ────────────────────────────────────
-    const titleW = bold.widthOfTextAtSize('INVOICE', 32);
-    page.drawText('INVOICE', { x: W - MR - titleW, y: H - 6 - 38, size: 32, font: bold, color: navy });
-
-    const metaLX = W - MR - 200;
-    const metaVX = W - MR - 90;
-    let metaY = H - 6 - 56;
-
-    const metaRows = [
-        ['Invoice #',   docNum],
-        ['Issue Date',  issueDate],
-        ['Payment Due', 'Upon Completion'],
-    ];
-    metaRows.forEach(([lbl, val]) => {
-        page.drawText(lbl, { x: metaLX, y: metaY, size: 8, font: bold, color: gray });
-        page.drawText(s(val), { x: metaVX, y: metaY, size: 8, font, color: darkGray });
-        metaY -= 13;
+    page.drawText('CORE EXTERIORS', { x: ML, y: H - 8 - 36, size: 22, font: bold, color: white });
+    page.drawText('Professional Exterior Services  |  corexteriors.ca', {
+        x: ML, y: H - 8 - 56, size: 8.5, font, color: rgb(0.55, 0.65, 0.78),
     });
 
-    // Payment status badge
+    const invW = bold.widthOfTextAtSize('INVOICE', 30);
+    page.drawText('INVOICE', { x: W - MR - invW, y: H - 8 - 48, size: 30, font: bold, color: orange });
+
+    // ── INVOICE META (right-aligned under header) ────────────────────────────
+    let y = H - 8 - 82 - 18;
+    const metaX = W - MR - 210;
+    const valX  = W - MR - 10;
+
+    function metaRow(lbl, val) {
+        page.drawText(lbl, { x: metaX, y, size: 8.5, font: bold, color: gray });
+        const vw = font.widthOfTextAtSize(s(val), 8.5);
+        page.drawText(s(val), { x: valX - vw, y, size: 8.5, font, color: darkGray });
+        y -= 14;
+    }
+
+    metaRow('Invoice #:', docNum);
+    metaRow('Issue Date:', issueDate);
+    metaRow('Service Date:', dateSvc);
+    metaRow('Payment Due:', 'Upon Completion of Services');
+
+    // Payment badge
+    y -= 4;
     const payStatus  = (est.paymentStatus || 'Unpaid').toLowerCase();
-    const badgeColor = payStatus === 'paid'    ? green
-                     : payStatus === 'deposit' ? orange
-                     : rgb(0.75, 0.10, 0.10);
-    const badgeLabel = payStatus === 'paid'    ? 'PAID IN FULL'
-                     : payStatus === 'deposit' ? 'DEPOSIT PAID'
-                     : 'UNPAID';
-    const bW = 92, bH = 20;
-    const bX = W - MR - bW;
-    page.drawRectangle({ x: bX, y: metaY - 4, width: bW, height: bH, color: badgeColor });
-    const blw = bold.widthOfTextAtSize(badgeLabel, 7.5);
-    page.drawText(badgeLabel, { x: bX + (bW - blw) / 2, y: metaY + 4, size: 7.5, font: bold, color: white });
+    const badgeColor = payStatus === 'paid' ? green : payStatus.includes('deposit') ? orange : rgb(0.75, 0.10, 0.10);
+    const badgeLabel = payStatus === 'paid' ? 'PAID IN FULL' : payStatus.includes('deposit') ? 'DEPOSIT PAID' : 'UNPAID';
+    const bW = 104, bH = 22;
+    page.drawRectangle({ x: W - MR - bW, y: y - 4, width: bW, height: bH, color: badgeColor });
+    const blw = bold.widthOfTextAtSize(badgeLabel, 8);
+    page.drawText(badgeLabel, { x: W - MR - bW + (bW - blw) / 2, y: y + 5, size: 8, font: bold, color: white });
 
     // ── DIVIDER ──────────────────────────────────────────────────────────────
-    let y = H - 6 - logoH - 24;
-    page.drawLine({ start: { x: ML, y }, end: { x: W - MR, y }, thickness: 0.7, color: midGray });
-    y -= 10;
+    y = H - 8 - 82 - 18;  // reset y to below header for left column
+    y -= 90;               // match height of meta block
+    page.drawLine({ start: { x: ML, y }, end: { x: W - MR, y }, thickness: 0.6, color: midGray });
+    y -= 16;
 
-    // ── BILL TO / FROM BOXES ─────────────────────────────────────────────────
-    const boxH  = 90;
-    const halfW = CW / 2 - 6;
+    // ── BILL TO / FROM ───────────────────────────────────────────────────────
+    const boxH  = 100;
+    const halfW = CW / 2 - 8;
 
     // BILL TO
-    page.drawRectangle({ x: ML, y: y - boxH, width: halfW, height: boxH, color: lightGray });
-    page.drawRectangle({ x: ML, y: y - 3,    width: halfW, height: 3,    color: orange });
-    page.drawText('BILL TO', { x: ML + 10, y: y - 16, size: 7.5, font: bold, color: orange });
-    page.drawText(s(est.clientName || '—'), { x: ML + 10, y: y - 30, size: 11, font: bold, color: navy });
-    page.drawText(s(est.address || est.clientAddress || ''), { x: ML + 10, y: y - 44, size: 8.5, font, color: darkGray });
-    page.drawText(s(est.phone || ''), { x: ML + 10, y: y - 57, size: 8.5, font, color: darkGray });
-    page.drawText(s(est.email || ''), { x: ML + 10, y: y - 70, size: 8.5, font, color: gray });
+    page.drawRectangle({ x: ML,     y: y - boxH, width: halfW, height: boxH, color: lightGray });
+    page.drawRectangle({ x: ML,     y: y - boxH, width: 4,     height: boxH, color: orange });
+    page.drawText('BILL TO', { x: ML + 14, y: y - 15, size: 7.5, font: bold, color: orange });
+    page.drawText(s(est.clientName || '—'),                        { x: ML + 14, y: y - 31, size: 12,  font: bold, color: navy });
+    page.drawText(s(est.address || est.clientAddress || ''),       { x: ML + 14, y: y - 48, size: 8.5, font,       color: darkGray });
+    page.drawText(s(est.phone || ''),                              { x: ML + 14, y: y - 63, size: 8.5, font,       color: darkGray });
+    page.drawText(s(est.email || ''),                              { x: ML + 14, y: y - 78, size: 8,   font,       color: gray });
 
     // FROM
-    const rX = ML + halfW + 12;
+    const rX = ML + halfW + 16;
     page.drawRectangle({ x: rX, y: y - boxH, width: halfW, height: boxH, color: lightGray });
-    page.drawRectangle({ x: rX, y: y - 3,    width: halfW, height: 3,    color: navy });
-    page.drawText('FROM', { x: rX + 10, y: y - 16, size: 7.5, font: bold, color: navy });
-    page.drawText('Core Exteriors', { x: rX + 10, y: y - 30, size: 11, font: bold, color: navy });
-    page.drawText('Rep: ' + s(est.salesRep || 'Core Exteriors Team'), { x: rX + 10, y: y - 44, size: 8.5, font, color: darkGray });
-    page.drawText('Service Date: ' + s(dateOfService), { x: rX + 10, y: y - 57, size: 8.5, font, color: darkGray });
-    page.drawText('Tel: 519-712-1431', { x: rX + 10, y: y - 70, size: 8.5, font, color: gray });
+    page.drawRectangle({ x: rX, y: y - boxH, width: 4,     height: boxH, color: navy });
+    page.drawText('FROM',                             { x: rX + 14, y: y - 15, size: 7.5, font: bold, color: navy });
+    page.drawText('Core Exteriors',                   { x: rX + 14, y: y - 31, size: 12,  font: bold, color: navy });
+    page.drawText('203 Cambridge St, London, ON',     { x: rX + 14, y: y - 48, size: 8.5, font,       color: darkGray });
+    page.drawText('519-712-1431  |  corexteriors.ca', { x: rX + 14, y: y - 63, size: 8.5, font,       color: darkGray });
+    page.drawText('HST# 745847632 RT0001',            { x: rX + 14, y: y - 78, size: 8.5, font: bold, color: navy });
 
-    y -= boxH + 16;
+    y -= boxH + 20;
 
     // ── SERVICE TABLE ────────────────────────────────────────────────────────
-    page.drawRectangle({ x: ML, y: y - 20, width: CW, height: 20, color: navy });
-    page.drawText('Service',       { x: ML + 10,     y: y - 14, size: 8.5, font: bold, color: white });
-    page.drawText('Qty / Details', { x: ML + 270,    y: y - 14, size: 8.5, font: bold, color: white });
-    page.drawText('Price',         { x: W - MR - 42, y: y - 14, size: 8.5, font: bold, color: white });
-    y -= 20;
-
-    const jobDetails = est.jobDetails || {};
-    function detailFor(svc) {
-        const nm = (svc.name || '').toLowerCase();
-        const p  = [];
-        if (nm.includes('deck'))                   { const d = jobDetails.deck      || {}; if (d.sqft) p.push(d.sqft + ' sq ft'); if (d.condition) p.push('Cond ' + d.condition + '/5'); if (d.rails) p.push('Rails'); }
-        else if (nm.includes('gutter'))            { const g = jobDetails.gutter    || {}; if (g.stories) p.push(g.stories + '-storey'); if (g.deepClean) p.push('Deep Clean'); }
-        else if (nm.includes('interlock') || nm.includes('hardscape')) { const i = jobDetails.interlock || {}; if (i.sqft) p.push(i.sqft + ' sq ft'); if (i.seal) p.push('Seal'); }
-        else if (nm.includes('window'))            { const w = jobDetails.window    || {}; if (w.count) p.push(w.count + ' units'); if (w.type) p.push(w.type === 'full' ? 'Int+Ext' : 'Ext only'); }
-        else if (nm.includes('siding'))            { const sv2 = jobDetails.siding  || {}; if (sv2.stories) p.push(sv2.stories + '-storey'); }
-        else if (nm.includes('garden'))            { const g = jobDetails.garden    || {}; if (g.mulch) p.push(g.mulch + ' yd3 mulch'); if (g.weeding && g.weeding !== 'none') p.push(g.weeding + ' weeding'); }
-        return p.join(', ');
-    }
+    page.drawRectangle({ x: ML, y: y - 24, width: CW, height: 24, color: navy });
+    page.drawText('SERVICE',                                                   { x: ML + 12,         y: y - 16, size: 8.5, font: bold, color: white });
+    page.drawText('AMOUNT', { x: W - MR - bold.widthOfTextAtSize('AMOUNT', 8.5) - 12, y: y - 16, size: 8.5, font: bold, color: white });
+    y -= 24;
 
     let altRow = false;
     services.forEach(svc => {
-        const rowH = 22;
+        const rowH = 26;
         if (altRow) page.drawRectangle({ x: ML, y: y - rowH, width: CW, height: rowH, color: lightGray });
-        page.drawText(s(svc.name), { x: ML + 10, y: y - 15, size: 9, font, color: black });
-        const detail = detailFor(svc);
-        if (detail) page.drawText(s(detail), { x: ML + 270, y: y - 15, size: 8, font, color: gray });
+        page.drawText(s(svc.name), { x: ML + 12, y: y - 17, size: 10, font, color: black });
         const priceStr = '$' + s(String(svc.price || '0').replace(/^\$/, ''));
-        const pw = bold.widthOfTextAtSize(priceStr, 9);
-        page.drawText(priceStr, { x: W - MR - pw - 6, y: y - 15, size: 9, font: bold, color: darkGray });
+        const pw = bold.widthOfTextAtSize(priceStr, 10);
+        page.drawText(priceStr, { x: W - MR - pw - 12, y: y - 17, size: 10, font: bold, color: darkGray });
         page.drawLine({ start: { x: ML, y: y - rowH }, end: { x: W - MR, y: y - rowH }, thickness: 0.3, color: midGray });
         y -= rowH;
         altRow = !altRow;
     });
 
     if (!services.length) {
-        page.drawText('No services specified.', { x: ML + 10, y: y - 15, size: 9, font, color: gray });
-        y -= 22;
+        page.drawText('No services specified.', { x: ML + 12, y: y - 17, size: 9, font, color: gray });
+        y -= 26;
     }
 
-    y -= 10;
+    y -= 12;
 
     // ── TOTALS ───────────────────────────────────────────────────────────────
-    const totW = 220, totX = W - MR - totW;
+    const totW = 230, totX = W - MR - totW;
     const subtotalVal = s(String(est.subtotal || '0.00').replace(/^\$/, ''));
     const hstVal      = s(String(est.hst      || '0.00').replace(/^\$/, ''));
     const totalVal    = s(String(est.total    || '0.00').replace(/^\$/, ''));
@@ -362,102 +326,59 @@ async function buildInvoice(est) {
     const balanceNum  = Math.max(0, totalNum - depositAmt);
 
     function totRow(label, val, bgColor, valColor) {
-        if (bgColor) page.drawRectangle({ x: totX, y: y - 22, width: totW, height: 22, color: bgColor });
+        const rowH = 24;
+        if (bgColor) page.drawRectangle({ x: totX, y: y - rowH, width: totW, height: rowH, color: bgColor });
         const f  = bgColor ? bold : font;
         const lc = bgColor ? white : darkGray;
         const vc = bgColor ? white : (valColor || darkGray);
-        page.drawText(s(label), { x: totX + 10, y: y - 15, size: 9, font: f, color: lc });
-        const vw = f.widthOfTextAtSize(val, 9);
-        page.drawText(val, { x: totX + totW - vw - 8, y: y - 15, size: 9, font: f, color: vc });
-        if (!bgColor) page.drawLine({ start: { x: totX, y: y - 22 }, end: { x: totX + totW, y: y - 22 }, thickness: 0.35, color: midGray });
-        y -= 22;
+        page.drawText(s(label), { x: totX + 12, y: y - 16, size: 9, font: f, color: lc });
+        const vw = bold.widthOfTextAtSize(val, 9);
+        page.drawText(val, { x: totX + totW - vw - 10, y: y - 16, size: 9, font: bold, color: vc });
+        if (!bgColor) page.drawLine({ start: { x: totX, y: y - rowH }, end: { x: totX + totW, y: y - rowH }, thickness: 0.35, color: midGray });
+        y -= rowH;
     }
 
-    totRow('Subtotal',  '$' + subtotalVal, null, null);
-    totRow('HST (13%)', '$' + hstVal,      null, null);
-    totRow('Total',     '$' + totalVal,    navy, null);
+    totRow('Subtotal',  '$' + subtotalVal, null,   null);
+    totRow('HST (13%)', '$' + hstVal,      null,   null);
+    totRow('TOTAL',     '$' + totalVal,    navy,   null);
 
     if (depositAmt > 0) {
-        const methodSuffix = est.paymentMethod ? '  (' + est.paymentMethod + ')' : '  (E-transfer)';
-        totRow('Deposit Paid' + methodSuffix, '-$' + depositAmt.toFixed(2), null, green);
-        const isFullyPaid = balanceNum <= 0;
-        totRow(isFullyPaid ? 'PAID IN FULL' : 'BALANCE OWING',
-               '$' + balanceNum.toFixed(2),
-               isFullyPaid ? green : orange, null);
+        const methodNote = est.paymentMethod ? ' (' + est.paymentMethod + ')' : '';
+        totRow('Deposit Paid' + methodNote, '-$' + depositAmt.toFixed(2), null, green);
+        const paid = balanceNum <= 0;
+        totRow(paid ? 'PAID IN FULL' : 'BALANCE OWING', '$' + balanceNum.toFixed(2), paid ? green : orange, null);
     } else {
         totRow('BALANCE OWING', '$' + totalNum.toFixed(2), orange, null);
     }
 
-    y -= 18;
+    y -= 20;
 
-    // ── PAYMENT & TERMS ──────────────────────────────────────────────────────
-    page.drawText('Payment & Terms', { x: ML, y, size: 9, font: bold, color: darkGray });
-    y -= 6;
-    page.drawLine({ start: { x: ML, y }, end: { x: W - MR, y }, thickness: 0.5, color: midGray });
-    y -= 13;
-
-    const terms = [
-        'Payment is due upon completion of services.',
-        'E-transfer: corexteriors@gmail.com  |  Cash, cheque, and credit card accepted.',
-        'Core Exteriors carries $10M General Liability Insurance and is fully WSIB covered.',
-        'Thank you for choosing Core Exteriors \u2014 it was a pleasure working with you!',
-    ];
-    terms.forEach(t => {
-        page.drawText('\u2022 ' + s(t), { x: ML + 6, y, size: 8, font, color: darkGray });
-        y -= 12;
-    });
+    // ── PAYMENT INFO BOX ─────────────────────────────────────────────────────
+    const payBoxH = 56;
+    page.drawRectangle({ x: ML, y: y - payBoxH, width: CW, height: payBoxH, color: lightGray });
+    page.drawRectangle({ x: ML, y: y - payBoxH, width: 4,  height: payBoxH, color: navy });
+    page.drawText('PAYMENT INFORMATION',                                       { x: ML + 14, y: y - 15, size: 8,   font: bold, color: navy });
+    page.drawText('E-Transfer: corexteriors@gmail.com',                        { x: ML + 14, y: y - 31, size: 8.5, font,       color: darkGray });
+    page.drawText('Cash, Cheque & Credit Card also accepted  |  519-712-1431', { x: ML + 14, y: y - 46, size: 8.5, font,       color: darkGray });
+    y -= payBoxH + 14;
 
     // Notes
     const notes = s(est.survey?.notes || est.notes || '');
     if (notes) {
-        y -= 4;
-        page.drawText('Notes:', { x: ML + 6, y, size: 8, font: bold, color: gray });
-        y -= 12;
-        const noteLines = (notes.match(/.{1,110}(\s|$)/g) || [notes]);
-        noteLines.slice(0, 3).forEach(line => {
-            page.drawText(s(line.trim()), { x: ML + 6, y, size: 8, font, color: gray });
+        page.drawText('Notes:', { x: ML, y, size: 8, font: bold, color: gray });
+        y -= 13;
+        (notes.match(/.{1,110}(\s|$)/g) || [notes]).slice(0, 3).forEach(line => {
+            page.drawText(s(line.trim()), { x: ML, y, size: 8, font, color: gray });
             y -= 12;
         });
     }
 
-    // ── AUTHORIZED BY box ────────────────────────────────────────────────────
-    if (y > 90) {
-        y -= 8;
-        const sigBoxH = 58, sigBoxW = 200;
-        page.drawRectangle({ x: ML, y: y - sigBoxH, width: sigBoxW, height: sigBoxH, color: lightGray });
-        page.drawRectangle({ x: ML, y: y,            width: sigBoxW, height: 2,       color: navy });
-        page.drawText('AUTHORIZED BY', { x: ML + 8, y: y - 14, size: 6.5, font: bold, color: navy });
-        page.drawText('Core Exteriors', { x: ML + 8, y: y - 26, size: 10, font: bold, color: navy });
-
-        try {
-            let sigImg = null;
-            const savedSig = await kv.get('contractor_signature');
-            if (savedSig) {
-                const b64 = savedSig.includes(',') ? savedSig.split(',')[1] : savedSig;
-                sigImg = await doc.embedPng(Buffer.from(b64, 'base64'));
-            } else {
-                const pngPath = path.join(__dirname, 'contractor-sig.png');
-                const jpgPath = path.join(__dirname, 'contractor-sig.jpg');
-                const sigPath = fs.existsSync(pngPath) ? pngPath : fs.existsSync(jpgPath) ? jpgPath : null;
-                if (sigPath) {
-                    sigImg = sigPath.endsWith('.png')
-                        ? await doc.embedPng(fs.readFileSync(sigPath))
-                        : await doc.embedJpg(fs.readFileSync(sigPath));
-                }
-            }
-            if (sigImg) {
-                const dims = sigImg.scaleToFit(sigBoxW - 16, 26);
-                page.drawImage(sigImg, { x: ML + 8, y: y - sigBoxH + 8, width: dims.width, height: dims.height });
-            }
-        } catch (_) {}
-    }
-
     // ── FOOTER ───────────────────────────────────────────────────────────────
-    page.drawRectangle({ x: 0, y: 0,  width: W, height: 38, color: navy });
-    page.drawRectangle({ x: 0, y: 38, width: W, height: 3,  color: orange });
-    const footerTxt = 'Core Exteriors  \u2022  HST# 745847632 RT0001  \u2022  519-712-1431  \u2022  corexteriors@gmail.com  \u2022  corexteriors.ca';
+    page.drawRectangle({ x: 0, y: 0,  width: W, height: 44, color: navy });
+    page.drawRectangle({ x: 0, y: 44, width: W, height: 4,  color: orange });
+    const footerTxt = 'Core Exteriors  \u2022  HST# 745847632 RT0001  \u2022  203 Cambridge St, London, ON N6H 1N6  \u2022  519-712-1431  \u2022  corexteriors.ca';
     const ftw = font.widthOfTextAtSize(footerTxt, 7.5);
-    page.drawText(footerTxt, { x: (W - ftw) / 2, y: 14, size: 7.5, font, color: rgb(0.55, 0.63, 0.74) });
+    page.drawText(footerTxt, { x: (W - ftw) / 2, y: 16, size: 7.5, font, color: rgb(0.55, 0.63, 0.74) });
 
     return await doc.save();
 }

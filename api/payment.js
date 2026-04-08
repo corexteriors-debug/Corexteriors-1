@@ -2,6 +2,7 @@ const { kv } = require('@vercel/kv');
 const Stripe = require('stripe');
 const nodemailer = require('nodemailer');
 const { generateContractPDF } = require('./_contractPdf');
+const { generateEstimatePDF } = require('./_estimatePdf');
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', 'https://corexteriors.ca');
@@ -88,7 +89,15 @@ module.exports = async (req, res) => {
             console.error('Contract PDF error:', err.message);
         }
 
-        // Send ONE email: payment button in body + contract PDF attached
+        // Generate invoice PDF to attach alongside the contract
+        let invoicePdfBytes = null;
+        try {
+            invoicePdfBytes = await generateEstimatePDF(estData, { docType: 'INVOICE' });
+        } catch (err) {
+            console.error('Invoice PDF error in payment:', err.message);
+        }
+
+        // Send ONE email: payment button in body + contract + invoice PDFs attached
         let emailSent = false;
         try {
             emailSent = await sendPaymentEmail({
@@ -100,6 +109,7 @@ module.exports = async (req, res) => {
                 description: description || 'Exterior Services',
                 repName,
                 contractPdfBytes,
+                invoicePdfBytes,
                 estimateNumber: estData.estimateNumber,
             });
         } catch (err) {
@@ -119,7 +129,7 @@ module.exports = async (req, res) => {
     }
 };
 
-async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, isDeposit, description, repName, contractPdfBytes, estimateNumber }) {
+async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, isDeposit, description, repName, contractPdfBytes, invoicePdfBytes, estimateNumber }) {
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -134,6 +144,15 @@ async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, 
     const contractNum = estimateNumber || '';
 
     const attachments = [];
+    if (invoicePdfBytes) {
+        attachments.push({
+            filename: contractNum
+                ? 'CoreExteriors_Invoice_' + contractNum.replace(/ /g, '_') + '.pdf'
+                : 'CoreExteriors_Invoice.pdf',
+            content: Buffer.from(invoicePdfBytes),
+            contentType: 'application/pdf',
+        });
+    }
     if (contractPdfBytes) {
         attachments.push({
             filename: contractNum
