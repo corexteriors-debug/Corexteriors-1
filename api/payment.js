@@ -1,7 +1,6 @@
 const { kv } = require('@vercel/kv');
 const Stripe = require('stripe');
 const nodemailer = require('nodemailer');
-const { generateContractPDF } = require('./_contractPdf');
 const { generateEstimatePDF } = require('./_estimatePdf');
 
 module.exports = async (req, res) => {
@@ -79,17 +78,9 @@ module.exports = async (req, res) => {
         const repName = tokenData.repName || 'Core Exteriors Team';
         const checkoutUrl = session.url; // kept server-side only — never returned to the sales rep
 
-        // Generate contract PDF with payment URL embedded so client can see it on paper
-        let contractPdfBytes = null;
         const estData = estimate || { clientName, email: clientEmail };
-        try {
-            contractPdfBytes = await generateContractPDF(estData, signatureData || null, checkoutUrl);
-            console.log('Contract PDF generated, size:', contractPdfBytes.length);
-        } catch (err) {
-            console.error('Contract PDF error:', err.message);
-        }
 
-        // Generate invoice PDF to attach alongside the contract
+        // Generate invoice PDF to attach
         let invoicePdfBytes = null;
         try {
             invoicePdfBytes = await generateEstimatePDF(estData, { docType: 'INVOICE', signatureData: signatureData || null });
@@ -97,7 +88,7 @@ module.exports = async (req, res) => {
             console.error('Invoice PDF error in payment:', err.message);
         }
 
-        // Send ONE email: payment button in body + contract + invoice PDFs attached
+        // Send email: payment button in body + invoice PDF attached
         let emailSent = false;
         try {
             emailSent = await sendPaymentEmail({
@@ -108,7 +99,6 @@ module.exports = async (req, res) => {
                 isDeposit,
                 description: description || 'Exterior Services',
                 repName,
-                contractPdfBytes,
                 invoicePdfBytes,
                 estimateNumber: estData.estimateNumber,
             });
@@ -129,7 +119,7 @@ module.exports = async (req, res) => {
     }
 };
 
-async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, isDeposit, description, repName, contractPdfBytes, invoicePdfBytes, estimateNumber }) {
+async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, isDeposit, description, repName, invoicePdfBytes, estimateNumber }) {
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -150,15 +140,6 @@ async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, 
                 ? 'CoreExteriors_Invoice_' + contractNum.replace(/ /g, '_') + '.pdf'
                 : 'CoreExteriors_Invoice.pdf',
             content: Buffer.from(invoicePdfBytes),
-            contentType: 'application/pdf',
-        });
-    }
-    if (contractPdfBytes) {
-        attachments.push({
-            filename: contractNum
-                ? 'CoreExteriors_Contract_' + contractNum.replace(/ /g, '_') + '.pdf'
-                : 'CoreExteriors_Service_Agreement.pdf',
-            content: Buffer.from(contractPdfBytes),
             contentType: 'application/pdf',
         });
     }
