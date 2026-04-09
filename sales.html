@@ -991,7 +991,7 @@
                                         value="2" onchange="calcAll()"><label for="gutter_2">2 Story ($245)</label>
                                 </div>
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_3"
-                                        value="3" onchange="calcAll()"><label for="gutter_3">3 Story ($285)</label>
+                                        value="3" onchange="calcAll()"><label for="gutter_3">3 Story ($300)</label>
                                 </div>
                             </div>
                         </div>
@@ -1532,7 +1532,7 @@
             // GUTTER
             if (document.getElementById('svc_gutter').checked) {
                 const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
-                const base = { 1: 175, 2: 245, 3: 285 }[stories] || 175;
+                const base = { 1: 175, 2: 245, 3: 300 }[stories] || 175;
                 let gutterPrice = base;
                 if (document.getElementById('gutter_deep').checked) {
                     gutterPrice += 100 + (parseInt(stories) * 50);
@@ -2038,12 +2038,60 @@
         // Builds the estimate object from the current form state (shared by payment + submit)
         function buildEstimateObject() {
             const services = [];
-            const svcNames = { deck: 'Deck Restoration', gutter: 'Gutter Cleaning', interlock: 'Interlock Restoration', window: 'Window Cleaning', siding: 'Siding (Soft Wash)', garden: 'Garden Maintenance' };
-            ['deck', 'gutter', 'interlock', 'window', 'siding', 'garden'].forEach(s => {
-                if (document.getElementById('svc_' + s).checked) {
-                    services.push({ name: svcNames[s], price: document.getElementById('price_' + s).textContent });
+
+            // DECK
+            if (document.getElementById('svc_deck').checked) {
+                const cond = parseInt(document.getElementById('deck_condition').value);
+                let deckDetail = '';
+                if (cond === 0) {
+                    const linft = document.getElementById('deck_linft').value || '0';
+                    deckDetail = linft + ' lin ft (Replacement)';
+                } else {
+                    const sqft = document.getElementById('deck_sqft').value || '0';
+                    const rails = document.getElementById('deck_rails').checked ? ' + Rails' : '';
+                    deckDetail = sqft + ' sqft' + rails;
                 }
-            });
+                services.push({ name: 'Deck Restoration – ' + deckDetail, price: document.getElementById('price_deck').textContent });
+            }
+
+            // GUTTER
+            if (document.getElementById('svc_gutter').checked) {
+                const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
+                const storyLabel = { 1: '1 Story', 2: '2 Story', 3: '3 Story' }[stories] || '1 Story';
+                const deep = document.getElementById('gutter_deep').checked ? ' + Deep Clean' : '';
+                services.push({ name: 'Gutter Cleaning – ' + storyLabel + deep, price: document.getElementById('price_gutter').textContent });
+            }
+
+            // INTERLOCK
+            if (document.getElementById('svc_interlock').checked) {
+                const sqft = document.getElementById('interlock_sqft').value || '0';
+                const sev = document.getElementById('interlock_severity').value;
+                const sevLabel = { none: 'No Releveling', minor: 'Minor Releveling', moderate: 'Moderate Releveling', significant: 'Significant Releveling' }[sev] || sev;
+                const seal = document.getElementById('interlock_seal').checked ? ' + Seal' : '';
+                services.push({ name: 'Interlock Restoration – ' + sqft + ' sqft (' + sevLabel + ')' + seal, price: document.getElementById('price_interlock').textContent });
+            }
+
+            // WINDOW
+            if (document.getElementById('svc_window').checked) {
+                const count = document.getElementById('window_count').value || '0';
+                const type = document.querySelector('input[name="window_type"]:checked').value;
+                const typeLabel = type === 'full' ? 'Full Service' : 'Exterior Only';
+                services.push({ name: 'Window Cleaning – ' + count + ' Windows (' + typeLabel + ')', price: document.getElementById('price_window').textContent });
+            }
+
+            // SIDING
+            if (document.getElementById('svc_siding').checked) {
+                const stories = document.querySelector('input[name="siding_stories"]:checked').value;
+                const storyLabel = { 1: '1 Story', 2: '2 Story', 3: '3 Story' }[stories] || '1 Story';
+                services.push({ name: 'Siding Soft Wash – ' + storyLabel, price: document.getElementById('price_siding').textContent });
+            }
+
+            // GARDEN
+            if (document.getElementById('svc_garden').checked) {
+                services.push({ name: 'Garden Maintenance', price: document.getElementById('price_garden').textContent });
+            }
+
+            // OTHER — each custom item becomes its own line on the PDF
             if (document.getElementById('svc_other').checked) {
                 getOtherItems().forEach(item => {
                     if (item.name || item.price > 0) {
