@@ -249,6 +249,95 @@
             background: var(--light-gray);
         }
 
+        /* Hardscaping Section */
+        .hardscape-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .hardscape-card {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            background: #0a1628;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .hardscape-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+        }
+
+        .hardscape-card.wide {
+            grid-column: span 2;
+        }
+
+        .hardscape-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            aspect-ratio: 4/3;
+            transition: transform 0.45s ease, filter 0.3s ease;
+        }
+
+        .hardscape-card.wide img {
+            aspect-ratio: 16/9;
+        }
+
+        .hardscape-card:hover img {
+            transform: scale(1.04);
+            filter: brightness(0.82);
+        }
+
+        .hardscape-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(10,22,40,0.92) 0%, rgba(10,22,40,0.0) 100%);
+            padding: 2rem 1.25rem 1.1rem;
+            transition: opacity 0.3s;
+        }
+
+        .hardscape-location {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: #c9a227;
+            margin-bottom: .35rem;
+        }
+
+        .hardscape-location svg {
+            width: 11px; height: 11px;
+            fill: #c9a227;
+        }
+
+        .hardscape-title {
+            font-size: .97rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        @media (max-width: 900px) {
+            .hardscape-grid { grid-template-columns: repeat(2, 1fr); }
+            .hardscape-card.wide { grid-column: span 2; }
+        }
+
+        @media (max-width: 580px) {
+            .hardscape-grid { grid-template-columns: 1fr; }
+            .hardscape-card.wide { grid-column: span 1; }
+            .hardscape-card.wide img { aspect-ratio: 4/3; }
+        }
+
         /* Gallery CTA */
         .gallery-cta {
             text-align: center;
@@ -546,6 +635,7 @@
             <button class="filter-btn" data-filter="decks">Decks</button>
             <button class="filter-btn" data-filter="powerwash">Power Wash</button>
             <button class="filter-btn" data-filter="cleanup">Clean Up</button>
+            <button class="filter-btn" data-filter="hardscape">Hardscaping</button>
             <button class="filter-btn" data-filter="videos">Videos</button>
         </div>
     </section>
@@ -829,7 +919,129 @@
             </div>
         </div>
 
-        <!-- Section 4: Featured Videos (at bottom) -->
+        <!-- Section 4: Hardscaping -->
+        <div class="photos-section" data-category="hardscape">
+            <h2 class="gallery-section-title">Hardscaping & Landscape Design</h2>
+            <p class="gallery-section-subtitle" style="text-align:center;color:#4a5568;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Custom interlock, patios, outdoor kitchens, and landscape transformations across London and surrounding areas</p>
+
+            <div class="hardscape-grid">
+
+                <!-- Wide: Front Interlock Walkway — Masonville -->
+                <div class="hardscape-card wide" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/CSVS8207-HDR-scaled.jpg" loading="lazy"
+                        alt="Newly installed interlock paver front walkway and driveway at a brick home in Masonville London Ontario"
+                        data-label="Interlock Front Walkway &amp; Driveway — Masonville, London">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Masonville, London
+                        </div>
+                        <div class="hardscape-title">Interlock Front Walkway &amp; Driveway</div>
+                    </div>
+                </div>
+
+                <!-- Interlock Patio & Steps — Westmount -->
+                <div class="hardscape-card" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/CSVS8191-scaled.jpg" loading="lazy"
+                        alt="Interlock paver patio with stone steps and Japanese maple at a Westmount London Ontario home"
+                        data-label="Interlock Patio &amp; Steps — Westmount, London">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Westmount, London
+                        </div>
+                        <div class="hardscape-title">Interlock Patio &amp; Stone Steps</div>
+                    </div>
+                </div>
+
+                <!-- Flagstone Fire Pit Patio — Strathroy -->
+                <div class="hardscape-card" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/Frankruyters_CSVS6972_resize.jpg" loading="lazy"
+                        alt="Natural flagstone fire pit patio with seating area surrounded by ornamental grasses and gardens in Strathroy Ontario"
+                        data-label="Flagstone Fire Pit Patio — Strathroy, ON">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Strathroy, ON
+                        </div>
+                        <div class="hardscape-title">Flagstone Fire Pit &amp; Garden Patio</div>
+                    </div>
+                </div>
+
+                <!-- Outdoor Kitchen & Bar — Hyde Park -->
+                <div class="hardscape-card" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/Frankruyters_CSVS7024_HDR_resize.jpg" loading="lazy"
+                        alt="Custom outdoor kitchen and bar with concrete block construction and integrated lighting on a paver patio in Hyde Park London Ontario"
+                        data-label="Outdoor Kitchen &amp; Bar — Hyde Park, London">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Hyde Park, London
+                        </div>
+                        <div class="hardscape-title">Custom Outdoor Kitchen &amp; Bar</div>
+                    </div>
+                </div>
+
+                <!-- Wide: Backyard Patio & Pergola — Dorchester -->
+                <div class="hardscape-card wide" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/CSVS8354-HDR-scaled.jpg" loading="lazy"
+                        alt="Backyard patio with timber pergola, flagstone path, fire pit and garden beds at a home in Dorchester Ontario"
+                        data-label="Backyard Patio &amp; Pergola — Dorchester, ON">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Dorchester, ON
+                        </div>
+                        <div class="hardscape-title">Backyard Patio, Pergola &amp; Landscape</div>
+                    </div>
+                </div>
+
+                <!-- Pool Deck & Cabana — St. Thomas -->
+                <div class="hardscape-card" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/Frankruyters_CSVS7045_HDR-scaled.webp" loading="lazy"
+                        alt="Large format paver pool deck with modern timber cabana and outdoor lounge area in St. Thomas Ontario"
+                        data-label="Pool Deck &amp; Cabana — St. Thomas, ON">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            St. Thomas, ON
+                        </div>
+                        <div class="hardscape-title">Pool Deck &amp; Timber Cabana</div>
+                    </div>
+                </div>
+
+                <!-- Pool Deck & Outdoor Kitchen — South London -->
+                <div class="hardscape-card" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/Ovcjak_CSVS6776_HDR-scaled.webp" loading="lazy"
+                        alt="Large paver pool deck with custom outdoor kitchen island and BBQ station in South London Ontario"
+                        data-label="Pool Deck &amp; Outdoor Kitchen — South London">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            South London
+                        </div>
+                        <div class="hardscape-title">Pool Deck &amp; Outdoor Kitchen</div>
+                    </div>
+                </div>
+
+                <!-- Wide: Natural Stone Garden Path — Byron -->
+                <div class="hardscape-card wide" onclick="this.querySelector('img').click()">
+                    <img src="images/hardscape/CC-Contrest-edits.-44-scaled.jpg" loading="lazy"
+                        alt="Natural stone step garden path with lavender and ornamental plantings in Byron London Ontario"
+                        data-label="Natural Stone Garden Path — Byron, London">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Byron, London
+                        </div>
+                        <div class="hardscape-title">Natural Stone Garden Path &amp; Planting Design</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Section 5: Featured Videos (at bottom) -->
         <div class="videos-section" data-category="videos">
             <h2 class="gallery-section-title">Featured Videos</h2>
             <p class="gallery-section-subtitle">Watch our team in action</p>
