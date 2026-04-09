@@ -985,13 +985,13 @@
                             <label>Stories <span class="req">*</span></label>
                             <div class="radio-group">
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_1"
-                                        value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story
+                                        value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story ($175)
                                         ($275)</label></div>
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_2"
-                                        value="2" onchange="calcAll()"><label for="gutter_2">2 Story ($475)</label>
+                                        value="2" onchange="calcAll()"><label for="gutter_2">2 Story ($245)</label>
                                 </div>
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_3"
-                                        value="3" onchange="calcAll()"><label for="gutter_3">3 Story ($675)</label>
+                                        value="3" onchange="calcAll()"><label for="gutter_3">3 Story ($285)</label>
                                 </div>
                             </div>
                         </div>
@@ -1016,7 +1016,7 @@
                         <div class="field">
                             <label>Re leveling Severity</label>
                             <select id="interlock_severity" onchange="calcAll()">
-                                <option value="none">None (Base $2.05/sqft)</option>
+                                <option value="none">None (Base $1.75/sqft)</option>
                                 <option value="minor">Minor ($2.60/sqft total)</option>
                                 <option value="moderate">Moderate ($3.25/sqft total)</option>
                                 <option value="significant">Significant ($4.10/sqft total)</option>
@@ -1532,7 +1532,7 @@
             // GUTTER
             if (document.getElementById('svc_gutter').checked) {
                 const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
-                const base = { 1: 275, 2: 475, 3: 675 }[stories] || 275;
+                const base = { 1: 175, 2: 245, 3: 285 }[stories] || 175;
                 let gutterPrice = base;
                 if (document.getElementById('gutter_deep').checked) {
                     gutterPrice += 100 + (parseInt(stories) * 50);
@@ -1545,8 +1545,8 @@
             if (document.getElementById('svc_interlock').checked) {
                 const sqft = parseFloat(document.getElementById('interlock_sqft').value) || 0;
                 const sev = document.getElementById('interlock_severity').value;
-                const rates = { none: 2.05, minor: 2.60, moderate: 3.25, significant: 4.10 };
-                let intPrice = sqft * (rates[sev] || 2.05);
+                const rates = { none: 1.75, minor: 2.60, moderate: 3.25, significant: 4.10 };
+                let intPrice = sqft * (rates[sev] || 1.75);
                 if (document.getElementById('interlock_seal').checked) intPrice += 250;
                 document.getElementById('price_interlock').textContent = '$' + intPrice.toFixed(2);
                 subtotal += intPrice;
