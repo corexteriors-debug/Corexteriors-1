@@ -4,72 +4,427 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Commercial Exterior Maintenance | Core Exteriors</title>
     <meta name="title" content="Commercial Exterior Maintenance | Core Exteriors">
-    <meta name="description"
-        content="Full-service commercial and residential exterior maintenance company serving property managers, developers, and building owners across Southern Ontario. 10M insured.">
-    
+    <meta name="description" content="Full-service commercial exterior maintenance for property managers across Southern Ontario. $10M insured, WSIB compliant, Working at Heights certified. Net 30 billing.">
+    <link rel="canonical" href="https://corexteriors.ca/commercial">
     <link rel="icon" type="image/png" href="images/logo-mark.png">
     <link rel="apple-touch-icon" href="images/logo-mark.png">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css?v=6">
+    <style>
+        /* ── Commercial page extras ── */
+        .comm-area-strip {
+            background: #0a1628;
+            color: rgba(255,255,255,.75);
+            text-align: center;
+            padding: .6rem 1rem;
+            font-size: .82rem;
+            letter-spacing: .04em;
+        }
+        .comm-area-strip strong { color: #c9a227; }
+
+        /* Properties grid */
+        .comm-properties { padding: 5rem 1.5rem; background: #f4f6f9; }
+        .comm-properties-inner { max-width: 1100px; margin: 0 auto; }
+        .comm-section-label {
+            text-transform: uppercase;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            color: #c9a227;
+            margin-bottom: .75rem;
+        }
+        .comm-section-title {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            color: #0a1628;
+            margin-bottom: .75rem;
+            line-height: 1.2;
+        }
+        .comm-section-sub {
+            font-size: 1rem;
+            color: #4a5568;
+            margin-bottom: 2.5rem;
+            max-width: 560px;
+        }
+        .prop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .prop-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-size: .9rem;
+            font-weight: 600;
+            color: #1a202c;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .prop-card:hover { border-color: #c9a227; box-shadow: 0 2px 12px rgba(201,162,39,.12); }
+        .prop-dot {
+            width: 8px; height: 8px;
+            background: #c9a227;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Services tabs */
+        .comm-services { padding: 5rem 1.5rem; background: #fff; }
+        .comm-services-inner { max-width: 1100px; margin: 0 auto; }
+        .svc-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin-bottom: 2rem;
+        }
+        .svc-tab {
+            background: none;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            padding: .5rem 1.1rem;
+            font-size: .85rem;
+            font-weight: 600;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all .18s;
+            font-family: inherit;
+        }
+        .svc-tab:hover { border-color: #c9a227; color: #0a1628; }
+        .svc-tab.active { background: #0a1628; border-color: #0a1628; color: #fff; }
+        .svc-panel { display: none; }
+        .svc-panel.active { display: block; }
+        .svc-tags { display: flex; flex-wrap: wrap; gap: .6rem; }
+        .svc-tag {
+            background: #f4f6f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: .4rem .95rem;
+            font-size: .83rem;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        .svc-panel-intro {
+            font-size: .95rem;
+            color: #4a5568;
+            margin-bottom: 1.25rem;
+            line-height: 1.65;
+        }
+
+        /* Two ways */
+        .comm-ways { padding: 5rem 1.5rem; background: #0a1628; }
+        .comm-ways-inner { max-width: 1100px; margin: 0 auto; }
+        .comm-ways-inner .comm-section-title { color: #fff; }
+        .comm-ways-inner .comm-section-sub { color: rgba(255,255,255,.6); }
+        .ways-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2.5rem;
+        }
+        @media (max-width: 640px) { .ways-grid { grid-template-columns: 1fr; } }
+        .way-card {
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        .way-card.featured { border-color: #c9a227; background: rgba(201,162,39,.07); }
+        .way-badge {
+            display: inline-block;
+            background: #c9a227;
+            color: #0a1628;
+            font-size: .7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            padding: .25rem .65rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .way-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: .75rem;
+        }
+        .way-desc {
+            font-size: .9rem;
+            color: rgba(255,255,255,.65);
+            line-height: 1.65;
+            margin-bottom: 1.25rem;
+        }
+        .way-bullets { list-style: none; padding: 0; margin: 0; }
+        .way-bullets li {
+            font-size: .87rem;
+            color: rgba(255,255,255,.75);
+            padding: .3rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: .5rem;
+        }
+        .way-bullets li::before { content: "✓"; color: #c9a227; font-weight: 700; flex-shrink: 0; }
+        .billing-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .billing-chip {
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 8px;
+            padding: .9rem 1.1rem;
+            text-align: center;
+        }
+        .billing-chip strong { display: block; font-size: 1rem; color: #c9a227; font-weight: 800; }
+        .billing-chip span { font-size: .78rem; color: rgba(255,255,255,.5); }
+
+        /* Insurance table */
+        .comm-insurance { padding: 5rem 1.5rem; background: #f4f6f9; }
+        .comm-insurance-inner { max-width: 1100px; margin: 0 auto; }
+        .ins-table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-top: 2rem;
+        }
+        .ins-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            font-size: .9rem;
+        }
+        .ins-table thead tr { background: #0a1628; }
+        .ins-table thead th {
+            padding: .9rem 1.25rem;
+            text-align: left;
+            font-weight: 700;
+            color: #fff;
+            font-size: .82rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+        .ins-table tbody tr { border-bottom: 1px solid #e2e8f0; }
+        .ins-table tbody tr:last-child { border-bottom: none; }
+        .ins-table tbody td { padding: .85rem 1.25rem; color: #2d3748; }
+        .ins-table tbody td:first-child { font-weight: 600; color: #0a1628; }
+        .ins-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            border-radius: 20px;
+            padding: .25rem .75rem;
+            font-size: .8rem;
+            font-weight: 600;
+        }
+        .ins-badge::before { content: "✓"; }
+        .ins-note {
+            margin-top: 1.5rem;
+            padding: 1.1rem 1.5rem;
+            background: #fff;
+            border-left: 4px solid #c9a227;
+            border-radius: 0 8px 8px 0;
+            font-size: .9rem;
+            color: #4a5568;
+            line-height: 1.65;
+        }
+
+        /* Process */
+        .comm-process { padding: 5rem 1.5rem; background: #fff; }
+        .comm-process-inner { max-width: 1100px; margin: 0 auto; }
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-top: 2.5rem;
+        }
+        .process-card {
+            background: #f4f6f9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            border: 1px solid #e2e8f0;
+        }
+        .process-num {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #c9a227;
+            opacity: .35;
+            line-height: 1;
+            margin-bottom: .5rem;
+        }
+        .process-title { font-size: 1rem; font-weight: 700; color: #0a1628; margin-bottom: .5rem; }
+        .process-desc { font-size: .87rem; color: #4a5568; line-height: 1.6; }
+
+        /* Who we work with */
+        .comm-clients { padding: 5rem 1.5rem; background: #0a1628; }
+        .comm-clients-inner { max-width: 1100px; margin: 0 auto; }
+        .comm-clients-inner .comm-section-title { color: #fff; }
+        .comm-clients-inner .comm-section-sub { color: rgba(255,255,255,.6); }
+        .client-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .client-chip {
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 8px;
+            padding: .85rem 1.4rem;
+            font-size: .9rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .client-chip span { color: #c9a227; }
+        .client-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .client-stat {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 12px;
+        }
+        .client-stat-num { font-size: 2rem; font-weight: 900; color: #c9a227; display: block; }
+        .client-stat-label { font-size: .8rem; color: rgba(255,255,255,.5); margin-top: .25rem; }
+        .client-ref {
+            margin-top: 1.5rem;
+            font-size: .88rem;
+            color: rgba(255,255,255,.45);
+            text-align: center;
+        }
+
+        /* Why choose */
+        .comm-why { padding: 5rem 1.5rem; background: #f4f6f9; }
+        .comm-why-inner { max-width: 1100px; margin: 0 auto; }
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-top: 2.5rem;
+        }
+        .why-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.75rem;
+            transition: box-shadow .2s, border-color .2s;
+        }
+        .why-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); border-color: #c9a227; }
+        .why-icon {
+            width: 44px; height: 44px;
+            background: #0a1628;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .why-icon svg { width: 22px; height: 22px; stroke: #c9a227; fill: none; stroke-width: 2; }
+        .why-title { font-size: 1rem; font-weight: 700; color: #0a1628; margin-bottom: .5rem; }
+        .why-desc { font-size: .87rem; color: #4a5568; line-height: 1.65; }
+
+        /* Bottom CTA */
+        .comm-bottom-cta {
+            padding: 5rem 1.5rem;
+            background: linear-gradient(135deg, #0a1628 0%, #112240 100%);
+            text-align: center;
+        }
+        .comm-bottom-cta h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; color: #fff; margin-bottom: .75rem; }
+        .comm-bottom-cta p { color: rgba(255,255,255,.6); font-size: 1rem; margin-bottom: 2rem; }
+        .cta-pair { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .cta-primary {
+            background: #c9a227;
+            color: #0a1628;
+            font-weight: 800;
+            padding: .9rem 2.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: .95rem;
+            transition: background .2s, transform .15s;
+        }
+        .cta-primary:hover { background: #e0b82e; transform: translateY(-1px); }
+        .cta-secondary {
+            background: rgba(255,255,255,.08);
+            color: #fff;
+            font-weight: 600;
+            padding: .9rem 2.2rem;
+            border: 1px solid rgba(255,255,255,.2);
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: .95rem;
+            transition: background .2s;
+        }
+        .cta-secondary:hover { background: rgba(255,255,255,.14); }
+        .owners-row {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,.1);
+        }
+        .owner-info { text-align: center; }
+        .owner-name { font-size: .95rem; font-weight: 700; color: #fff; }
+        .owner-role { font-size: .78rem; color: rgba(255,255,255,.45); margin-top: .2rem; }
+    </style>
 </head>
 
 <body>
     <!-- Header -->
     <header class="header">
-        <!-- Row 1: Top Utility Bar -->
         <div class="utility-bar">
             <div class="utility-container">
                 <div class="utility-left">
-                    <a href="mailto:info@corexteriors.com" class="utility-link">
+                    <a href="mailto:corexteriors@gmail.com" class="utility-link">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
-                            </path>
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                             <polyline points="22,6 12,13 2,6"></polyline>
                         </svg>
-                        <span>Email Us</span>
+                        <span>corexteriors@gmail.com</span>
                     </a>
                     <a href="tel:519-712-1431" class="utility-link">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path
-                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                            </path>
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                         </svg>
                         <span>519-712-1431</span>
                     </a>
                 </div>
                 <div class="utility-right">
                     <div class="lang-buttons">
-                        <button class="lang-toggle lang-en active" id="langToggleEN" aria-label="Switch to English">
-                            <span class="lang-text">EN</span>
-                        </button>
-                        <button class="lang-toggle lang-fr" id="langToggleFR" aria-label="Switch to French">
-                            <span class="lang-text">FR</span>
-                        </button>
+                        <button class="lang-toggle lang-en active" id="langToggleEN" aria-label="Switch to English"><span class="lang-text">EN</span></button>
+                        <button class="lang-toggle lang-fr" id="langToggleFR" aria-label="Switch to French"><span class="lang-text">FR</span></button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Row 2: Main Menu Bar -->
         <nav class="main-nav">
             <div class="nav-container">
                 <a href="index.html" class="logo">
                     <img src="images/logo-letterform.png" alt="Core Exteriors" class="logo-image">
                 </a>
-
                 <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
                     <span class="hamburger"></span>
                 </button>
-
                 <ul class="nav-links" id="navLinks">
                     <li><a href="index.html#services">Services</a></li>
-                    <li><a href="commercial.html">Commercial</a></li>
+                    <li><a href="commercial.html" class="active">Commercial</a></li>
                     <li><a href="index.html#why-us">Why Us</a></li>
                     <li><a href="gallery.html">Gallery</a></li>
                     <li><a href="index.html#testimonials">Testimonials</a></li>
@@ -77,13 +432,12 @@
                     <li><a href="blog.html">Blog</a></li>
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
-
-                <a href="#quoteFormContainer" class="cta-button" onclick="document.getElementById('name').focus()">GET A FREE ESTIMATE</a>
+                <a href="#quoteFormContainer" class="cta-button" onclick="document.getElementById('name').focus()">GET A COMMERCIAL BID</a>
             </div>
         </nav>
     </header>
 
-    <!-- Commercial Hero Section (Mimicking main hero with form) -->
+    <!-- Hero -->
     <section class="hero">
         <div class="hero-container">
             <div class="hero-content">
@@ -93,20 +447,20 @@
                     <span class="headline-line accent">Exterior Maintenance.</span>
                 </h1>
                 <p class="hero-subheadline">
-                    Serving property managers, developers, and building owners across Southern Ontario.
+                    One company. One point of contact. Every exterior service your property portfolio needs — done right.
                 </p>
                 <div class="hero-features">
                     <div class="hero-feature">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                        <span>No Franchise Fees</span>
+                        <span>$10M Liability Insurance</span>
                     </div>
                     <div class="hero-feature">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                        <span>$10M Insurance coverage</span>
+                        <span>WSIB Compliant &amp; Working at Heights</span>
                     </div>
                     <div class="hero-feature">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                        <span>Working at Heights Certified</span>
+                        <span>Net 30 Billing · No Franchise Fees</span>
                     </div>
                 </div>
             </div>
@@ -115,8 +469,8 @@
                     <div class="form-seal-wrap">
                         <img src="images/logo-emblem.png" alt="Core Exteriors Seal" class="form-seal">
                     </div>
-                    <h3 class="form-title">Get a Commercial Bid</h3>
-                    <p class="form-subtitle">Net 30 billing • Itemized clear quotes</p>
+                    <h3 class="form-title">Request a Commercial Bid</h3>
+                    <p class="form-subtitle">Free on-site walkthrough · Written quote in 48 hrs</p>
                     <form class="quote-form" id="quoteForm">
                         <div class="form-group">
                             <input type="text" id="name" name="name" placeholder="Contact Name / Property Manager" required>
@@ -130,28 +484,28 @@
                         <div class="form-group">
                             <input type="email" id="email" name="email" placeholder="Email Address" required>
                         </div>
-                        <button type="submit" class="form-submit">Request Commercial Bid</button>
+                        <button type="submit" class="form-submit">Send Bid Request</button>
                     </form>
                     <p class="form-note">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-                        Your info is 100% secure
+                        COIs provided before your first job
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Service Area Strip -->
+    <div class="comm-area-strip">
+        Serving all of Southern Ontario — <strong>Sarnia · London · Hamilton · Niagara Falls</strong> and every community in between
+    </div>
+
     <!-- Trust Bar -->
     <section class="trust-bar">
         <div class="trust-container">
             <div class="trust-item">
-                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                <span>6+ Fleet Trucks</span>
-            </div>
-            <div class="trust-divider"></div>
-            <div class="trust-item">
                 <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                <span>10 Million Liability Insurance</span>
+                <span>$10M Liability Insurance</span>
             </div>
             <div class="trust-divider"></div>
             <div class="trust-item">
@@ -160,338 +514,460 @@
             </div>
             <div class="trust-divider"></div>
             <div class="trust-item">
-                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25c0 1.38 1.12 2.5 2.5 2.5.53 0 1.01-.16 1.42-.44l-.02.19c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5l-.02-.19c.4.28.89.44 1.42.44 1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.43-2.25.84-.4 1.43-1.25 1.43-2.25 0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l.02-.19C14.5 2.12 13.38 1 12 1S9.5 2.12 9.5 3.5l.02.19c-.4-.28-.89-.44-1.42-.44-1.38 0-2.5 1.12-2.5 2.5 0 1 .59 1.85 1.43 2.25-.84.4-1.43 1.25-1.43 2.25zM12 5.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8s1.12-2.5 2.5-2.5zM3 13c0 4.97 4.03 9 9 9 0-4.97-4.03-9-9-9z"/></svg>
-                <span>Eco-Friendly Products</span>
+                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>6+ Fleet Trucks · 20+ Crew Daily</span>
+            </div>
+            <div class="trust-divider"></div>
+            <div class="trust-item">
+                <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span>Same &amp; Next Day Available</span>
             </div>
         </div>
     </section>
 
-    <!-- Who We Are (Using How It Works Layout) -->
-    <section class="how-it-works">
-        <div class="hiw-container">
-            <h2 class="hiw-title">Who We Are</h2>
-            <p class="why-choose-subtitle">We don't cut corners on quality or coverage.</p>
-            <div class="hiw-steps">
-                <div class="hiw-step">
-                    <div class="step-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 22h20L12 2zm0 3.8l7.2 14.2H4.8L12 5.8z"/></svg>
-                    </div>
-                    <h3 class="step-title">No Franchise Fees</h3>
-                    <p class="step-desc">Independently owned. No corporate royalties means our pricing is roughly 20% lower than the large franchises.</p>
-                </div>
-                <div class="hiw-connector"></div>
-                <div class="hiw-step">
-                    <div class="step-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H8C6.9 1 6 1.9 6 3v18c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zM8 3h8v2H8V3zm8 18H8v-2h8v2zm0-4H8V5h8v12z"/></svg>
-                    </div>
-                    <h3 class="step-title">The Equipment</h3>
-                    <p class="step-desc">6+ fully equipped trucks and trailers. 10+ core crew members. 20+ people on jobs daily. We have the mass to handle your property.</p>
-                </div>
-                <div class="hiw-connector"></div>
-                <div class="hiw-step">
-                    <div class="step-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                    </div>
-                    <h3 class="step-title">Full Insurance</h3>
-                    <p class="step-desc">COIs provided before the first job. WSIB compliant. Working at Heights. Full commercial auto policies.</p>
-                </div>
+    <!-- Properties We Serve -->
+    <section class="comm-properties">
+        <div class="comm-properties-inner">
+            <p class="comm-section-label">Properties We Serve</p>
+            <h2 class="comm-section-title">Built for Property Managers &amp; Building Owners</h2>
+            <p class="comm-section-sub">We work with all types of commercial and multi-residential properties across Southern Ontario.</p>
+            <div class="prop-grid">
+                <div class="prop-card"><span class="prop-dot"></span>High-rise &amp; mid-rise residential</div>
+                <div class="prop-card"><span class="prop-dot"></span>Retail plazas &amp; shopping centres</div>
+                <div class="prop-card"><span class="prop-dot"></span>Multi-unit residential complexes</div>
+                <div class="prop-card"><span class="prop-dot"></span>Office buildings &amp; corporate campuses</div>
+                <div class="prop-card"><span class="prop-dot"></span>Restaurants &amp; food service properties</div>
+                <div class="prop-card"><span class="prop-dot"></span>Industrial &amp; warehouse facilities</div>
+                <div class="prop-card"><span class="prop-dot"></span>Medical &amp; dental offices</div>
+                <div class="prop-card"><span class="prop-dot"></span>Hotels &amp; hospitality</div>
+                <div class="prop-card"><span class="prop-dot"></span>Condominiums &amp; strata buildings</div>
+                <div class="prop-card"><span class="prop-dot"></span>New construction &amp; development sites</div>
             </div>
         </div>
     </section>
 
-    <!-- Services Section -->
-    <section class="services" id="services">
-        <div class="services-container">
-            <h2 class="services-title">Commercial Services</h2>
-            <p class="services-subtitle">Everything your property needs to stay pristine and safe</p>
+    <!-- Commercial Services (Tabbed) -->
+    <section class="comm-services" id="services">
+        <div class="comm-services-inner">
+            <p class="comm-section-label">What We Do</p>
+            <h2 class="comm-section-title">Full-Scope Commercial Services</h2>
+            <p class="comm-section-sub">Everything your property needs — one vendor, one invoice, one point of contact.</p>
 
-            <div class="services-grid">
-                <!-- Cleaning -->
-                <div class="service-card popular">
-                    <div class="popular-tag">Specialty</div>
-                    <div class="service-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="8" y="40" width="16" height="16" />
-                            <rect x="24" y="40" width="16" height="16" />
-                            <rect x="40" y="40" width="16" height="16" />
-                            <rect x="16" y="24" width="16" height="16" />
-                            <rect x="32" y="24" width="16" height="16" />
-                            <rect x="24" y="8" width="16" height="16" />
-                        </svg>
-                    </div>
-                    <h3 class="service-title">Pressure Cleaning & Washing</h3>
-                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
-                        <li>Sidewalks and walkways</li>
-                        <li>Building facades and exteriors</li>
-                        <li>Driveways and parking lots</li>
-                        <li>Storefronts and entrance areas</li>
-                        <li>Loading docks and ramps</li>
-                        <li>Siding cleaning</li>
-                        <li>Parking garages</li>
-                        <li>Concrete and brick surfaces</li>
-                        <li>Dumpster pads and waste areas</li>
-                        <li>Drive-thru lanes</li>
-                        <li>Graffiti removal</li>
-                        <li>Oil and grease cleaning (restaurants/commercial kitchens)</li>
-                        <li>Post-construction exterior cleanup</li>
-                        <li>Exterior sanitization and disinfection</li>
-                        <li>Rust removal and surface treatment</li>
-                        <li>Awning and canopy cleaning</li>
-                    </ul>
-                </div>
+            <div class="svc-tabs">
+                <button class="svc-tab active" onclick="showTab('pressure')">Pressure Washing</button>
+                <button class="svc-tab" onclick="showTab('windows')">Window Cleaning</button>
+                <button class="svc-tab" onclick="showTab('specialty')">Specialty Cleaning</button>
+                <button class="svc-tab" onclick="showTab('maintenance')">Maintenance &amp; Restoration</button>
+                <button class="svc-tab" onclick="showTab('landscape')">Landscaping &amp; Hardscaping</button>
+                <button class="svc-tab" onclick="showTab('seasonal')">Seasonal</button>
+            </div>
 
-                <!-- Windows -->
-                <div class="service-card">
-                    <div class="service-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="8" y="8" width="20" height="48" rx="1" />
-                            <rect x="36" y="16" width="20" height="40" rx="1" />
-                            <line x1="14" y1="16" x2="22" y2="16" />
-                            <line x1="14" y1="26" x2="22" y2="26" />
-                            <line x1="42" y1="24" x2="50" y2="24" />
-                            <line x1="42" y1="34" x2="50" y2="34" />
-                        </svg>
-                    </div>
-                    <h3 class="service-title">High & Low Rise Windows</h3>
-                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
-                        <li>Low-rise commercial windows</li>
-                        <li>High-rise window cleaning (Working at Heights certified)</li>
-                        <li>Interior and exterior glass</li>
-                        <li>Storefront and retail glass</li>
-                        <li>Post-construction glass cleaning</li>
-                        <li>Frame and sill detailing</li>
-                    </ul>
-                </div>
-
-                <!-- Maintenance -->
-                <div class="service-card">
-                    <div class="service-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M8 20 L32 8 L56 20" />
-                            <path d="M12 20 L12 24 L52 24 L52 20" />
-                            <rect x="12" y="24" width="40" height="6" />
-                            <path d="M48 30 L48 44 L44 48 L44 56" />
-                            <circle cx="44" cy="40" r="2" fill="currentColor" />
-                        </svg>
-                    </div>
-                    <h3 class="service-title">Property Maintenance</h3>
-                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
-                        <li>Exterior painting (commercial and residential)</li>
-                        <li>Caulking and weather sealing</li>
-                        <li>Fence and railing maintenance</li>
-                        <li>Deck restoration (power washing, sanding, staining)</li>
-                        <li>Gutter cleaning and flow testing</li>
-                        <li>Catch basin and drain cleaning</li>
-                        <li>Roof inspections and minor repairs</li>
-                        <li>Sign cleaning and maintenance</li>
-                        <li>Exterior lighting and bulb replacement</li>
-                        <li>Bird and pest deterrent installation</li>
-                        <li>Balcony cleaning for multi-unit residential</li>
-                    </ul>
-                </div>
-
-                <!-- Landscape -->
-                <div class="service-card">
-                    <div class="service-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 56 L60 56 M8 56 L8 20 L56 20 L56 56 M4 20 L32 4 L60 20" />
-                            <rect x="24" y="36" width="16" height="20" />
-                        </svg>
-                    </div>
-                    <h3 class="service-title">Landscaping & Hardscaping</h3>
-                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
-                        <li>Lawn care and grass cutting</li>
-                        <li>Tree and shrub trimming</li>
-                        <li>Weed control and mulching</li>
-                        <li>Paver leveling and resetting</li>
-                        <li>Pothole patching and asphalt repair</li>
-                        <li>Parking lot sweeping and line painting</li>
-                        <li>Driveway and concrete sealing</li>
-                        <li>Curb repair and painting</li>
-                    </ul>
-                </div>
-                
-                <!-- Seasonal -->
-                <div class="service-card">
-                    <div class="service-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="32" cy="32" r="24" stroke-dasharray="4 4" />
-                            <path d="M32 16 L32 48 M16 32 L48 32 M21 21 L43 43 M21 43 L43 21" />
-                        </svg>
-                    </div>
-                    <h3 class="service-title">Seasonal Services</h3>
-                    <ul class="service-description" style="list-style:disc; margin-left:1.5rem; text-align:left;">
-                        <li>Snow clearing and plowing</li>
-                        <li>Ice management and salting</li>
-                        <li>Salt damage cleaning</li>
-                        <li>Holiday lighting installation and removal</li>
-                        <li>Spring exterior property refresh</li>
-                        <li>Leaf removal and fall cleanup</li>
-                        <li>Winter property inspections</li>
-                    </ul>
+            <div class="svc-panel active" id="tab-pressure">
+                <p class="svc-panel-intro">High-powered cleaning for all exterior surfaces — parking lots to building facades.</p>
+                <div class="svc-tags">
+                    <span class="svc-tag">Sidewalks &amp; walkways</span>
+                    <span class="svc-tag">Building facades &amp; exteriors</span>
+                    <span class="svc-tag">Driveways &amp; parking lots</span>
+                    <span class="svc-tag">Storefronts &amp; entrance areas</span>
+                    <span class="svc-tag">Loading docks &amp; ramps</span>
+                    <span class="svc-tag">Siding cleaning</span>
+                    <span class="svc-tag">Parking garages</span>
+                    <span class="svc-tag">Concrete &amp; brick surfaces</span>
+                    <span class="svc-tag">Dumpster pads &amp; waste areas</span>
+                    <span class="svc-tag">Drive-thru lanes</span>
                 </div>
             </div>
-            
-            <div class="services-cta">
-                <a href="#quoteFormContainer" onclick="document.getElementById('name').focus()" class="cta-button-commercial">REQUEST A BID</a>
+
+            <div class="svc-panel" id="tab-windows">
+                <p class="svc-panel-intro">Low-rise to high-rise window cleaning — our crew is Working at Heights certified for every elevated job.</p>
+                <div class="svc-tags">
+                    <span class="svc-tag">Low-rise commercial windows</span>
+                    <span class="svc-tag">High-rise (Working at Heights certified)</span>
+                    <span class="svc-tag">Interior &amp; exterior glass</span>
+                    <span class="svc-tag">Storefront &amp; retail glass</span>
+                    <span class="svc-tag">Post-construction glass cleaning</span>
+                    <span class="svc-tag">Frame &amp; sill detailing</span>
+                </div>
+            </div>
+
+            <div class="svc-panel" id="tab-specialty">
+                <p class="svc-panel-intro">Specialized cleaning for situations standard pressure washing can't handle.</p>
+                <div class="svc-tags">
+                    <span class="svc-tag">Graffiti removal</span>
+                    <span class="svc-tag">Post-construction exterior cleanup</span>
+                    <span class="svc-tag">Oil &amp; grease cleaning</span>
+                    <span class="svc-tag">Exterior sanitization &amp; disinfection</span>
+                    <span class="svc-tag">Dumpster &amp; bin sanitization</span>
+                    <span class="svc-tag">Dryer vent cleaning</span>
+                    <span class="svc-tag">Rust removal &amp; surface treatment</span>
+                    <span class="svc-tag">Cigarette butt station cleanup</span>
+                    <span class="svc-tag">Moss &amp; algae treatment</span>
+                    <span class="svc-tag">Awning &amp; canopy cleaning</span>
+                </div>
+            </div>
+
+            <div class="svc-panel" id="tab-maintenance">
+                <p class="svc-panel-intro">Ongoing building and grounds maintenance to protect your property investment.</p>
+                <div class="svc-tags">
+                    <span class="svc-tag">Exterior &amp; interior painting</span>
+                    <span class="svc-tag">Caulking &amp; weather sealing</span>
+                    <span class="svc-tag">Deck restoration</span>
+                    <span class="svc-tag">Stucco &amp; masonry repair</span>
+                    <span class="svc-tag">Balcony &amp; railing repainting</span>
+                    <span class="svc-tag">Gutter cleaning &amp; flow testing</span>
+                    <span class="svc-tag">Catch basin &amp; drain cleaning</span>
+                    <span class="svc-tag">Roof inspections &amp; minor repairs</span>
+                    <span class="svc-tag">Sign cleaning &amp; maintenance</span>
+                    <span class="svc-tag">Exterior lighting &amp; bulb replacement</span>
+                    <span class="svc-tag">Bird &amp; pest deterrent installation</span>
+                    <span class="svc-tag">Balcony cleaning (multi-unit residential)</span>
+                    <span class="svc-tag">Fence repair &amp; replacement</span>
+                    <span class="svc-tag">Patio furniture cleaning &amp; setup</span>
+                </div>
+            </div>
+
+            <div class="svc-panel" id="tab-landscape">
+                <p class="svc-panel-intro">Complete grounds and hardscape services to keep your property looking sharp year-round.</p>
+                <div class="svc-tags">
+                    <span class="svc-tag">Lawn care &amp; grass cutting</span>
+                    <span class="svc-tag">Tree &amp; shrub trimming</span>
+                    <span class="svc-tag">Garden bed cleanup &amp; maintenance</span>
+                    <span class="svc-tag">Flower bed design &amp; planting</span>
+                    <span class="svc-tag">Weed control &amp; mulching</span>
+                    <span class="svc-tag">Sod installation</span>
+                    <span class="svc-tag">Paver leveling &amp; resetting</span>
+                    <span class="svc-tag">Pothole patching &amp; asphalt repair</span>
+                    <span class="svc-tag">Interlock restoration</span>
+                    <span class="svc-tag">Parking lot sweeping &amp; line painting</span>
+                    <span class="svc-tag">Polymeric sand installation</span>
+                    <span class="svc-tag">Bollard &amp; speed bump installation</span>
+                    <span class="svc-tag">Retaining wall repair</span>
+                    <span class="svc-tag">Driveway &amp; concrete sealing</span>
+                    <span class="svc-tag">Curb repair &amp; painting</span>
+                </div>
+            </div>
+
+            <div class="svc-panel" id="tab-seasonal">
+                <p class="svc-panel-intro">Year-round seasonal services so your property stays managed through every Ontario season.</p>
+                <div class="svc-tags">
+                    <span class="svc-tag">Snow clearing &amp; plowing</span>
+                    <span class="svc-tag">Ice management &amp; salting</span>
+                    <span class="svc-tag">Leaf removal &amp; fall cleanup</span>
+                    <span class="svc-tag">Salt damage cleaning</span>
+                    <span class="svc-tag">Holiday lighting installation &amp; removal</span>
+                    <span class="svc-tag">Spring exterior property refresh</span>
+                    <span class="svc-tag">Seasonal gutter clearing</span>
+                    <span class="svc-tag">Winter property inspections</span>
+                </div>
+            </div>
+
+            <div style="margin-top:2rem;">
+                <a href="#quoteFormContainer" onclick="document.getElementById('name').focus()" class="cta-primary">Request a Bid for Your Property</a>
             </div>
         </div>
     </section>
 
-    <!-- Our Process Section -->
-    <section class="how-it-works" style="background:#f8fafc;">
-        <div class="hiw-container">
-            <h2 class="hiw-title">Our Process</h2>
-            <p class="why-choose-subtitle">From first conversation to final follow-up.</p>
-            <div class="hiw-steps" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left;">
-                <div class="advantage-card" style="margin:0; padding:1.5rem;">
-                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">01. Contact</h3>
-                    <p class="advantage-description">You reach out or we connect. We learn about your property and what you need.</p>
+    <!-- Two Ways to Work With Us -->
+    <section class="comm-ways">
+        <div class="comm-ways-inner">
+            <p class="comm-section-label" style="color:#c9a227;">How We Work</p>
+            <h2 class="comm-section-title">Two Ways to Work With Us</h2>
+            <p class="comm-section-sub">Both include the same quality, documentation, and communication. You decide what fits your portfolio.</p>
+
+            <div class="ways-grid">
+                <div class="way-card">
+                    <div class="way-badge">On-Call</div>
+                    <div class="way-title">On-Call Service</div>
+                    <p class="way-desc">Same-day or next-day availability. You call, we show up. No long-term commitment required.</p>
+                    <ul class="way-bullets">
+                        <li>Ideal for one-off jobs &amp; emergencies</li>
+                        <li>No ongoing contract needed</li>
+                        <li>Fast response within 24 hours</li>
+                        <li>Per-job billing</li>
+                    </ul>
                 </div>
-                <div class="advantage-card" style="margin:0; padding:1.5rem;">
-                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">02. Walkthrough</h3>
-                    <p class="advantage-description">We visit your property in person, assess the scope, identify problem areas, and take notes.</p>
+                <div class="way-card featured">
+                    <div class="way-badge">Contract</div>
+                    <div class="way-title">Scheduled Contract Service</div>
+                    <p class="way-desc">Recurring maintenance on a set schedule — weekly, bi-weekly, monthly, or seasonal. You never have to think about it.</p>
+                    <ul class="way-bullets">
+                        <li>Consistent crew &amp; single point of contact</li>
+                        <li>Predictable pricing &amp; scheduling</li>
+                        <li>Before-and-after documentation on every visit</li>
+                        <li>Monthly or quarterly billing available</li>
+                    </ul>
                 </div>
-                <div class="advantage-card" style="margin:0; padding:1.5rem;">
-                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">03. Custom Quote</h3>
-                    <p class="advantage-description">You receive a detailed written quote within 48 hours. Itemized, transparent, no hidden fees.</p>
-                </div>
-                <div class="advantage-card" style="margin:0; padding:1.5rem;">
-                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">04. Scheduling</h3>
-                    <p class="advantage-description">Once approved, we lock in a schedule that works for your tenants. One point of contact.</p>
-                </div>
-                <div class="advantage-card" style="margin:0; padding:1.5rem;">
-                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">05. Execution</h3>
-                    <p class="advantage-description">Our crew shows up on time, completes the work to our standard, and does not leave until it is done right.</p>
-                </div>
-                <div class="advantage-card" style="margin:0; padding:1.5rem;">
-                    <h3 class="advantage-title" style="margin-bottom:0.5rem; font-size:1.25rem;">06. Documentation</h3>
-                    <p class="advantage-description">You receive a completion report with before-and-after photos and an itemized invoice. We follow up within 48 hours.</p>
+            </div>
+
+            <div style="margin-top:2.5rem;">
+                <p style="color:rgba(255,255,255,.55);font-size:.88rem;margin-bottom:1.25rem;">Billing details</p>
+                <div class="billing-row">
+                    <div class="billing-chip"><strong>Net 30</strong><span>Payment terms</span></div>
+                    <div class="billing-chip"><strong>48 hrs</strong><span>Written quote turnaround</span></div>
+                    <div class="billing-chip"><strong>Free</strong><span>On-site walkthrough</span></div>
+                    <div class="billing-chip"><strong>3-Bid</strong><span>We welcome the process</span></div>
+                    <div class="billing-chip"><strong>Itemized</strong><span>No hidden fees, ever</span></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Why Choose Us / Bidding Section -->
-    <section class="why-choose-us" id="why-us">
-        <div class="why-choose-container">
-            <h2 class="why-choose-title">Why Property Managers Choose Core Exteriors</h2>
-            <p class="why-choose-subtitle">We make your vendor decisions easy.</p>
+    <!-- Insurance & Compliance -->
+    <section class="comm-insurance" id="insurance">
+        <div class="comm-insurance-inner">
+            <p class="comm-section-label">Insurance &amp; Compliance</p>
+            <h2 class="comm-section-title">Everything in Your Vendor File — Before Day One</h2>
+            <p class="comm-section-sub">We send COIs, WSIB clearance, and Working at Heights certification to your office before our crew sets foot on your property.</p>
 
-            <div class="advantages-grid">
-                <!-- On-Call -->
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="32" cy="32" r="24" />
-                            <path d="M20 32 L28 40 L44 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </div>
-                    <h3 class="advantage-title">Quality & Pricing<span class="title-accent">No Franchise Fees</span></h3>
-                    <p class="advantage-description">
-                        We are independently owned with no franchise fees, meaning our pricing comes in around 20% lower than big names. You get <strong>one company and one point of contact</strong> for every exterior service. Our Job Complete guarantee means we do not leave a site until the work meets our standard.
-                    </p>
+            <div class="ins-table-wrap">
+                <table class="ins-table">
+                    <thead>
+                        <tr>
+                            <th>Coverage Type</th>
+                            <th>Details</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Commercial General Liability</td>
+                            <td>$10,000,000</td>
+                            <td><span class="ins-badge">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>WSIB Compliance</td>
+                            <td>Clearance certificate provided on request</td>
+                            <td><span class="ins-badge">Fully Compliant</span></td>
+                        </tr>
+                        <tr>
+                            <td>Working at Heights Certification</td>
+                            <td>All crew members certified for elevated &amp; high-rise work</td>
+                            <td><span class="ins-badge">Certified</span></td>
+                        </tr>
+                        <tr>
+                            <td>Equipment Insurance</td>
+                            <td>Full coverage on all equipment</td>
+                            <td><span class="ins-badge">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>Commercial Auto Insurance</td>
+                            <td>All vehicles in our 6+ truck fleet covered</td>
+                            <td><span class="ins-badge">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>Additional Insured</td>
+                            <td>Your organization named on any contract — on request</td>
+                            <td><span class="ins-badge">Available</span></td>
+                        </tr>
+                        <tr>
+                            <td>Certificates of Insurance</td>
+                            <td>Provided before the first day of work</td>
+                            <td><span class="ins-badge">Provided</span></td>
+                        </tr>
+                        <tr>
+                            <td>Subcontractor Coverage</td>
+                            <td>All subcontractors fully insured and certified</td>
+                            <td><span class="ins-badge">Verified</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="ins-note">
+                Every job we take on — whether it's a single storefront or an entire portfolio — is backed by the same level of coverage and professionalism. <strong>No exceptions.</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Process -->
+    <section class="comm-process">
+        <div class="comm-process-inner">
+            <p class="comm-section-label">Our Process</p>
+            <h2 class="comm-section-title">From First Call to Final Follow-Up</h2>
+            <p class="comm-section-sub">Here's exactly what working with Core Exteriors looks like.</p>
+            <div class="process-steps">
+                <div class="process-card">
+                    <div class="process-num">01</div>
+                    <div class="process-title">Contact</div>
+                    <p class="process-desc">You reach out or we connect. We learn about your property, your maintenance needs, and your timeline.</p>
                 </div>
-
-                <!-- Fully Insured -->
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M32 4 L8 16 L8 32 C8 48 32 60 32 60 C32 60 56 48 56 32 L56 16 L32 4Z" />
-                            <path d="M22 32 L28 38 L42 24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </div>
-                    <h3 class="advantage-title">Transparent Bidding<span class="title-accent">100% Itemized</span></h3>
-                    <p class="advantage-description">
-                        We welcome the standard 3-bid process. Once you provide the scope of work, we respond with a fully itemized written bid within 48 hours, detailing timelines and costs with no hidden fees. Every job includes before-and-after documentation.
-                    </p>
+                <div class="process-card">
+                    <div class="process-num">02</div>
+                    <div class="process-title">Site Walkthrough</div>
+                    <p class="process-desc">We visit your property in person, assess the full scope, identify problem areas, and take detailed notes.</p>
                 </div>
-
-                 <!-- Properties -->
-                 <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 56 L60 56 M8 56 L8 20 L56 20 L56 56 M4 20 L32 4 L60 20" />
-                            <rect x="24" y="36" width="16" height="20" />
-                        </svg>
-                    </div>
-                    <h3 class="advantage-title">Flexible Agreements<span class="title-accent">On-Call or Contract</span></h3>
-                    <p class="advantage-description">
-                        We offer <strong>On-Call Service</strong> for same/next-day emergencies with no long-term commitment. Or, choose our <strong>Scheduled Contract Service</strong> for recurring, predictable maintenance with a single point of contact.
-                    </p>
+                <div class="process-card">
+                    <div class="process-num">03</div>
+                    <div class="process-title">Custom Quote</div>
+                    <p class="process-desc">You receive a fully itemized written quote within 48 hours — transparent pricing, no hidden fees, proof of insurance included.</p>
+                </div>
+                <div class="process-card">
+                    <div class="process-num">04</div>
+                    <div class="process-title">Scheduling</div>
+                    <p class="process-desc">Once approved, we assign a dedicated crew and lock in a schedule that works for your property and your tenants.</p>
+                </div>
+                <div class="process-card">
+                    <div class="process-num">05</div>
+                    <div class="process-title">Execution</div>
+                    <p class="process-desc">Our crew shows up on time, works to our standard, and does not leave until the job is done right.</p>
+                </div>
+                <div class="process-card">
+                    <div class="process-num">06</div>
+                    <div class="process-title">Documentation &amp; Follow-Up</div>
+                    <p class="process-desc">You receive a completion report with before-and-after photos and an itemized invoice. We follow up within 48 hours.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Gallery Section -->
+    <!-- Who We Work With -->
+    <section class="comm-clients">
+        <div class="comm-clients-inner">
+            <p class="comm-section-label" style="color:#c9a227;">Who We Work With</p>
+            <h2 class="comm-section-title">Trusted by Property Managers Across Southern Ontario</h2>
+            <p class="comm-section-sub">We currently serve commercial and multi-residential properties across the London region and beyond.</p>
+
+            <div class="client-stats">
+                <div class="client-stat">
+                    <strong class="client-stat-num">5+</strong>
+                    <span class="client-stat-label">Condo &amp; plaza properties maintained</span>
+                </div>
+                <div class="client-stat">
+                    <strong class="client-stat-num">6+</strong>
+                    <span class="client-stat-label">Fully equipped trucks in fleet</span>
+                </div>
+                <div class="client-stat">
+                    <strong class="client-stat-num">20+</strong>
+                    <span class="client-stat-label">Crew members on jobs daily</span>
+                </div>
+                <div class="client-stat">
+                    <strong class="client-stat-num">2022</strong>
+                    <span class="client-stat-label">Founded in London, Ontario</span>
+                </div>
+            </div>
+
+            <div class="client-row">
+                <div class="client-chip"><span>Southside Group</span> — Tesla facility &amp; surrounding plaza</div>
+                <div class="client-chip">5+ condominium &amp; commercial plaza properties — London region</div>
+                <div class="client-chip">Active discussions with additional property management groups</div>
+            </div>
+
+            <p class="client-ref">References available upon request &nbsp;·&nbsp; We welcome the standard 3-bid process</p>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="comm-why">
+        <div class="comm-why-inner">
+            <p class="comm-section-label">Why Us</p>
+            <h2 class="comm-section-title">Why Property Managers Choose Core Exteriors</h2>
+            <p class="comm-section-sub">When you're comparing bids, here's what makes our submission the easy choice.</p>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="why-title">~20% Lower Pricing</div>
+                    <p class="why-desc">Independently owned — no franchise fees, no corporate overhead. Our pricing comes in around 20% lower than the large franchise names without cutting corners.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="why-title">One Point of Contact</div>
+                    <p class="why-desc">One company for every exterior service your portfolio needs. No juggling multiple vendors — one number, one invoice, one relationship.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div class="why-title">Job Complete Guarantee</div>
+                    <p class="why-desc">We do not leave a site until the work meets our standard. Every job comes with before-and-after documentation so you have a clear record.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <div class="why-title">Transparent Bidding</div>
+                    <p class="why-desc">We respond to any scope of work within 48 hours with a fully itemized bid — timeline, pricing, and proof of insurance included. No surprises.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="why-title">Same &amp; Next Day Response</div>
+                    <p class="why-desc">When something urgent comes up on your property, we are available same-day or next-day. You call, we show up.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div class="why-title">Fully Eco-Friendly</div>
+                    <p class="why-desc">We use eco-friendly products on every single job. Safe for your tenants, your landscaping, and the environment.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery -->
     <section class="gallery" id="gallery">
         <div class="gallery-container">
             <h2 class="gallery-title">Commercial Work Gallery</h2>
-            <p class="gallery-subtitle">See the industrial transformations</p>
-
+            <p class="gallery-subtitle">Before &amp; after results from properties we've serviced</p>
             <div class="gallery-grid">
-                <!-- Graffiti -->
                 <div class="gallery-item">
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/graffiti before-nohuman.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/graffiti before-nohuman.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Graffiti on commercial building before removal">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/graffiti after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/graffiti after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Commercial building after graffiti removal">
                                 <span class="image-label">After</span>
                             </div>
                         </div>
                         <div class="gallery-label">Graffiti Removal</div>
                     </div>
                 </div>
-
-                <!-- Oil cleanup -->
                 <div class="gallery-item">
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/oil_before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/oil_before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Oil and grease stain before cleaning">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/oil_after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/oil_after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Cleaned surface after oil and grease removal">
                                 <span class="image-label">After</span>
                             </div>
                         </div>
-                        <div class="gallery-label">Oil & Grease Cleaning</div>
+                        <div class="gallery-label">Oil &amp; Grease Cleaning</div>
                     </div>
                 </div>
-
-                <!-- Pipeline -->
                 <div class="gallery-item">
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/pipeline before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/pipeline before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Industrial pipeline before pressure washing">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/pipeline after.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/pipeline after.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Industrial pipeline after pressure washing">
                                 <span class="image-label">After</span>
                             </div>
                         </div>
                         <div class="gallery-label">Industrial Pressure Washing</div>
                     </div>
                 </div>
-
-                <!-- Relevel -->
                 <div class="gallery-item">
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/relevel before.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/relevel before.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Sunken interlock pavers before re-leveling">
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/relevel after.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="images/relevel after.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Restored interlock pavers after re-leveling">
                                 <span class="image-label">After</span>
                             </div>
                         </div>
@@ -499,28 +975,48 @@
                     </div>
                 </div>
             </div>
-
             <div class="gallery-cta">
-                <a href="#quoteFormContainer" onclick="document.getElementById('name').focus()" class="cta-button-large">Request Commercial Quote</a>
+                <a href="gallery.html" class="cta-button-large">View Full Gallery</a>
             </div>
         </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="comm-bottom-cta">
+        <h2>Let's Start With a Free Site Walkthrough</h2>
+        <p>No commitment, no pressure. Just a conversation about your property and what we can do for you.</p>
+        <div class="cta-pair">
+            <a href="#quoteFormContainer" class="cta-primary" onclick="document.getElementById('name').focus()">Request a Bid</a>
+            <a href="tel:519-712-1431" class="cta-secondary">Call 519-712-1431</a>
+        </div>
+        <div class="owners-row">
+            <div class="owner-info">
+                <div class="owner-name">Luke Cairns</div>
+                <div class="owner-role">Co-Owner, Core Exteriors</div>
+            </div>
+            <div class="owner-info">
+                <div class="owner-name">Mirkomil Oblokulov</div>
+                <div class="owner-role">Co-Owner, Core Exteriors</div>
+            </div>
+        </div>
+        <p style="color:rgba(255,255,255,.3);font-size:.78rem;margin-top:1.5rem;">
+            203 Cambridge St, London, ON N6H 1N6 &nbsp;·&nbsp; corexteriors@gmail.com &nbsp;·&nbsp; Emergency: 647-764-7799
+        </p>
     </section>
 
     <!-- Sticky Mobile CTA -->
     <div class="sticky-cta" id="stickyCta">
         <a href="tel:519-712-1431" class="sticky-call">
             <svg viewBox="0 0 24 24" fill="currentColor">
-                <path
-                    d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
             </svg>
             <span>Call Now</span>
         </a>
         <a href="#quoteFormContainer" class="sticky-quote">
             <svg viewBox="0 0 24 24" fill="currentColor">
-                <path
-                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
             </svg>
-            <span>Free Quote</span>
+            <span>Get a Bid</span>
         </a>
     </div>
 
@@ -530,27 +1026,19 @@
             <div class="footer-main">
                 <div class="footer-brand">
                     <img src="images/logo-mark.png" alt="Core Exteriors" class="footer-logo">
-                    <p class="footer-tagline">Premium Exterior Maintenance.<br>London's Trusted Exterior Pros.</p>
+                    <p class="footer-tagline">Premium Commercial Exterior Maintenance.<br>Southern Ontario's Trusted Property Partner.</p>
                 </div>
-
                 <div class="footer-contact">
                     <h3 class="footer-heading">Contact Us</h3>
                     <div class="contact-item">
-                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                        </svg>
+                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                         <span>203 Cambridge St, London, ON, N6H 1N6</span>
                     </div>
                     <div class="contact-item">
-                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-                        </svg>
+                        <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
                         <a href="tel:519-712-1431">519-712-1431</a>
                     </div>
                 </div>
-
                 <div class="footer-areas">
                     <h3 class="footer-heading">Service Areas</h3>
                     <ul class="areas-list">
@@ -558,18 +1046,17 @@
                         <li>St. Thomas</li>
                         <li>Strathroy</li>
                         <li>Dorchester</li>
+                        <li>Hamilton</li>
+                        <li>Niagara Falls</li>
                     </ul>
                 </div>
-
                 <div class="footer-cta">
                     <h3 class="footer-heading">Ready to Get Started?</h3>
-                    <a href="tel:519-712-1431" class="footer-cta-button">Get Your Free Quote</a>
+                    <a href="tel:519-712-1431" class="footer-cta-button">Call for a Free Walkthrough</a>
                 </div>
             </div>
-
             <div class="footer-bottom">
-                <p><a href="sales.html" style="color:inherit;text-decoration:none">&copy;</a> 2023-2026 Core Exteriors.
-                    All rights reserved.</p>
+                <p><a href="sales.html" style="color:inherit;text-decoration:none">&copy;</a> 2023-2026 Core Exteriors. All rights reserved.</p>
                 <p class="footer-legal-links">
                     <a href="privacy-policy.html">Privacy Policy</a> |
                     <a href="terms-of-service.html">Terms of Service</a>
@@ -579,5 +1066,13 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        function showTab(id) {
+            document.querySelectorAll('.svc-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.svc-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
 </body>
 </html>
