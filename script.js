@@ -362,8 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners for Gallery Images (Home & Gallery Pages)
-    // Selects both .gallery-card images (Home) and .photo-card images (Gallery)
-    const galleryImages = document.querySelectorAll('.gallery-card img, .photo-card img');
+    // Selects both .gallery-card images (Home), .photo-card images (Gallery), and .hardscape-card images
+    const galleryImages = document.querySelectorAll('.gallery-card img, .photo-card img, .hardscape-card img');
 
     galleryImages.forEach(img => {
         img.style.cursor = 'pointer'; // Indicate clickable
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // If not in a before-after container (e.g., single image card), use the card itself
             if (!container) {
-                container = this.closest('.gallery-card, .photo-card');
+                container = this.closest('.gallery-card, .photo-card, .hardscape-card');
             }
 
             if (!container) return; // Should not happen based on selector
