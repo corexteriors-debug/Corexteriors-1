@@ -1326,6 +1326,10 @@
                             <input type="radio" name="ns_emailtype" value="invoice" checked style="accent-color:#2ecc71"> Invoice
                         </label>
                     </div>
+                    <label id="ns_paylink_wrap" style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;padding:.45rem .75rem;background:rgba(245,184,0,.06);border:1px solid rgba(245,184,0,.2);border-radius:8px;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.65)">
+                        <input type="checkbox" id="ns_send_paylink" style="accent-color:#F5B800;width:15px;height:15px">
+                        💳 Include Stripe credit card payment link in email
+                    </label>
                 </div>
             </div>
 
@@ -2010,21 +2014,35 @@
                 allLeads.unshift(d.lead);
                 renderLeads(); updateStats(); renderCharts();
 
-                // Send estimate or invoice email
+                // Send estimate or invoice email (+ optional Stripe payment link)
                 if (emailType !== 'none' && email) {
                     btn.textContent = 'Sending email...';
                     const docLabel = emailType === 'estimate' ? 'Estimate' : 'Invoice';
+
+                    // Build payment request if checkbox is checked
+                    let paymentRequest = null;
+                    if (document.getElementById('ns_send_paylink').checked) {
+                        const linkAmount = payAmount > 0 ? payAmount : total;
+                        if (linkAmount >= 0.50) {
+                            paymentRequest = {
+                                amount: linkAmount,
+                                type: payStatus === 'Deposit' ? 'deposit' : 'full',
+                                description: address ? 'Services at ' + address : 'Exterior Services'
+                            };
+                        }
+                    }
+
                     try {
                         const er = await fetch(`${API_BASE}/invoice`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                            body: JSON.stringify({ estimate, documentType: emailType })
+                            body: JSON.stringify({ estimate, documentType: emailType, paymentRequest })
                         });
                         const ed = await er.json();
                         msg.style.display = 'block';
                         if (ed.emailSent) {
                             msg.style.background = 'rgba(46,204,113,.12)'; msg.style.color = '#2ecc71';
-                            msg.textContent = `✅ Sale saved & ${docLabel} emailed to ${email}`;
+                            msg.textContent = `✅ Sale saved & ${docLabel} emailed to ${email}` + (ed.paymentLinkSent ? ' with payment link' : '');
                         } else {
                             msg.style.background = 'rgba(230,126,34,.12)'; msg.style.color = '#e67e22';
                             msg.textContent = `✅ Sale saved. ⚠️ ${docLabel} email failed — check SMTP config.`;
