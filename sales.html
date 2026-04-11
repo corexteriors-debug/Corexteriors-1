@@ -985,8 +985,7 @@
                             <label>Stories <span class="req">*</span></label>
                             <div class="radio-group">
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_1"
-                                        value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story ($175)
-                                        ($275)</label></div>
+                                        value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story ($175)</label></div>
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_2"
                                         value="2" onchange="calcAll()"><label for="gutter_2">2 Story ($245)</label>
                                 </div>
@@ -1954,14 +1953,20 @@
                 const d = await r.json();
                 if (!d.success) { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to save.'; msg.style.display = 'block'; return; }
 
-                // Send estimate PDF to client
+                // Send estimate PDF + optional Stripe deposit link to client in one email
                 msg.textContent = '⏳ Sending estimate to ' + email + '...';
-                const estRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'estimate' }) }).catch(() => null);
+                const paymentRequest = getCardPaymentRequest();
+                const estRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'estimate', paymentRequest }) }).catch(() => null);
                 const estData = estRes ? await estRes.json().catch(() => ({})) : {};
 
-                msg.textContent = estData.emailSent
-                    ? '✅ Estimate #' + estimateNumber + ' saved to Leads and emailed to ' + email
-                    : '✅ Estimate #' + estimateNumber + ' saved to Leads!' + (estData.error ? ' ⚠️ Email failed: ' + estData.error : ' (check email config)');
+                if (estData.emailSent) {
+                    msg.textContent = '✅ Estimate #' + estimateNumber + ' emailed to ' + email
+                        + (estData.paymentLinkSent ? ' with payment link' : '');
+                    if (estData.paymentLinkSent) window._cardPaymentSent = true;
+                } else {
+                    msg.textContent = '✅ Estimate #' + estimateNumber + ' saved!'
+                        + (estData.error ? ' ⚠️ Email failed: ' + estData.error : ' (check email config)');
+                }
                 localStorage.removeItem('estimate_draft');
             } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block'; }
             finally { btn.disabled = false; btn.textContent = '📧 Send Estimate'; }
@@ -2022,17 +2027,40 @@
                 const lr = await fetch(API_BASE + '/leads', { method: 'POST', headers, body: JSON.stringify(estimate) });
                 if (lr.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return; }
 
-                const invRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'invoice', signatureData }) }).catch(() => null);
+                // Send invoice PDF + optional Stripe deposit/payment link to client in one email
+                const paymentRequest = getCardPaymentRequest();
+                const invRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'invoice', signatureData, paymentRequest }) }).catch(() => null);
                 const invData = invRes ? await invRes.json().catch(() => ({})) : {};
 
                 msg.className = 'msg success';
-                msg.textContent = invData.emailSent
-                    ? '✅ Invoice #' + estimateNumber + ' sent to ' + email + ' and saved!'
-                    : '✅ Invoice #' + estimateNumber + ' saved!' + (invData.error ? ' ⚠️ Email failed: ' + invData.error : ' (check email config)');
+                if (invData.emailSent) {
+                    msg.textContent = '✅ Invoice #' + estimateNumber + ' sent to ' + email
+                        + (invData.paymentLinkSent ? ' with payment link' : '') + ' and saved!';
+                    if (invData.paymentLinkSent) window._cardPaymentSent = true;
+                } else {
+                    msg.textContent = '✅ Invoice #' + estimateNumber + ' saved!'
+                        + (invData.error ? ' ⚠️ Email failed: ' + invData.error : ' (check email config)');
+                }
                 msg.style.display = 'block';
                 localStorage.removeItem('estimate_draft');
             } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
             finally { btn.disabled = false; btn.textContent = '📄 Send Invoice' }
+        }
+
+        // Returns a paymentRequest object if card payment is selected and not already sent, otherwise null
+        function getCardPaymentRequest() {
+            if (window._cardPaymentSent) return null; // already sent via "Collect Payment" button
+            const method = document.getElementById('paymentMethod').value;
+            const type   = document.getElementById('paymentType').value;
+            if (method !== 'card' || type === 'none') return null;
+            const total = getTotal();
+            let amount = 0;
+            if (type === 'deposit')     amount = total * 0.25;
+            else if (type === 'full')   amount = total;
+            else if (type === 'custom') amount = parseFloat(document.getElementById('customPayAmount').value) || 0;
+            if (amount < 0.50) return null;
+            const address = document.getElementById('clientAddress').value;
+            return { amount, type, description: address ? 'Services at ' + address : 'Exterior Services' };
         }
 
         // Builds the estimate object from the current form state (shared by payment + submit)

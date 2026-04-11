@@ -1,5 +1,6 @@
 const { kv } = require('@vercel/kv');
 const nodemailer = require('nodemailer');
+const Stripe = require('stripe');
 const { generateEstimatePDF } = require('./_estimatePdf');
 
 module.exports = async function handler(req, res) {
@@ -20,7 +21,7 @@ module.exports = async function handler(req, res) {
     if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
 
     try {
-        const { estimate, documentType, signatureData } = req.body;
+        const { estimate, documentType, signatureData, paymentRequest } = req.body;
         if (!estimate || !estimate.clientName || !estimate.email) {
             return res.status(400).json({ error: 'Estimate data with client email is required' });
         }
@@ -28,16 +29,56 @@ module.exports = async function handler(req, res) {
         const isInvoice = documentType === 'invoice';
         const docType   = isInvoice ? 'INVOICE' : 'ESTIMATE';
         const pdfBytes  = await generateEstimatePDF(estimate, { docType, signatureData: signatureData || null });
-        const emailSent = await sendDocEmail(estimate, pdfBytes, docType);
 
-        return res.status(200).json({ success: true, emailSent });
+        // Optionally create a Stripe checkout session and embed the link in the email
+        let checkoutUrl = null;
+        if (paymentRequest && paymentRequest.amount >= 0.50) {
+            const stripeKey = (process.env.STRIPE_SECRET_KEY || '').trim();
+            if (stripeKey) {
+                try {
+                    const stripe = new Stripe(stripeKey);
+                    const amountCents = Math.round(parseFloat(paymentRequest.amount) * 100);
+                    const isDeposit = paymentRequest.type === 'deposit';
+                    const session = await stripe.checkout.sessions.create({
+                        payment_method_types: ['card'],
+                        customer_email: estimate.email,
+                        line_items: [{
+                            price_data: {
+                                currency: 'cad',
+                                product_data: {
+                                    name: isDeposit ? 'Deposit — Core Exteriors' : 'Payment — Core Exteriors',
+                                    description: paymentRequest.description || `Services for ${estimate.clientName}`,
+                                },
+                                unit_amount: amountCents,
+                            },
+                            quantity: 1,
+                        }],
+                        mode: 'payment',
+                        success_url: `https://corexteriors.ca/sales?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+                        cancel_url: `https://corexteriors.ca/sales?payment=cancelled`,
+                        metadata: {
+                            clientName: estimate.clientName || '',
+                            estimateNumber: estimate.estimateNumber || '',
+                            paymentType: paymentRequest.type || 'deposit',
+                        },
+                    });
+                    checkoutUrl = session.url;
+                } catch (stripeErr) {
+                    console.error('Stripe session error in invoice:', stripeErr.message);
+                }
+            }
+        }
+
+        const emailSent = await sendDocEmail(estimate, pdfBytes, docType, checkoutUrl, paymentRequest);
+
+        return res.status(200).json({ success: true, emailSent, paymentLinkSent: !!checkoutUrl });
     } catch (error) {
         console.error('Invoice error:', error);
         return res.status(500).json({ error: 'Failed to generate/send document: ' + error.message });
     }
 };
 
-async function sendDocEmail(est, pdfBytes, docType) {
+async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest) {
     const gmailUser  = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass  = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -55,15 +96,33 @@ async function sendDocEmail(est, pdfBytes, docType) {
         auth: { user: gmailUser, pass: gmailPass },
     });
 
+    // Payment button block — shown only when a Stripe checkout URL is available
+    const paymentBlock = checkoutUrl && paymentRequest ? (() => {
+        const isDeposit = paymentRequest.type === 'deposit';
+        const amountStr = '$' + parseFloat(paymentRequest.amount).toFixed(2) + ' CAD';
+        const payLabel  = isDeposit ? 'Deposit' : 'Payment';
+        return `
+           <div style="margin:24px 0;text-align:center">
+             <p style="font-size:14px;color:#555;margin-bottom:12px">
+               ${isDeposit ? 'To confirm your booking, a <strong>25% deposit</strong> is required:' : 'Complete your payment securely below:'}
+             </p>
+             <a href="${checkoutUrl}"
+                style="display:inline-block;background:#F5B800;color:#1A1A1A;font-size:16px;font-weight:700;padding:14px 36px;border-radius:50px;text-decoration:none;letter-spacing:.3px">
+               &#128179; Pay ${payLabel} &mdash; ${amountStr}
+             </a>
+             <p style="font-size:11px;color:#999;margin-top:10px">&#128274; Powered by Stripe &mdash; your card details are never shared with us. Link expires in 24 hours.</p>
+           </div>`;
+    })() : '';
+
     const bodyNote = isInvoice
         ? `<p>Please find your invoice attached. Payment is due upon completion of services.</p>
-           <div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:14px;font-size:13px;color:#1b5e20;margin:16px 0">
+           ${paymentBlock || `<div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:14px;font-size:13px;color:#1b5e20;margin:16px 0">
              <strong>Payment:</strong> E-transfer to <strong>corexteriors@gmail.com</strong> — Cash, cheque, and credit card also accepted.
-           </div>`
+           </div>`}`
         : `<p>Please find your estimate attached. This estimate is valid for 30 days.</p>
-           <div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:14px;font-size:13px;color:#1b5e20;margin:16px 0">
+           ${paymentBlock || `<div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:14px;font-size:13px;color:#1b5e20;margin:16px 0">
              <strong>To confirm your booking:</strong> A 25% deposit is required. E-transfer to <strong>corexteriors@gmail.com</strong> or call us.
-           </div>`;
+           </div>`}`;
 
     await transporter.sendMail({
         from: '"Core Exteriors" <' + gmailUser + '>',
