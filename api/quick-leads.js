@@ -26,18 +26,37 @@ module.exports = async function handler(req, res) {
 
             const lead = {
                 id: `ql_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                // identity
                 name,
                 address,
                 phone:          b.phone || '',
                 email:          b.email || '',
-                notes:          b.notes || b.survey?.notes || '',
                 salesRep:       b.salesRep || tokenData.repName || '',
                 estimateNumber: b.estimateNumber || '',
+                // services & pricing
                 services:       b.services || [],
+                serviceType:    b.serviceType || '',
                 subtotal:       b.subtotal || '',
                 hst:            b.hst || '',
                 total:          b.total || '',
-                visitDate:      b.survey?.visitDate || b.saleDate || '',
+                discount:       b.discount || 0,
+                bundleDiscount: b.bundleDiscount || 0,
+                estimatedValue: b.estimatedValue || '',
+                // scheduling
+                visitDate:      b.survey?.visitDate || b.saleDate || b.visitDate || '',
+                saleDate:       b.saleDate || '',
+                saleTime:       b.saleTime || '',
+                // payment
+                paymentStatus:  b.paymentStatus || 'Unpaid',
+                paymentMethod:  b.paymentMethod || '',
+                paymentAmount:  parseFloat(b.paymentAmount) || 0,
+                // extras
+                notes:          b.notes || b.survey?.notes || '',
+                jobDetails:     b.jobDetails || null,
+                survey:         b.survey || {},
+                legal:          b.legal || {},
+                hasSignature:   b.hasSignature || false,
+                status:         b.status || 'New',
                 createdAt:      new Date().toISOString(),
             };
 

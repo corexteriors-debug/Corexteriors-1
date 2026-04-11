@@ -2891,29 +2891,39 @@
         async function moveToLead(saleId) {
             const sale = allLeads.find(l => l.id === saleId);
             if (!sale) return;
-            if (!confirm(`Move "${sale.clientName}" from Sales to Leads?\n\nAll their details will be saved in the lead notes so nothing is lost.`)) return;
-
-            // Build a note summary from the sale details
-            const noteParts = [
-                sale.phone         ? `Phone: ${sale.phone}`                 : '',
-                sale.email         ? `Email: ${sale.email}`                 : '',
-                sale.serviceType   ? `Service: ${sale.serviceType}`         : '',
-                sale.total         ? `Total: ${sale.total}`                 : (sale.estimatedValue ? `Est: $${sale.estimatedValue}` : ''),
-                sale.estimateNumber ? `Est#: ${sale.estimateNumber}`        : '',
-                sale.salesRep      ? `Rep: ${sale.salesRep}`               : '',
-                sale.notes         ? `Notes: ${sale.notes}`                 : '',
-            ].filter(Boolean);
+            if (!confirm(`Move "${sale.clientName}" from Sales to Leads?\n\nAll details will be fully preserved.`)) return;
 
             try {
-                // 1. Create quick lead
+                // 1. Create quick lead — carry over every field from the sale
                 const createR = await fetch(`${API_BASE}/quick-leads`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({
-                        name: sale.clientName,
-                        address: sale.address || '',
-                        notes: noteParts.join(' · '),
-                        salesRep: sale.salesRep || ''
+                        name:           sale.clientName,
+                        address:        sale.address        || '',
+                        phone:          sale.phone          || '',
+                        email:          sale.email          || '',
+                        salesRep:       sale.salesRep       || '',
+                        estimateNumber: sale.estimateNumber || '',
+                        services:       sale.services       || [],
+                        serviceType:    sale.serviceType    || '',
+                        subtotal:       sale.subtotal       || '',
+                        hst:            sale.hst            || '',
+                        total:          sale.total          || '',
+                        discount:       sale.discount       || 0,
+                        bundleDiscount: sale.bundleDiscount || 0,
+                        estimatedValue: sale.estimatedValue || '',
+                        saleDate:       sale.saleDate       || '',
+                        saleTime:       sale.saleTime       || '',
+                        paymentStatus:  sale.paymentStatus  || 'Unpaid',
+                        paymentMethod:  sale.paymentMethod  || '',
+                        paymentAmount:  sale.paymentAmount  || 0,
+                        notes:          sale.notes          || '',
+                        jobDetails:     sale.jobDetails     || null,
+                        survey:         sale.survey         || {},
+                        legal:          sale.legal          || {},
+                        hasSignature:   sale.hasSignature   || false,
+                        status:         sale.status         || '',
                     })
                 });
                 const createD = await createR.json();
@@ -2941,16 +2951,19 @@
         function openPromoteToSaleModal(qlId) {
             const lead = allQLLeads.find(l => l.id === qlId);
             if (!lead) return;
-            document.getElementById('promoteQLId').value   = qlId;
-            document.getElementById('promoteName').value   = lead.name    || '';
-            document.getElementById('promoteAddress').value= lead.address || '';
-            document.getElementById('promoteRep').value    = lead.salesRep|| '';
-            document.getElementById('promotePhone').value  = '';
-            document.getElementById('promoteEmail').value  = '';
-            document.getElementById('promoteService').value= '';
-            document.getElementById('promoteValue').value  = '';
-            // Pre-fill notes, stripping any "To Lead" summary if present
-            document.getElementById('promoteNotes').value  = lead.notes   || '';
+            const serviceLabel = lead.serviceType || (lead.services || []).map(s => s.name).filter(Boolean).join(', ') || '';
+            const valueLabel   = lead.estimatedValue
+                || (lead.total ? String(lead.total).replace(/[^0-9.]/g, '') : '')
+                || '';
+            document.getElementById('promoteQLId').value    = qlId;
+            document.getElementById('promoteName').value    = lead.name     || '';
+            document.getElementById('promoteAddress').value = lead.address  || '';
+            document.getElementById('promoteRep').value     = lead.salesRep || '';
+            document.getElementById('promotePhone').value   = lead.phone    || '';
+            document.getElementById('promoteEmail').value   = lead.email    || '';
+            document.getElementById('promoteService').value = serviceLabel;
+            document.getElementById('promoteValue').value   = valueLabel;
+            document.getElementById('promoteNotes').value   = lead.notes    || '';
             document.getElementById('promoteMsg').style.display = 'none';
             document.getElementById('promoteSaveBtn').disabled = false;
             document.getElementById('promoteSaveBtn').textContent = '💰 Create Sale';
@@ -2980,7 +2993,12 @@
             msg.style.display = 'none';
 
             try {
-                // 1. Create full lead/sale
+                // Retrieve full quick lead data to carry over structured fields
+                const qlLead = allQLLeads.find(l => l.id === qlId) || {};
+                const formService = document.getElementById('promoteService').value.trim();
+                const formValue   = document.getElementById('promoteValue').value.trim();
+
+                // 1. Create full lead/sale — merge form inputs with preserved ql data
                 const createR = await fetch(`${API_BASE}/leads`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
@@ -2989,12 +3007,28 @@
                         phone:          phone,
                         email:          document.getElementById('promoteEmail').value.trim(),
                         address:        document.getElementById('promoteAddress').value.trim(),
-                        serviceType:    document.getElementById('promoteService').value.trim(),
-                        estimatedValue: document.getElementById('promoteValue').value.trim(),
+                        serviceType:    formService || qlLead.serviceType || '',
+                        estimatedValue: formValue   || qlLead.estimatedValue || '',
                         notes:          document.getElementById('promoteNotes').value.trim(),
                         salesRep:       document.getElementById('promoteRep').value.trim(),
+                        // carry over all structured data from the quick lead
+                        services:       qlLead.services       || [],
+                        subtotal:       qlLead.subtotal        || '',
+                        hst:            qlLead.hst             || '',
+                        total:          qlLead.total           || '',
+                        discount:       qlLead.discount        || 0,
+                        bundleDiscount: qlLead.bundleDiscount  || 0,
+                        estimateNumber: qlLead.estimateNumber  || '',
+                        saleDate:       qlLead.saleDate        || qlLead.visitDate || '',
+                        saleTime:       qlLead.saleTime        || '',
+                        paymentStatus:  qlLead.paymentStatus   || 'Unpaid',
+                        paymentMethod:  qlLead.paymentMethod   || '',
+                        paymentAmount:  qlLead.paymentAmount   || 0,
+                        jobDetails:     qlLead.jobDetails      || null,
+                        survey:         qlLead.survey          || {},
+                        legal:          qlLead.legal           || {},
+                        hasSignature:   qlLead.hasSignature    || false,
                         status:         'New',
-                        paymentStatus:  'Unpaid'
                     })
                 });
                 const createD = await createR.json();
