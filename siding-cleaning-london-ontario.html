@@ -49,6 +49,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css?v=5">
+  <!-- Nextdoor Pixel Code -->
+  <script type='text/javascript'>
+    !function(e,n){var t,p;e.ndp||((t=e.ndp=function(){
+    t.handleRequest?t.handleRequest.apply(t,arguments):t.queue.push(arguments)
+    }).queue=[],t.v=1,(p=n.createElement(e="script")).async=!0,
+    p.src="https://ads.nextdoor.com/public/pixel/ndp.js?id=31c2eefe-76e4-49ae-a3f7-3f62a37f0e77",
+    (n=n.getElementsByTagName(e)[0]).parentNode.insertBefore(p,n))
+    }(window,document);
+
+    ndp('init','31c2eefe-76e4-49ae-a3f7-3f62a37f0e77', {});
+    ndp('track','PAGE_VIEW');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+       src="https://flask.nextdoor.com/pixel?pid=31c2eefe-76e4-49ae-a3f7-3f62a37f0e77&ev=PAGE_VIEW&noscript=1"/>
+  </noscript>
+  <!-- End Nextdoor Pixel Code -->
 </head>
 
 <body>
@@ -83,7 +100,7 @@
         <nav class="main-nav">
             <div class="nav-container">
                 <a href="index.html" class="logo">
-                    <img src="images/logo-letter.png" alt="Core Exteriors" class="logo-image">
+                    <picture><source srcset="images/logo-letter.webp" type="image/webp"><img src="images/logo-letter.png" alt="Core Exteriors" class="logo-image"></picture>
                 </a>
                 <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
                     <span class="hamburger"></span>
@@ -256,7 +273,7 @@
         <div class="footer-container">
             <div class="footer-main">
                 <div class="footer-brand">
-                    <img src="images/logo-mark.png" alt="Core Exteriors" class="footer-logo">
+                    <picture><source srcset="images/logo-mark.webp" type="image/webp"><img src="images/logo-mark.png" alt="Core Exteriors" class="footer-logo"></picture>
                     <p class="footer-tagline">Premium Exterior Maintenance.<br>London's Trusted Exterior Pros.</p>
                 </div>
                 <div class="footer-contact">

@@ -383,6 +383,23 @@
         .owner-name { font-size: .95rem; font-weight: 700; color: #fff; }
         .owner-role { font-size: .78rem; color: rgba(255,255,255,.45); margin-top: .2rem; }
     </style>
+  <!-- Nextdoor Pixel Code -->
+  <script type='text/javascript'>
+    !function(e,n){var t,p;e.ndp||((t=e.ndp=function(){
+    t.handleRequest?t.handleRequest.apply(t,arguments):t.queue.push(arguments)
+    }).queue=[],t.v=1,(p=n.createElement(e="script")).async=!0,
+    p.src="https://ads.nextdoor.com/public/pixel/ndp.js?id=31c2eefe-76e4-49ae-a3f7-3f62a37f0e77",
+    (n=n.getElementsByTagName(e)[0]).parentNode.insertBefore(p,n))
+    }(window,document);
+
+    ndp('init','31c2eefe-76e4-49ae-a3f7-3f62a37f0e77', {});
+    ndp('track','PAGE_VIEW');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+       src="https://flask.nextdoor.com/pixel?pid=31c2eefe-76e4-49ae-a3f7-3f62a37f0e77&ev=PAGE_VIEW&noscript=1"/>
+  </noscript>
+  <!-- End Nextdoor Pixel Code -->
 </head>
 
 <body>
@@ -417,7 +434,7 @@
         <nav class="main-nav">
             <div class="nav-container">
                 <a href="index.html" class="logo">
-                    <img src="images/logo-letterform.png" alt="Core Exteriors" class="logo-image">
+                    <picture><source srcset="images/logo-letterform.webp" type="image/webp"><img src="images/logo-letterform.png" alt="Core Exteriors" class="logo-image"></picture>
                 </a>
                 <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
                     <span class="hamburger"></span>
@@ -441,7 +458,7 @@
     <section class="hero">
         <div class="hero-container">
             <div class="hero-content">
-                <img src="images/logo-wordmark-new.png" alt="Core Exteriors" class="hero-wordmark">
+                <picture><source srcset="images/logo-wordmark-new.webp" type="image/webp"><img src="images/logo-wordmark-new.png" alt="Core Exteriors" class="hero-wordmark"></picture>
                 <h1 class="hero-headline">
                     <span class="headline-line">Premium Commercial</span>
                     <span class="headline-line accent">Exterior Maintenance.</span>
@@ -467,7 +484,7 @@
             <div class="hero-form-wrapper" id="quoteFormContainer">
                 <div class="quote-form-card">
                     <div class="form-seal-wrap">
-                        <img src="images/logo-emblem.png" alt="Core Exteriors Seal" class="form-seal">
+                        <picture><source srcset="images/logo-emblem.webp" type="image/webp"><img src="images/logo-emblem.png" alt="Core Exteriors Seal" class="form-seal"></picture>
                     </div>
                     <h3 class="form-title">Request a Commercial Bid</h3>
                     <p class="form-subtitle">Free on-site walkthrough · Written quote in 48 hrs</p>
@@ -918,11 +935,11 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/graffiti before-nohuman.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Graffiti on commercial building before removal">
+                                <picture><source srcset="images/graffiti before-nohuman.webp" type="image/webp"><img src="images/graffiti before-nohuman.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Graffiti on commercial building before removal"></picture>
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/graffiti after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Commercial building after graffiti removal">
+                                <picture><source srcset="images/graffiti after.webp" type="image/webp"><img src="images/graffiti after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Commercial building after graffiti removal"></picture>
                                 <span class="image-label">After</span>
                             </div>
                         </div>
@@ -933,11 +950,11 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/oil_before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Oil and grease stain before cleaning">
+                                <picture><source srcset="images/oil_before.webp" type="image/webp"><img src="images/oil_before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Oil and grease stain before cleaning"></picture>
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/oil_after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Cleaned surface after oil and grease removal">
+                                <picture><source srcset="images/oil_after.webp" type="image/webp"><img src="images/oil_after.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Cleaned surface after oil and grease removal"></picture>
                                 <span class="image-label">After</span>
                             </div>
                         </div>
@@ -948,11 +965,11 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/pipeline before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Industrial pipeline before pressure washing">
+                                <picture><source srcset="images/pipeline before.webp" type="image/webp"><img src="images/pipeline before.jpeg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Industrial pipeline before pressure washing"></picture>
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/pipeline after.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Industrial pipeline after pressure washing">
+                                <picture><source srcset="images/pipeline after.webp" type="image/webp"><img src="images/pipeline after.jpg" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Industrial pipeline after pressure washing"></picture>
                                 <span class="image-label">After</span>
                             </div>
                         </div>
@@ -963,11 +980,11 @@
                     <div class="gallery-card">
                         <div class="before-after">
                             <div class="image-slot before">
-                                <img src="images/relevel before.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Sunken interlock pavers before re-leveling">
+                                <picture><source srcset="images/relevel before.webp" type="image/webp"><img src="images/relevel before.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Sunken interlock pavers before re-leveling"></picture>
                                 <span class="image-label">Before</span>
                             </div>
                             <div class="image-slot after">
-                                <img src="images/relevel after.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Restored interlock pavers after re-leveling">
+                                <picture><source srcset="images/relevel after.webp" type="image/webp"><img src="images/relevel after.png" loading="lazy" style="width:100%;height:100%;object-fit:cover;" alt="Restored interlock pavers after re-leveling"></picture>
                                 <span class="image-label">After</span>
                             </div>
                         </div>
@@ -1025,7 +1042,7 @@
         <div class="footer-container">
             <div class="footer-main">
                 <div class="footer-brand">
-                    <img src="images/logo-mark.png" alt="Core Exteriors" class="footer-logo">
+                    <picture><source srcset="images/logo-mark.webp" type="image/webp"><img src="images/logo-mark.png" alt="Core Exteriors" class="footer-logo"></picture>
                     <p class="footer-tagline">Premium Commercial Exterior Maintenance.<br>Southern Ontario's Trusted Property Partner.</p>
                 </div>
                 <div class="footer-contact">
