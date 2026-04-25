@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Core Exteriors — Worker Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a1628; color: #fff; min-height: 100vh; }
+        .screen { display: none; min-height: 100vh; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        /* PIN */
+        #screen-pin { align-items: center; justify-content: center; padding: 2rem 1.5rem; gap: 2rem; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #4fc3f7; text-align: center; }
+        .logo span { color: #fff; }
+        .pin-display { display: flex; gap: .75rem; justify-content: center; }
+        .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #4fc3f7; background: transparent; transition: background .15s; }
+        .pin-dot.filled { background: #4fc3f7; }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; width: 100%; max-width: 300px; }
+        .num-btn { background: #1a2a45; border: none; border-radius: 12px; color: #fff; font-size: 1.6rem; font-weight: 600; padding: 1.1rem; cursor: pointer; transition: background .1s; user-select: none; }
+        .num-btn:active { background: #253a5e; }
+        .num-btn.del { font-size: 1.2rem; color: #4fc3f7; }
+        .num-btn.empty { background: transparent; pointer-events: none; }
+        .pin-error { color: #ef5350; font-size: .9rem; text-align: center; min-height: 1.2em; }
+        .pin-label { color: #aaa; font-size: .95rem; }
+
+        /* Home */
+        #screen-home { padding: 0; }
+        .home-header { background: #1a2a45; padding: 1.25rem 1.25rem .75rem; }
+        .worker-name { font-size: 1.1rem; font-weight: 700; }
+        .worker-date { font-size: .85rem; color: #aaa; }
+        .day-clock-btn { margin: 1rem 1.25rem; padding: 1rem; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; width: calc(100% - 2.5rem); }
+        .btn-in   { background: #2e7d32; color: #fff; }
+        .btn-out  { background: #c62828; color: #fff; }
+        .btn-done { background: #333; color: #888; pointer-events: none; }
+        .section-title { padding: .75rem 1.25rem .4rem; font-size: .8rem; color: #aaa; text-transform: uppercase; letter-spacing: .5px; }
+        .jobs-list { padding: 0 1.25rem 6rem; display: flex; flex-direction: column; gap: .75rem; }
+        .job-card { background: #1a2a45; border-radius: 12px; padding: 1rem; cursor: pointer; }
+        .job-card:active { background: #253a5e; }
+        .job-card-title { font-weight: 600; font-size: 1rem; margin-bottom: .3rem; }
+        .job-card-time { font-size: .82rem; color: #aaa; }
+        .job-card-status { font-size: .78rem; margin-top: .4rem; }
+        .status-active { color: #4caf50; }
+        .status-done { color: #888; }
+        .sync-banner { background: #e65100; color: #fff; text-align: center; padding: .5rem; font-size: .82rem; display: none; }
+        .sync-banner.visible { display: block; }
+
+        /* Job detail */
+        #screen-job { padding: 0; }
+        .job-header { background: #1a2a45; padding: 1rem 1.25rem; display: flex; align-items: center; gap: .75rem; }
+        .back-btn { background: none; border: none; color: #4fc3f7; font-size: 1.4rem; cursor: pointer; padding: .25rem; line-height: 1; }
+        .job-header-title { font-size: 1rem; font-weight: 700; flex: 1; }
+        .job-detail-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+        .detail-card { background: #1a2a45; border-radius: 12px; padding: 1rem; }
+        .detail-label { font-size: .75rem; color: #aaa; text-transform: uppercase; margin-bottom: .3rem; }
+        .detail-value { font-size: .95rem; line-height: 1.5; }
+        .action-btns { display: flex; flex-direction: column; gap: .75rem; }
+        .action-btn { border: none; border-radius: 12px; padding: 1rem; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
+        .action-btn:active { opacity: .8; }
+        .btn-green  { background: #2e7d32; color: #fff; }
+        .btn-red    { background: #c62828; color: #fff; }
+        .btn-orange { background: #e65100; color: #fff; }
+        .btn-blue   { background: #1565c0; color: #fff; }
+        .btn-grey   { background: #333; color: #888; pointer-events: none; }
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: .5rem; }
+        .photo-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; cursor: pointer; }
+
+        /* Loading */
+        .loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 999; }
+        .loading.visible { display: flex; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #4fc3f7; border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="loading" id="loading"><div class="spinner"></div></div>
+
+<!-- SCREEN 1: PIN LOGIN -->
+<div class="screen active" id="screen-pin">
+    <div class="logo">CORE <span>EXTERIORS</span></div>
+    <div class="pin-label">Enter your PIN</div>
+    <div class="pin-display">
+        <div class="pin-dot" id="dot0"></div>
+        <div class="pin-dot" id="dot1"></div>
+        <div class="pin-dot" id="dot2"></div>
+        <div class="pin-dot" id="dot3"></div>
+    </div>
+    <div class="numpad">
+        <button class="num-btn" onclick="pinPress('1')">1</button>
+        <button class="num-btn" onclick="pinPress('2')">2</button>
+        <button class="num-btn" onclick="pinPress('3')">3</button>
+        <button class="num-btn" onclick="pinPress('4')">4</button>
+        <button class="num-btn" onclick="pinPress('5')">5</button>
+        <button class="num-btn" onclick="pinPress('6')">6</button>
+        <button class="num-btn" onclick="pinPress('7')">7</button>
+        <button class="num-btn" onclick="pinPress('8')">8</button>
+        <button class="num-btn" onclick="pinPress('9')">9</button>
+        <div class="num-btn empty"></div>
+        <button class="num-btn" onclick="pinPress('0')">0</button>
+        <button class="num-btn del" onclick="pinDel()">&#x232B;</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+</div>
+
+<!-- SCREEN 2: HOME -->
+<div class="screen" id="screen-home">
+    <div class="sync-banner" id="syncBanner">Syncing offline events&hellip;</div>
+    <div class="home-header">
+        <div class="worker-name" id="workerName">Worker</div>
+        <div class="worker-date" id="workerDate"></div>
+    </div>
+    <button class="day-clock-btn btn-in" id="dayClockBtn" onclick="toggleDayClock()">Clock In for Day</button>
+    <div class="section-title">Today&rsquo;s Jobs</div>
+    <div class="jobs-list" id="jobsList"></div>
+</div>
+
+<!-- SCREEN 3: JOB DETAIL -->
+<div class="screen" id="screen-job">
+    <div class="job-header">
+        <button class="back-btn" onclick="showScreen('home')">&#x2039;</button>
+        <div class="job-header-title" id="jobDetailTitle">Job</div>
+    </div>
+    <div class="job-detail-body">
+        <div class="detail-card">
+            <div class="detail-label">Description / Notes</div>
+            <div class="detail-value" id="jobDetailDesc"></div>
+        </div>
+        <div class="detail-card">
+            <div class="detail-label">Scheduled Time</div>
+            <div class="detail-value" id="jobDetailTime"></div>
+        </div>
+        <div class="action-btns" id="jobActionBtns"></div>
+        <div class="detail-card">
+            <div class="detail-label">Completion Photos</div>
+            <div class="photo-grid" id="photoGrid"></div>
+            <button class="action-btn btn-blue" style="margin-top:.75rem" onclick="triggerPhotoUpload()">&#x1F4F7; Add Photos</button>
+            <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Security: all user data rendered via innerHTML must go through esc() ───────
+function esc(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let pin = '';
+let sessionToken = localStorage.getItem('labour_token') || null;
+let workerName   = localStorage.getItem('labour_name')  || null;
+let currentJobs  = [];
+let todayLog     = null;
+let currentJob   = null;
+
+// ── Screens ───────────────────────────────────────────────────────────────────
+function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+}
+function showLoading(v) { document.getElementById('loading').classList.toggle('visible', v); }
+
+// ── PIN input ─────────────────────────────────────────────────────────────────
+function pinPress(digit) {
+    if (pin.length >= 4) return;
+    pin += digit;
+    updateDots();
+    if (pin.length === 4) submitPin();
+}
+function pinDel() {
+    pin = pin.slice(0, -1);
+    updateDots();
+    document.getElementById('pinError').textContent = '';
+}
+function updateDots() {
+    for (let i = 0; i < 4; i++) {
+        document.getElementById('dot' + i).classList.toggle('filled', i < pin.length);
+    }
+}
+async function submitPin() {
+    showLoading(true);
+    try {
+        const r = await fetch('/api/labour?action=verify-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin })
+        });
+        const data = await r.json();
+        if (data.success) {
+            sessionToken = data.token;
+            workerName   = data.name;
+            localStorage.setItem('labour_token', sessionToken);
+            localStorage.setItem('labour_name', workerName);
+            await loadHome();
+        } else {
+            document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
+            pin = ''; updateDots();
+        }
+    } catch {
+        document.getElementById('pinError').textContent = 'Connection error. Try again.';
+        pin = ''; updateDots();
+    }
+    showLoading(false);
+}
+
+// ── Home screen ───────────────────────────────────────────────────────────────
+async function loadHome() {
+    document.getElementById('workerName').textContent = workerName || 'Worker';
+    document.getElementById('workerDate').textContent = new Date().toLocaleDateString('en-CA', {
+        timeZone: 'America/Toronto', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+    showScreen('home');
+    await syncOfflineQueue();
+    await refreshJobs();
+}
+
+async function refreshJobs() {
+    try {
+        const r = await fetch('/api/labour?action=today-jobs', {
+            headers: { 'Authorization': 'Bearer ' + sessionToken }
+        });
+        if (r.status === 401) { logout(); return; }
+        const data = await r.json();
+        currentJobs = data.jobs || [];
+        todayLog    = data.log;
+        renderHome();
+    } catch {
+        document.getElementById('jobsList').textContent = 'Could not load jobs. Check your connection.';
+    }
+}
+
+function renderHome() {
+    const btn = document.getElementById('dayClockBtn');
+    if (todayLog?.dayClockIn && !todayLog?.dayClockOut) {
+        btn.textContent = 'Clock Out for Day';
+        btn.className = 'day-clock-btn btn-out';
+    } else if (todayLog?.dayClockOut) {
+        btn.textContent = 'Day Complete';
+        btn.className = 'day-clock-btn btn-done';
+    } else {
+        btn.textContent = 'Clock In for Day';
+        btn.className = 'day-clock-btn btn-in';
+    }
+
+    const list = document.getElementById('jobsList');
+    if (!currentJobs.length) {
+        list.textContent = 'No jobs scheduled for today.';
+        return;
+    }
+    // esc() applied to all server-provided strings before innerHTML insertion
+    list.innerHTML = currentJobs.map(job => {
+        const log = todayLog?.jobs?.find(j => j.calendarEventId === job.id);
+        const statusHtml = log
+            ? (log.clockOut
+                ? `<div class="job-card-status status-done">&#x2713; Completed</div>`
+                : `<div class="job-card-status status-active">&#x25CF; In progress</div>`)
+            : '';
+        return `<div class="job-card" onclick="openJob('${esc(job.id)}')">
+            <div class="job-card-title">${esc(job.title)}</div>
+            <div class="job-card-time">${esc(fmtTime(job.start))}</div>
+            ${statusHtml}
+        </div>`;
+    }).join('');
+}
+
+// ── Day clock ─────────────────────────────────────────────────────────────────
+async function toggleDayClock() {
+    const event = (todayLog?.dayClockIn && !todayLog?.dayClockOut) ? 'dayClockOut' : 'dayClockIn';
+    await logEvent({ event });
+    await refreshJobs();
+}
+
+// ── Job detail ────────────────────────────────────────────────────────────────
+function openJob(jobId) {
+    currentJob = currentJobs.find(j => j.id === jobId);
+    if (!currentJob) return;
+    // textContent for user data avoids innerHTML XSS
+    document.getElementById('jobDetailTitle').textContent = currentJob.title;
+    document.getElementById('jobDetailDesc').textContent  = currentJob.description || '—';
+    document.getElementById('jobDetailTime').textContent  = fmtTime(currentJob.start) + (currentJob.end ? ' – ' + fmtTime(currentJob.end) : '');
+    renderJobActions();
+    renderPhotoGrid();
+    showScreen('job');
+}
+
+function renderJobActions() {
+    const log = todayLog?.jobs?.find(j => j.calendarEventId === currentJob.id);
+    const btns = document.getElementById('jobActionBtns');
+    if (!log?.clockIn) {
+        btns.innerHTML = `<button class="action-btn btn-green" onclick="jobClockIn()">Clock In to Job</button>`;
+    } else if (!log.clockOut) {
+        const onLunch = todayLog?.lunchOut && !todayLog?.lunchIn;
+        btns.innerHTML = onLunch
+            ? `<button class="action-btn btn-orange" onclick="lunchEnd()">End Lunch Break</button>
+               <button class="action-btn btn-red" onclick="jobClockOut()">Clock Out of Job</button>`
+            : `<button class="action-btn btn-orange" onclick="lunchStart()">Start Lunch Break</button>
+               <button class="action-btn btn-red" onclick="jobClockOut()">Clock Out of Job</button>`;
+    } else {
+        btns.innerHTML = `<button class="action-btn btn-grey">Job Complete &#x2713;</button>`;
+    }
+}
+
+async function jobClockIn()  { await logEvent({ event: 'jobClockIn', calendarEventId: currentJob.id, jobTitle: currentJob.title }); await refreshJobs(); renderJobActions(); }
+async function jobClockOut() { await logEvent({ event: 'jobClockOut', calendarEventId: currentJob.id }); await refreshJobs(); renderJobActions(); }
+async function lunchStart()  { await logEvent({ event: 'lunchOut' }); await refreshJobs(); renderJobActions(); }
+async function lunchEnd()    { await logEvent({ event: 'lunchIn' });  await refreshJobs(); renderJobActions(); }
+
+// ── Offline queue ─────────────────────────────────────────────────────────────
+async function logEvent(payload) {
+    const queue = getQueue();
+    queue.push({ ...payload, _ts: Date.now() });
+    saveQueue(queue);
+    if (!navigator.onLine) return;
+    await syncOfflineQueue();
+}
+
+function getQueue()   { return JSON.parse(localStorage.getItem('labour_queue') || '[]'); }
+function saveQueue(q) { localStorage.setItem('labour_queue', JSON.stringify(q)); }
+
+async function syncOfflineQueue() {
+    const queue = getQueue();
+    if (!queue.length) return;
+    document.getElementById('syncBanner').classList.add('visible');
+    const remaining = [];
+    for (const item of queue) {
+        const { _ts, ...payload } = item;
+        try {
+            const r = await fetch('/api/labour?action=log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionToken, ...payload })
+            });
+            if (!r.ok) remaining.push(item);
+        } catch { remaining.push(item); }
+    }
+    saveQueue(remaining);
+    if (!remaining.length) document.getElementById('syncBanner').classList.remove('visible');
+}
+
+window.addEventListener('online', syncOfflineQueue);
+
+// ── Photo upload ──────────────────────────────────────────────────────────────
+function triggerPhotoUpload() { document.getElementById('photoInput').click(); }
+
+async function handlePhotoSelect(event) {
+    for (const file of Array.from(event.target.files)) {
+        const compressed = await compressImage(file, 1024);
+        await uploadPhoto(compressed);
+    }
+    event.target.value = '';
+}
+
+function compressImage(file, maxPx) {
+    return new Promise(resolve => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+            const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = url;
+    });
+}
+
+async function uploadPhoto(base64) {
+    if (!currentJob) return;
+    const grid = document.getElementById('photoGrid');
+    const pending = document.createElement('div');
+    pending.style.cssText = 'background:#1a2a45;border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.5rem';
+    pending.textContent = '\u23F3';
+    grid.appendChild(pending);
+    try {
+        const r = await fetch('/api/labour-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionToken, calendarEventId: currentJob.id, jobTitle: currentJob.title, photoData: base64 })
+        });
+        const data = await r.json();
+        if (data.success) {
+            const img = document.createElement('img');
+            img.className = 'photo-thumb';
+            img.src = data.url;
+            img.addEventListener('click', () => window.open(data.url, '_blank'));
+            pending.replaceWith(img);
+            await refreshJobs();
+        } else {
+            pending.textContent = '\u2717';
+        }
+    } catch { pending.textContent = '\u2717'; }
+}
+
+function renderPhotoGrid() {
+    const log    = todayLog?.jobs?.find(j => j.calendarEventId === currentJob?.id);
+    const grid   = document.getElementById('photoGrid');
+    const photos = log?.photos || [];
+    grid.innerHTML = '';
+    photos.forEach(url => {
+        const img = document.createElement('img');
+        img.className = 'photo-thumb';
+        img.src = url;
+        img.addEventListener('click', () => window.open(url, '_blank'));
+        grid.appendChild(img);
+    });
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function fmtTime(iso) {
+    if (!iso) return '\u2014';
+    return new Date(iso).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function logout() {
+    localStorage.removeItem('labour_token');
+    localStorage.removeItem('labour_name');
+    sessionToken = null; workerName = null; pin = '';
+    updateDots();
+    showScreen('pin');
+}
+
+// Auto-login if session token already stored
+(async () => {
+    if (sessionToken && workerName) {
+        showLoading(true);
+        try { await loadHome(); } catch { logout(); }
+        showLoading(false);
+    }
+})();
+</script>
+</body>
+</html>
