@@ -20,14 +20,25 @@ module.exports = async function handler(req, res) {
         if (!session) return res.status(401).json({ error: 'Invalid session' });
         if (!calendarEventId || !photoData) return res.status(400).json({ error: 'calendarEventId and photoData required' });
 
+        if (!/^[a-zA-Z0-9_\-]{1,256}$/.test(calendarEventId)) {
+            return res.status(400).json({ error: 'Invalid calendarEventId' });
+        }
+
         const { workerId } = session;
         const date = todayKey();
         const path = `labour/${date}/${workerId}/${calendarEventId}/${Date.now()}.jpg`;
 
-        const base64 = photoData.replace(/^data:image\/\w+;base64,/, '');
-        const buffer = Buffer.from(base64, 'base64');
+        // Validate data URL format
+        const match = photoData.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/s);
+        if (!match) return res.status(400).json({ error: 'Invalid photo format. Must be JPEG, PNG, or WebP.' });
+        const [, mimeType, b64] = match;
+        const buffer = Buffer.from(b64, 'base64');
 
-        const blob = await put(path, buffer, { access: 'public', contentType: 'image/jpeg' });
+        // Enforce 2MB size limit after decode
+        const MAX_BYTES = 2 * 1024 * 1024;
+        if (buffer.length > MAX_BYTES) return res.status(413).json({ error: 'Photo exceeds 2MB limit after compression' });
+
+        const blob = await put(path, buffer, { access: 'public', contentType: mimeType, addRandomSuffix: true });
 
         // Append photo URL to the job's entry in the daily log
         const logKey = `labour:${date}:${workerId}`;
@@ -47,6 +58,6 @@ module.exports = async function handler(req, res) {
 
     } catch (err) {
         console.error('Photo upload error:', err.message);
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: 'Upload failed. Please try again.' });
     }
 };

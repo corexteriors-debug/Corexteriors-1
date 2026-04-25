@@ -29,7 +29,8 @@ function todayKey() {
 }
 
 function hashPin(pin) {
-    const secret = process.env.PIN_HMAC_SECRET || 'corexteriors-pin-secret-2026';
+    const secret = process.env.PIN_HMAC_SECRET;
+    if (!secret) throw new Error('PIN_HMAC_SECRET env var is required');
     return crypto.createHmac('sha256', secret).update(String(pin)).digest('hex');
 }
 
@@ -49,7 +50,7 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Unknown action' });
     } catch (err) {
         console.error('Labour API error:', err.message);
-        return res.status(500).json({ error: err.message || 'Server error' });
+        return res.status(500).json({ error: 'Server error. Please try again.' });
     }
 };
 
@@ -118,6 +119,9 @@ async function writeLog(req, res) {
     const session = await verifyWorkerSession(sessionToken);
     if (!session) return res.status(401).json({ error: 'Invalid session' });
 
+    const VALID_EVENTS = ['dayClockIn', 'dayClockOut', 'lunchOut', 'lunchIn', 'jobClockIn', 'jobClockOut'];
+    if (!event || !VALID_EVENTS.includes(event)) return res.status(400).json({ error: 'Invalid event' });
+
     const { workerId } = session;
     const date = todayKey();
     const key = `labour:${date}:${workerId}`;
@@ -139,7 +143,8 @@ async function writeLog(req, res) {
     if (event === 'jobClockOut') {
         if (!calendarEventId) return res.status(400).json({ error: 'calendarEventId required' });
         const job = log.jobs.find(j => j.calendarEventId === calendarEventId);
-        if (job) job.clockOut = ts;
+        if (!job) return res.status(404).json({ error: 'Job not clocked in' });
+        job.clockOut = ts;
     }
 
     await kv.set(key, log);
@@ -147,6 +152,7 @@ async function writeLog(req, res) {
 }
 
 function stripPricing(text) {
+    if (!text) return '';
     return text.split('\n').filter(line => !/\$\d/.test(line)).join('\n').trim();
 }
 
@@ -197,10 +203,11 @@ async function dailyLogs(req, res) {
     if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
     const date  = req.query.date || todayKey();
     const index = await kv.get('workers:index') || [];
-    const results = await Promise.all(index.map(async (workerId) => ({
-        worker: await kv.get(`worker:${workerId}`),
-        log:    await kv.get(`labour:${date}:${workerId}`) || null
-    })));
+    const results = await Promise.all(index.map(async (workerId) => {
+        const raw = await kv.get(`worker:${workerId}`);
+        const worker = raw ? (({ pinHash: _h, ...rest }) => rest)(raw) : null;
+        return { worker, log: await kv.get(`labour:${date}:${workerId}`) || null };
+    }));
     return res.status(200).json({ success: true, date, workers: results.filter(r => r.worker) });
 }
 
@@ -210,6 +217,7 @@ async function editLog(req, res) {
 
     const { workerId, date, field, value, jobIndex } = req.body || {};
     if (!workerId || !date || !field) return res.status(400).json({ error: 'workerId, date, field required' });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
 
     const key = `labour:${date}:${workerId}`;
     let log = await kv.get(key) || { dayClockIn: null, dayClockOut: null, lunchOut: null, lunchIn: null, jobs: [] };
@@ -217,7 +225,10 @@ async function editLog(req, res) {
     function toISO(timeStr) {
         if (!timeStr) return null;
         if (timeStr.includes('T')) return timeStr;
-        return new Date(`${date}T${timeStr}:00`).toISOString();
+        if (!/^\d{2}:\d{2}$/.test(timeStr)) return null; // reject malformed HH:MM
+        const d = new Date(`${date}T${timeStr}:00`);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString();
     }
 
     if (field === 'dayClockIn')  log.dayClockIn  = toISO(value);
