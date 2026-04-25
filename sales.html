@@ -1018,7 +1018,7 @@
                                 <option value="none">None (Base $1.75/sqft)</option>
                                 <option value="minor">Minor ($2.60/sqft total)</option>
                                 <option value="moderate">Moderate ($3.25/sqft total)</option>
-                                <option value="significant">Significant ($4.10/sqft total)</option>
+                                <option value="significant">Significant ($6.60/sqft total)</option>
                             </select>
                         </div>
                     </div>
@@ -1544,7 +1544,7 @@
             if (document.getElementById('svc_interlock').checked) {
                 const sqft = parseFloat(document.getElementById('interlock_sqft').value) || 0;
                 const sev = document.getElementById('interlock_severity').value;
-                const rates = { none: 1.75, minor: 2.60, moderate: 3.25, significant: 4.10 };
+                const rates = { none: 1.75, minor: 2.60, moderate: 3.25, significant: 6.60 };
                 let intPrice = sqft * (rates[sev] || 1.75);
                 if (document.getElementById('interlock_seal').checked) intPrice += 250;
                 document.getElementById('price_interlock').textContent = '$' + intPrice.toFixed(2);
