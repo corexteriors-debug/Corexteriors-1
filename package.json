@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/oblokulov/Corexteriors#readme",
   "dependencies": {
+    "@vercel/blob": "^2.3.3",
     "@vercel/kv": "^3.0.0",
     "docxtemplater": "^3.68.3",
     "docxtemplater-image-module-free": "^1.1.1",
