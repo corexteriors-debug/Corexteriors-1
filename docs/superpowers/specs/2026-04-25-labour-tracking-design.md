@@ -60,21 +60,23 @@ workers:index       →  [ workerId, workerId, ... ]
 **Daily time logs:**
 ```
 labour:{YYYY-MM-DD}:{workerId}  →  {
-  dayClockIn:   "HH:MM",
-  dayClockOut:  "HH:MM" | null,
-  lunchOut:     "HH:MM" | null,
-  lunchIn:      "HH:MM" | null,
+  dayClockIn:   ISO timestamp | null,
+  dayClockOut:  ISO timestamp | null,
+  lunchOut:     ISO timestamp | null,
+  lunchIn:      ISO timestamp | null,
   jobs: [
     {
       calendarEventId: string,
       jobTitle:        string,
-      clockIn:         "HH:MM",
-      clockOut:        "HH:MM" | null,
+      clockIn:         ISO timestamp,
+      clockOut:        ISO timestamp | null,
       photos:          string[]   // Vercel Blob URLs
     }
   ]
 }
 ```
+- All timestamps stored as ISO 8601 (e.g. `2026-04-25T09:02:00-04:00`), displayed in `America/Toronto` timezone
+- Multiple workers can clock into the same job — each has their own log entry keyed by workerId, no collision
 
 ### Vercel Blob (new, no extra account needed)
 
@@ -115,8 +117,10 @@ labour/{YYYY-MM-DD}/{workerId}/{calendarEventId}/{timestamp}.jpg
 ### Screen 2 — Home (Today's Jobs)
 - Worker name + today's date
 - **Clock In for Day** button (green when active → becomes **Clock Out for Day**)
+- All of today's calendar jobs visible to every worker — workers can join any job to help each other out
 - List of today's calendar events: address, service type, scheduled time
 - No pricing shown anywhere
+- "Pending sync" banner shown if any clock events are queued offline
 - Tap a job → Screen 3
 
 ### Screen 3 — Job Detail
@@ -124,8 +128,15 @@ labour/{YYYY-MM-DD}/{workerId}/{calendarEventId}/{timestamp}.jpg
 - **Clock In to Job** → **Clock Out of Job**
 - **Start Lunch** / **End Lunch** (available while clocked into a job)
 - **Upload Photos** (camera + library, multiple, shows thumbnails)
+  - Photos compressed to max 1MB in-browser (Canvas API) before upload
 - Submit locks the job as complete
 - Back arrow → Screen 2
+
+### Offline Handling
+- All clock events (in/out/lunch) saved to `localStorage` immediately
+- Synced to API in background — retried automatically when connection returns
+- "Pending sync" indicator shown until confirmed by server
+- Photos queued similarly; worker sees thumbnails immediately, upload happens async
 
 ---
 
@@ -140,7 +151,9 @@ labour/{YYYY-MM-DD}/{workerId}/{calendarEventId}/{timestamp}.jpg
 - Date picker (defaults to today)
 - One row per worker: Name | Day In | Lunch Out | Lunch In | Day Out | Total Hours
 - Expandable per-job rows: Job Name | Job In | Job Out | Duration | Photo thumbnails
+- Jobs show all workers who clocked into them — easy to see when crews combined
 - Click thumbnail → full-size photo lightbox
+- Admin can click any time field to manually edit it (for forgotten clock-ins/outs)
 - Status badges:
   - 🟢 Clocked in for day
   - 🟡 On lunch
