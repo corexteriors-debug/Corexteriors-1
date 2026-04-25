@@ -35,6 +35,7 @@ module.exports = async function handler(req, res) {
 
         const job = log.jobs.find(j => j.calendarEventId === calendarEventId);
         if (job) {
+            if (!Array.isArray(job.photos)) job.photos = [];
             job.photos.push(blob.url);
         } else {
             // Photo uploaded without a clock-in — create a job stub
