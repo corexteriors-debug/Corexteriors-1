@@ -165,11 +165,16 @@ async function todayJobs(req, res) {
     const cal  = google.calendar({ version: 'v3', auth });
 
     const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE });
-    const timeMin  = new Date(`${todayStr}T00:00:00`).toISOString();
-    const timeMax  = new Date(`${todayStr}T23:59:59`).toISOString();
+    // Build Toronto-midnight timestamps by using the UTC offset for America/Toronto
+    // toLocaleDateString already gave us the correct YYYY-MM-DD for Toronto,
+    // so we append the time and let the browser/server parse with explicit offset.
+    // Safer: format as strings and let Google Calendar interpret with timeZone param.
+    const timeMin = `${todayStr}T00:00:00`;
+    const timeMax = `${todayStr}T23:59:59`;
 
     const response = await cal.events.list({
         calendarId, timeMin, timeMax,
+        timeZone: TIMEZONE,
         singleEvents: true, orderBy: 'startTime', maxResults: 50
     });
 
