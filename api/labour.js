@@ -105,3 +105,9 @@ async function deactivateWorker(req, res) {
     await kv.set(`worker:${workerId}`, worker);
     return res.status(200).json({ success: true });
 }
+
+// Stubs — implemented in Task 2
+async function writeLog(req, res)  { return res.status(501).json({ error: 'Not implemented yet' }); }
+async function todayJobs(req, res) { return res.status(501).json({ error: 'Not implemented yet' }); }
+async function dailyLogs(req, res) { return res.status(501).json({ error: 'Not implemented yet' }); }
+async function editLog(req, res)   { return res.status(501).json({ error: 'Not implemented yet' }); }
