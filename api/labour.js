@@ -11,7 +11,7 @@ function cors(res) {
 }
 
 async function verifyAdminToken(req) {
-    const token = (req.headers.authorization || '').replace('Bearer ', '');
+    const token = (req.headers.authorization || '').split(' ')[1] || '';
     if (!token) return false;
     const data = await kv.get(`token:${token}`);
     return data && data.role === 'admin';
@@ -26,6 +26,11 @@ function nowISO() { return new Date().toISOString(); }
 
 function todayKey() {
     return new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+}
+
+function hashPin(pin) {
+    const secret = process.env.PIN_HMAC_SECRET || 'corexteriors-pin-secret-2026';
+    return crypto.createHmac('sha256', secret).update(String(pin)).digest('hex');
 }
 
 module.exports = async function handler(req, res) {
@@ -56,7 +61,7 @@ async function verifyPin(req, res) {
     const index = await kv.get('workers:index') || [];
     for (const workerId of index) {
         const worker = await kv.get(`worker:${workerId}`);
-        if (worker && worker.active && worker.pin === String(pin)) {
+        if (worker && worker.active && worker.pinHash === hashPin(pin)) {
             const token = crypto.randomBytes(24).toString('hex');
             await kv.set(`worker-session:${token}`, { workerId: worker.id, name: worker.name }, { ex: 86400 });
             return res.status(200).json({ success: true, token, name: worker.name, workerId: worker.id });
@@ -76,14 +81,14 @@ async function addWorker(req, res) {
     const index = await kv.get('workers:index') || [];
     for (const wid of index) {
         const w = await kv.get(`worker:${wid}`);
-        if (w && w.active && w.pin === String(pin)) return res.status(409).json({ error: 'PIN already in use' });
+        if (w && w.active && w.pinHash === hashPin(pin)) return res.status(409).json({ error: 'PIN already in use' });
     }
 
     const workerId = crypto.randomBytes(8).toString('hex');
-    const worker = { id: workerId, name: String(name).trim(), pin: String(pin), active: true };
+    const worker = { id: workerId, name: String(name).trim(), pinHash: hashPin(pin), active: true };
     await kv.set(`worker:${workerId}`, worker);
     await kv.set('workers:index', [...index, workerId]);
-    return res.status(201).json({ success: true, worker });
+    return res.status(201).json({ success: true, worker: { id: worker.id, name: worker.name, active: worker.active } });
 }
 
 async function listWorkers(req, res) {
@@ -91,7 +96,8 @@ async function listWorkers(req, res) {
     if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
     const index = await kv.get('workers:index') || [];
     const workers = (await Promise.all(index.map(id => kv.get(`worker:${id}`)))).filter(Boolean);
-    return res.status(200).json({ success: true, workers });
+    const safeWorkers = workers.map(({ pinHash: _h, ...rest }) => rest);
+    return res.status(200).json({ success: true, workers: safeWorkers });
 }
 
 async function deactivateWorker(req, res) {
