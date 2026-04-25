@@ -112,8 +112,116 @@ async function deactivateWorker(req, res) {
     return res.status(200).json({ success: true });
 }
 
-// Stubs — implemented in Task 2
-async function writeLog(req, res)  { return res.status(501).json({ error: 'Not implemented yet' }); }
-async function todayJobs(req, res) { return res.status(501).json({ error: 'Not implemented yet' }); }
-async function dailyLogs(req, res) { return res.status(501).json({ error: 'Not implemented yet' }); }
-async function editLog(req, res)   { return res.status(501).json({ error: 'Not implemented yet' }); }
+async function writeLog(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    const { sessionToken, event, calendarEventId, jobTitle } = req.body || {};
+    const session = await verifyWorkerSession(sessionToken);
+    if (!session) return res.status(401).json({ error: 'Invalid session' });
+
+    const { workerId } = session;
+    const date = todayKey();
+    const key = `labour:${date}:${workerId}`;
+    let log = await kv.get(key) || { dayClockIn: null, dayClockOut: null, lunchOut: null, lunchIn: null, jobs: [] };
+    const ts = nowISO();
+
+    if (event === 'dayClockIn')  log.dayClockIn  = ts;
+    if (event === 'dayClockOut') log.dayClockOut = ts;
+    if (event === 'lunchOut')    log.lunchOut    = ts;
+    if (event === 'lunchIn')     log.lunchIn     = ts;
+
+    if (event === 'jobClockIn') {
+        if (!calendarEventId || !jobTitle) return res.status(400).json({ error: 'calendarEventId and jobTitle required' });
+        if (!log.jobs.find(j => j.calendarEventId === calendarEventId)) {
+            log.jobs.push({ calendarEventId, jobTitle, clockIn: ts, clockOut: null, photos: [] });
+        }
+    }
+
+    if (event === 'jobClockOut') {
+        if (!calendarEventId) return res.status(400).json({ error: 'calendarEventId required' });
+        const job = log.jobs.find(j => j.calendarEventId === calendarEventId);
+        if (job) job.clockOut = ts;
+    }
+
+    await kv.set(key, log);
+    return res.status(200).json({ success: true, log });
+}
+
+function stripPricing(text) {
+    return text.split('\n').filter(line => !/\$\d/.test(line)).join('\n').trim();
+}
+
+async function todayJobs(req, res) {
+    if (req.method !== 'GET') return res.status(405).end();
+    const sessionToken = (req.headers.authorization || '').split(' ')[1] || '';
+    const session = await verifyWorkerSession(sessionToken);
+    if (!session) return res.status(401).json({ error: 'Invalid session' });
+
+    const email      = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
+    const key        = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
+    const calendarId = (process.env.GOOGLE_CALENDAR_ID || '').trim();
+    if (!email || !key || !calendarId) return res.status(503).json({ error: 'Calendar not configured' });
+
+    const auth = new google.auth.JWT({ email, key, scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
+    const cal  = google.calendar({ version: 'v3', auth });
+
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+    const timeMin  = new Date(`${todayStr}T00:00:00`).toISOString();
+    const timeMax  = new Date(`${todayStr}T23:59:59`).toISOString();
+
+    const response = await cal.events.list({
+        calendarId, timeMin, timeMax,
+        singleEvents: true, orderBy: 'startTime', maxResults: 50
+    });
+
+    const jobs = (response.data.items || [])
+        .filter(e => (e.extendedProperties?.private?.eventType || 'job') !== 'unavailable')
+        .map(e => ({
+            id:          e.id,
+            title:       e.summary || 'Job',
+            description: stripPricing(e.description || ''),
+            start:       e.start.dateTime || e.start.date,
+            end:         e.end.dateTime   || e.end.date,
+        }));
+
+    const log = await kv.get(`labour:${todayStr}:${session.workerId}`) || null;
+    return res.status(200).json({ success: true, jobs, log, date: todayStr });
+}
+
+async function dailyLogs(req, res) {
+    if (req.method !== 'GET') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+    const date  = req.query.date || todayKey();
+    const index = await kv.get('workers:index') || [];
+    const results = await Promise.all(index.map(async (workerId) => ({
+        worker: await kv.get(`worker:${workerId}`),
+        log:    await kv.get(`labour:${date}:${workerId}`) || null
+    })));
+    return res.status(200).json({ success: true, date, workers: results.filter(r => r.worker) });
+}
+
+async function editLog(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+
+    const { workerId, date, field, value, jobIndex } = req.body || {};
+    if (!workerId || !date || !field) return res.status(400).json({ error: 'workerId, date, field required' });
+
+    const key = `labour:${date}:${workerId}`;
+    let log = await kv.get(key) || { dayClockIn: null, dayClockOut: null, lunchOut: null, lunchIn: null, jobs: [] };
+
+    function toISO(timeStr) {
+        if (!timeStr) return null;
+        if (timeStr.includes('T')) return timeStr;
+        return new Date(`${date}T${timeStr}:00`).toISOString();
+    }
+
+    if (field === 'dayClockIn')  log.dayClockIn  = toISO(value);
+    if (field === 'dayClockOut') log.dayClockOut = toISO(value);
+    if (field === 'lunchOut')    log.lunchOut    = toISO(value);
+    if (field === 'lunchIn')     log.lunchIn     = toISO(value);
+    if (field === 'jobClockIn'  && jobIndex != null && log.jobs[jobIndex]) log.jobs[jobIndex].clockIn  = toISO(value);
+    if (field === 'jobClockOut' && jobIndex != null && log.jobs[jobIndex]) log.jobs[jobIndex].clockOut = toISO(value);
+
+    await kv.set(key, log);
+    return res.status(200).json({ success: true, log });
+}
