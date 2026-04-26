@@ -2,11 +2,22 @@ const { kv } = require('@vercel/kv');
 const { put } = require('@vercel/blob');
 
 const TIMEZONE = 'America/Toronto';
+const ALLOWED_ORIGINS = ['https://corexteriors.ca', 'https://www.corexteriors.ca'];
 function todayKey() { return new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE }); }
-async function verifyWorkerSession(token) { return token ? await kv.get(`worker-session:${token}`) : null; }
+async function verifyWorkerSession(token) {
+    if (!token) return null;
+    const session = await kv.get(`worker-session:${token}`);
+    if (!session) return null;
+    const worker = await kv.get(`worker:${session.workerId}`);
+    if (!worker || !worker.active) return null;
+    return session;
+}
 
 module.exports = async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin || '';
+    const allowed = ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app');
+    res.setHeader('Access-Control-Allow-Origin', allowed ? origin : ALLOWED_ORIGINS[0]);
+    res.setHeader('Vary', 'Origin');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') return res.status(200).end();

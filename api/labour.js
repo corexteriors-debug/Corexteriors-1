@@ -3,9 +3,13 @@ const { google } = require('googleapis');
 const crypto = require('crypto');
 
 const TIMEZONE = 'America/Toronto';
+const ALLOWED_ORIGINS = ['https://corexteriors.ca', 'https://www.corexteriors.ca'];
 
-function cors(res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+function cors(req, res) {
+    const origin = req.headers.origin || '';
+    const allowed = ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app');
+    res.setHeader('Access-Control-Allow-Origin', allowed ? origin : ALLOWED_ORIGINS[0]);
+    res.setHeader('Vary', 'Origin');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
@@ -19,7 +23,11 @@ async function verifyAdminToken(req) {
 
 async function verifyWorkerSession(token) {
     if (!token) return null;
-    return await kv.get(`worker-session:${token}`);
+    const session = await kv.get(`worker-session:${token}`);
+    if (!session) return null;
+    const worker = await kv.get(`worker:${session.workerId}`);
+    if (!worker || !worker.active) return null;
+    return session;
 }
 
 function nowISO() { return new Date().toISOString(); }
@@ -35,7 +43,7 @@ function hashPin(pin) {
 }
 
 module.exports = async function handler(req, res) {
-    cors(res);
+    cors(req, res);
     if (req.method === 'OPTIONS') return res.status(200).end();
     const action = req.query.action;
     try {
@@ -60,13 +68,17 @@ async function verifyPin(req, res) {
     if (!pin) return res.status(400).json({ error: 'PIN required' });
 
     const index = await kv.get('workers:index') || [];
-    for (const workerId of index) {
-        const worker = await kv.get(`worker:${workerId}`);
-        if (worker && worker.active && worker.pinHash === hashPin(pin)) {
-            const token = crypto.randomBytes(24).toString('hex');
-            await kv.set(`worker-session:${token}`, { workerId: worker.id, name: worker.name }, { ex: 86400 });
-            return res.status(200).json({ success: true, token, name: worker.name, workerId: worker.id });
-        }
+    const workers = await Promise.all(index.map(id => kv.get(`worker:${id}`)));
+    const pinHash = hashPin(pin);
+    // Iterate ALL workers (no early return) to avoid timing side-channel
+    let matched = null;
+    for (const worker of workers) {
+        if (worker && worker.active && worker.pinHash === pinHash) matched = worker;
+    }
+    if (matched) {
+        const token = crypto.randomBytes(24).toString('hex');
+        await kv.set(`worker-session:${token}`, { workerId: matched.id, name: matched.name }, { ex: 86400 });
+        return res.status(200).json({ success: true, token, name: matched.name, workerId: matched.id });
     }
     return res.status(401).json({ error: 'Invalid PIN' });
 }
@@ -218,6 +230,8 @@ async function editLog(req, res) {
     const { workerId, date, field, value, jobIndex } = req.body || {};
     if (!workerId || !date || !field) return res.status(400).json({ error: 'workerId, date, field required' });
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+    const VALID_FIELDS = ['dayClockIn', 'dayClockOut', 'lunchOut', 'lunchIn', 'jobClockIn', 'jobClockOut'];
+    if (!VALID_FIELDS.includes(field)) return res.status(400).json({ error: 'Invalid field' });
 
     const key = `labour:${date}:${workerId}`;
     let log = await kv.get(key) || { dayClockIn: null, dayClockOut: null, lunchOut: null, lunchIn: null, jobs: [] };
@@ -225,8 +239,16 @@ async function editLog(req, res) {
     function toISO(timeStr) {
         if (!timeStr) return null;
         if (timeStr.includes('T')) return timeStr;
-        if (!/^\d{2}:\d{2}$/.test(timeStr)) return null; // reject malformed HH:MM
-        const d = new Date(`${date}T${timeStr}:00`);
+        if (!/^\d{2}:\d{2}$/.test(timeStr)) return null;
+        // Determine Toronto UTC offset for this date using noon (avoids DST midnight edge cases)
+        const noon = new Date(`${date}T12:00:00Z`);
+        const parts = new Intl.DateTimeFormat('en', { timeZone: TIMEZONE, timeZoneName: 'shortOffset' }).formatToParts(noon);
+        const tzName = (parts.find(p => p.type === 'timeZoneName') || {}).value || '';
+        const match = tzName.match(/GMT([+-]\d+)/);
+        const offsetHours = match ? parseInt(match[1]) : -5; // default EST if parse fails
+        const sign = offsetHours >= 0 ? '+' : '-';
+        const absH = String(Math.abs(offsetHours)).padStart(2, '0');
+        const d = new Date(`${date}T${timeStr}:00${sign}${absH}:00`);
         if (isNaN(d.getTime())) return null;
         return d.toISOString();
     }
