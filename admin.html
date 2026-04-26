@@ -1214,7 +1214,7 @@
                             </div>
                             <div>
                                 <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">4-Digit PIN</label>
-                                <input id="newWorkerPin" placeholder="e.g. 5291" maxlength="4" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;width:110px">
+                                <input id="newWorkerPin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="e.g. 5291" maxlength="4" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;width:110px">
                             </div>
                             <button onclick="saveNewWorker()" style="background:#2e7d32;border:none;border-radius:8px;padding:.5rem 1rem;color:#fff;cursor:pointer;font-size:.9rem">Save</button>
                             <button onclick="document.getElementById('addWorkerForm').style.display='none'" style="background:#333;border:none;border-radius:8px;padding:.5rem 1rem;color:#aaa;cursor:pointer;font-size:.9rem">Cancel</button>
@@ -3167,17 +3167,22 @@ async function loadWorkers() {
 function renderWorkersTable(workers) {
     const tbody = document.getElementById('workersBody');
     if (!workers.length) {
-        tbody['inn'+'erHTML'] = '<tr><td colspan="4" style="color:#888;text-align:center;padding:1.5rem">No workers yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="color:#888;text-align:center;padding:1.5rem">No workers yet</td></tr>';
         return;
     }
-    tbody['inn'+'erHTML'] = workers.map(w => `
+    tbody.innerHTML = workers.map(w => `
         <tr>
             <td>${labEsc(w.name)}</td>
             <td style="letter-spacing:.15em;color:#aaa">&#x2022;&#x2022;&#x2022;&#x2022;</td>
             <td><span style="color:${w.active ? '#4caf50' : '#888'}">${w.active ? '&#x25CF; Active' : '&#x25CB; Inactive'}</span></td>
-            <td>${w.active ? `<button onclick="deactivateWorker('${labEsc(w.id)}')" style="background:#c62828;border:none;border-radius:6px;padding:.3rem .7rem;color:#fff;cursor:pointer;font-size:.8rem">Deactivate</button>` : '&mdash;'}</td>
+            <td>${w.active ? `<button class="lab-deactivate-btn" data-worker-id="${labEsc(w.id)}" style="background:#c62828;border:none;border-radius:6px;padding:.3rem .7rem;color:#fff;cursor:pointer;font-size:.8rem">Deactivate</button>` : '&mdash;'}</td>
         </tr>`).join('');
 }
+
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.lab-deactivate-btn');
+    if (btn) deactivateWorker(btn.dataset.workerId);
+});
 
 async function saveNewWorker() {
     const name = document.getElementById('newWorkerName').value.trim();
@@ -3210,21 +3215,23 @@ async function deactivateWorker(workerId) {
     if (!confirm('Deactivate this worker? They will no longer be able to log in.')) return;
     const token = localStorage.getItem('admin_token') || '';
     try {
-        await fetch('/api/labour?action=deactivate-worker', {
+        const r = await fetch('/api/labour?action=deactivate-worker', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
             body: JSON.stringify({ workerId })
         });
+        const data = await r.json();
+        if (!data.success) { alert('Failed to deactivate: ' + (data.error || 'Unknown error')); return; }
         await loadWorkers();
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error(e); alert('Connection error. Could not deactivate worker.'); }
 }
 
 function renderDailyLogs(workers, date) {
     const container = document.getElementById('dailyLogsContainer');
     if (!workers.length) { container.textContent = 'No workers found.'; return; }
 
-    container['inn'+'erHTML'] = workers.map(({ worker, log }) => {
-        if (!worker) return '';
+    container.innerHTML = workers.map(({ worker, log }) => {
+        if (!worker) { console.warn('Labour: log entry found for unknown worker'); return ''; }
         const statusLabel = !log ? '⚫ Not started'
             : (log.lunchOut && !log.lunchIn) ? '🟡 On lunch'
             : (log.dayClockIn && !log.dayClockOut) ? '🟢 Clocked in'
@@ -3272,7 +3279,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadDailyLogs() {
-    const date  = document.getElementById('labourDatePicker').value;
+    const date  = document.getElementById('labourDatePicker')?.value;
+    if (!date) return;
     const token = localStorage.getItem('admin_token') || '';
     const container = document.getElementById('dailyLogsContainer');
     container.textContent = 'Loading…';
@@ -3325,7 +3333,12 @@ async function adminEditTime(input) {
 function calcTotalHours(log) {
     if (!log?.dayClockIn || !log?.dayClockOut) return null;
     let ms = new Date(log.dayClockOut) - new Date(log.dayClockIn);
-    if (log.lunchOut && log.lunchIn) ms -= (new Date(log.lunchIn) - new Date(log.lunchOut));
+    if (log.lunchOut && log.lunchIn) {
+        ms -= (new Date(log.lunchIn) - new Date(log.lunchOut));
+    } else if (log.lunchOut && !log.lunchIn) {
+        ms -= (Date.now() - new Date(log.lunchOut));
+    }
+    if (ms < 0) return null;
     return (ms / 3600000).toFixed(1);
 }
     </script>
