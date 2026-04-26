@@ -230,6 +230,7 @@ async function refreshJobs() {
         const data = await r.json();
         currentJobs = data.jobs || [];
         todayLog    = data.log;
+        if (currentJob) currentJob = currentJobs.find(j => j.id === currentJob.id) || currentJob;
         renderHome();
     } catch {
         document.getElementById('jobsList').textContent = 'Could not load jobs. Check your connection.';
@@ -324,24 +325,32 @@ async function logEvent(payload) {
 function getQueue()   { return JSON.parse(localStorage.getItem('labour_queue') || '[]'); }
 function saveQueue(q) { localStorage.setItem('labour_queue', JSON.stringify(q)); }
 
+let _syncing = false;
 async function syncOfflineQueue() {
-    const queue = getQueue();
-    if (!queue.length) return;
-    document.getElementById('syncBanner').classList.add('visible');
-    const remaining = [];
-    for (const item of queue) {
-        const { _ts, ...payload } = item;
-        try {
-            const r = await fetch('/api/labour?action=log', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionToken, ...payload })
-            });
-            if (!r.ok) remaining.push(item);
-        } catch { remaining.push(item); }
+    if (_syncing) return;
+    _syncing = true;
+    try {
+        const queue = getQueue();
+        if (!queue.length) return;
+        document.getElementById('syncBanner').classList.add('visible');
+        const remaining = [];
+        for (const item of queue) {
+            const { _ts, ...payload } = item;
+            try {
+                const r = await fetch('/api/labour?action=log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionToken, ...payload })
+                });
+                if (r.status === 401) { logout(); break; }
+                if (!r.ok) remaining.push(item);
+            } catch { remaining.push(item); }
+        }
+        saveQueue(remaining);
+        if (!remaining.length) document.getElementById('syncBanner').classList.remove('visible');
+    } finally {
+        _syncing = false;
     }
-    saveQueue(remaining);
-    if (!remaining.length) document.getElementById('syncBanner').classList.remove('visible');
 }
 
 window.addEventListener('online', syncOfflineQueue);
@@ -351,14 +360,16 @@ function triggerPhotoUpload() { document.getElementById('photoInput').click(); }
 
 async function handlePhotoSelect(event) {
     for (const file of Array.from(event.target.files)) {
-        const compressed = await compressImage(file, 1024);
-        await uploadPhoto(compressed);
+        try {
+            const compressed = await compressImage(file, 1024);
+            await uploadPhoto(compressed);
+        } catch { /* skip unreadable files */ }
     }
     event.target.value = '';
 }
 
 function compressImage(file, maxPx) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         const img = new Image();
         const url = URL.createObjectURL(file);
         img.onload = () => {
@@ -366,10 +377,13 @@ function compressImage(file, maxPx) {
             const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
             const canvas = document.createElement('canvas');
             canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { URL.revokeObjectURL(url); reject(new Error('Canvas unavailable')); return; }
+            ctx.drawImage(img, 0, 0, w, h);
             URL.revokeObjectURL(url);
             resolve(canvas.toDataURL('image/jpeg', 0.82));
         };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
         img.src = url;
     });
 }
@@ -424,6 +438,7 @@ function fmtTime(iso) {
 function logout() {
     localStorage.removeItem('labour_token');
     localStorage.removeItem('labour_name');
+    localStorage.removeItem('labour_queue');
     sessionToken = null; workerName = null; pin = '';
     updateDots();
     showScreen('pin');

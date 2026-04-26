@@ -3184,7 +3184,7 @@ async function saveNewWorker() {
     const pin  = document.getElementById('newWorkerPin').value.trim();
     const msg  = document.getElementById('addWorkerMsg');
     if (!name || !pin) { msg.style.color='#ef5350'; msg.textContent='Name and PIN are required.'; return; }
-    if (!/^d{4}$/.test(pin)) { msg.style.color='#ef5350'; msg.textContent='PIN must be exactly 4 digits.'; return; }
+    if (!/^\d{4}$/.test(pin)) { msg.style.color='#ef5350'; msg.textContent='PIN must be exactly 4 digits.'; return; }
     const token = localStorage.getItem('admin_token') || '';
     try {
         const r = await fetch('/api/labour?action=add-worker', {
@@ -3195,7 +3195,7 @@ async function saveNewWorker() {
         const data = await r.json();
         if (data.success) {
             msg.style.color = '#4caf50';
-            msg.textContent = 'Worker added: ' + name + ' (PIN ' + pin + ')';
+            msg.textContent = 'Worker added: ' + name;
             document.getElementById('newWorkerName').value = '';
             document.getElementById('newWorkerPin').value  = '';
             await loadWorkers();
