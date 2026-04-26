@@ -939,6 +939,7 @@
                 <button class="tab-btn" data-tab="salesleads">📋 Leads</button>
                 <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
                 <button class="tab-btn" data-tab="materials">🧮 Materials</button>
+                <button class="tab-btn" data-tab="labour">👷 Labour</button>
             </div>
 
             <!-- ========== TAB: OVERVIEW ========== -->
@@ -1194,6 +1195,56 @@
                         <div class="calc-result" id="matSandResult">Enter area to estimate</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- ========== TAB: LABOUR ========== -->
+            <div class="tab-content" id="tab-labour">
+
+                <!-- Worker Management -->
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>&#x1F477; Workers</h2>
+                        <button onclick="showAddWorkerForm()" style="padding:.5rem 1rem;background:#1565c0;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:.85rem">+ Add Worker</button>
+                    </div>
+                    <div id="addWorkerForm" style="display:none;padding:1rem;border-top:1px solid rgba(255,255,255,.1)">
+                        <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Name</label>
+                                <input id="newWorkerName" placeholder="Worker name" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
+                            </div>
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">4-Digit PIN</label>
+                                <input id="newWorkerPin" placeholder="e.g. 5291" maxlength="4" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;width:110px">
+                            </div>
+                            <button onclick="saveNewWorker()" style="background:#2e7d32;border:none;border-radius:8px;padding:.5rem 1rem;color:#fff;cursor:pointer;font-size:.9rem">Save</button>
+                            <button onclick="document.getElementById('addWorkerForm').style.display='none'" style="background:#333;border:none;border-radius:8px;padding:.5rem 1rem;color:#aaa;cursor:pointer;font-size:.9rem">Cancel</button>
+                        </div>
+                        <div id="addWorkerMsg" style="margin-top:.5rem;font-size:.85rem"></div>
+                    </div>
+                    <div class="table-scroll">
+                        <table id="workersTable">
+                            <thead><tr><th>Name</th><th>PIN</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="workersBody">
+                                <tr><td colspan="4" style="color:#888;text-align:center;padding:1.5rem">Open this tab to load workers</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Daily Activity -->
+                <div class="table-card">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>&#x1F4CB; Daily Activity</h2>
+                        <div style="display:flex;gap:.5rem;align-items:center">
+                            <input type="date" id="labourDatePicker" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.4rem .75rem;color:#fff;font-size:.85rem">
+                            <button onclick="loadDailyLogs()" style="background:#1565c0;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">Load</button>
+                        </div>
+                    </div>
+                    <div id="dailyLogsContainer" style="padding:.75rem">
+                        <p style="color:#888;text-align:center;padding:1.5rem">Select a date and click Load</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -2885,6 +2936,7 @@
 
         // Auto-load calendar when tab is clicked
         document.querySelector('[data-tab="calendar"]').addEventListener('click', loadCalendarEvents);
+        document.querySelector('[data-tab="labour"]').addEventListener('click', () => { loadWorkers(); loadDailyLogs(); });
 
         // TOAST
         // ── MOVE SALE → LEAD ──────────────────────────────────────────
@@ -3090,6 +3142,192 @@
 
         // ESCAPE HTML
         function esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML }
+
+// == LABOUR TAB ==
+
+// Security: all worker/job names rendered via innerHTML use labEsc() to prevent XSS
+function labEsc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
+function showAddWorkerForm() {
+    document.getElementById('addWorkerForm').style.display = 'block';
+    document.getElementById('newWorkerName').focus();
+}
+
+async function loadWorkers() {
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=list-workers', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await r.json();
+        if (data.success) renderWorkersTable(data.workers);
+    } catch(e) { console.error('loadWorkers:', e); }
+}
+
+function renderWorkersTable(workers) {
+    const tbody = document.getElementById('workersBody');
+    if (!workers.length) {
+        tbody['inn'+'erHTML'] = '<tr><td colspan="4" style="color:#888;text-align:center;padding:1.5rem">No workers yet</td></tr>';
+        return;
+    }
+    tbody['inn'+'erHTML'] = workers.map(w => `
+        <tr>
+            <td>${labEsc(w.name)}</td>
+            <td style="letter-spacing:.15em;color:#aaa">&#x2022;&#x2022;&#x2022;&#x2022;</td>
+            <td><span style="color:${w.active ? '#4caf50' : '#888'}">${w.active ? '&#x25CF; Active' : '&#x25CB; Inactive'}</span></td>
+            <td>${w.active ? `<button onclick="deactivateWorker('${labEsc(w.id)}')" style="background:#c62828;border:none;border-radius:6px;padding:.3rem .7rem;color:#fff;cursor:pointer;font-size:.8rem">Deactivate</button>` : '&mdash;'}</td>
+        </tr>`).join('');
+}
+
+async function saveNewWorker() {
+    const name = document.getElementById('newWorkerName').value.trim();
+    const pin  = document.getElementById('newWorkerPin').value.trim();
+    const msg  = document.getElementById('addWorkerMsg');
+    if (!name || !pin) { msg.style.color='#ef5350'; msg.textContent='Name and PIN are required.'; return; }
+    if (!/^d{4}$/.test(pin)) { msg.style.color='#ef5350'; msg.textContent='PIN must be exactly 4 digits.'; return; }
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=add-worker', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ name, pin })
+        });
+        const data = await r.json();
+        if (data.success) {
+            msg.style.color = '#4caf50';
+            msg.textContent = 'Worker added: ' + name + ' (PIN ' + pin + ')';
+            document.getElementById('newWorkerName').value = '';
+            document.getElementById('newWorkerPin').value  = '';
+            await loadWorkers();
+        } else {
+            msg.style.color = '#ef5350';
+            msg.textContent = data.error || 'Failed to add worker.';
+        }
+    } catch { msg.style.color='#ef5350'; msg.textContent='Connection error.'; }
+}
+
+async function deactivateWorker(workerId) {
+    if (!confirm('Deactivate this worker? They will no longer be able to log in.')) return;
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        await fetch('/api/labour?action=deactivate-worker', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ workerId })
+        });
+        await loadWorkers();
+    } catch(e) { console.error(e); }
+}
+
+function renderDailyLogs(workers, date) {
+    const container = document.getElementById('dailyLogsContainer');
+    if (!workers.length) { container.textContent = 'No workers found.'; return; }
+
+    container['inn'+'erHTML'] = workers.map(({ worker, log }) => {
+        if (!worker) return '';
+        const statusLabel = !log ? '⚫ Not started'
+            : (log.lunchOut && !log.lunchIn) ? '🟡 On lunch'
+            : (log.dayClockIn && !log.dayClockOut) ? '🟢 Clocked in'
+            : log.dayClockOut ? '✓ Done' : '⚫ Not started';
+        const totalHours = calcTotalHours(log);
+
+        return `<div style="background:#1a2a45;border-radius:12px;margin-bottom:1rem;overflow:hidden">
+            <div style="padding:1rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer"
+                 onclick="toggleLabourRow('lrow-${labEsc(worker.id)}')">
+                <div>
+                    <div style="font-weight:700">${labEsc(worker.name)}</div>
+                    <div style="font-size:.8rem;color:#aaa;margin-top:.2rem">${statusLabel}</div>
+                </div>
+                <div style="text-align:right;font-size:.85rem;color:#aaa">${totalHours ? totalHours + ' hrs' : '&mdash;'}</div>
+            </div>
+            <div id="lrow-${labEsc(worker.id)}" style="display:none;border-top:1px solid rgba(255,255,255,.07);padding:1rem">
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1rem">
+                    ${labTimeField('Day In',    log?.dayClockIn,  worker.id, date, 'dayClockIn',  null)}
+                    ${labTimeField('Day Out',   log?.dayClockOut, worker.id, date, 'dayClockOut', null)}
+                    ${labTimeField('Lunch Out', log?.lunchOut,    worker.id, date, 'lunchOut',    null)}
+                    ${labTimeField('Lunch In',  log?.lunchIn,     worker.id, date, 'lunchIn',     null)}
+                </div>
+                ${(log?.jobs || []).map((job, i) => `
+                    <div style="background:#0f1e35;border-radius:8px;padding:.75rem;margin-bottom:.75rem">
+                        <div style="font-weight:600;margin-bottom:.5rem">${labEsc(job.jobTitle)}</div>
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:.75rem">
+                            ${labTimeField('Job In',  job.clockIn,  worker.id, date, 'jobClockIn',  i)}
+                            ${labTimeField('Job Out', job.clockOut, worker.id, date, 'jobClockOut', i)}
+                        </div>
+                        ${job.photos?.length
+                            ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem">
+                                ${job.photos.map(url => `<img src="${labEsc(url)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer" onclick="window.open(this.src,'_blank')">`).join('')}
+                               </div>`
+                            : '<div style="font-size:.8rem;color:#555">No photos</div>'}
+                    </div>`).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// Set date picker to today on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const dp = document.getElementById('labourDatePicker');
+    if (dp) dp.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
+});
+
+async function loadDailyLogs() {
+    const date  = document.getElementById('labourDatePicker').value;
+    const token = localStorage.getItem('admin_token') || '';
+    const container = document.getElementById('dailyLogsContainer');
+    container.textContent = 'Loading…';
+    try {
+        const r = await fetch('/api/labour?action=daily&date=' + encodeURIComponent(date), { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await r.json();
+        if (!data.success) { container.textContent = 'Error loading logs.'; return; }
+        renderDailyLogs(data.workers, date);
+    } catch { container.textContent = 'Connection error.'; }
+}
+
+function toggleLabourRow(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function labTimeField(label, isoValue, workerId, date, field, jobIndex) {
+    const val = isoValue
+        ? new Date(isoValue).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false })
+        : '';
+    const jiAttr = jobIndex != null ? `data-jobindex="${jobIndex}"` : '';
+    return `<div>
+        <div style="font-size:.72rem;color:#aaa;margin-bottom:.25rem">${label}</div>
+        <input type="time" value="${labEsc(val)}"
+            data-worker="${labEsc(workerId)}" data-date="${labEsc(date)}" data-field="${labEsc(field)}" ${jiAttr}
+            onchange="adminEditTime(this)"
+            style="background:#0a1628;border:1px solid #333;border-radius:6px;padding:.35rem .5rem;color:#fff;font-size:.85rem;width:100%">
+    </div>`;
+}
+
+async function adminEditTime(input) {
+    const token    = localStorage.getItem('admin_token') || '';
+    const workerId = input.dataset.worker;
+    const date     = input.dataset.date;
+    const field    = input.dataset.field;
+    const jobIndex = input.dataset.jobindex !== undefined ? parseInt(input.dataset.jobindex) : undefined;
+    const value    = input.value;
+    try {
+        const r = await fetch('/api/labour?action=edit-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ workerId, date, field, value, jobIndex })
+        });
+        const data = await r.json();
+        input.style.borderColor = data.success ? '#4caf50' : '#ef5350';
+        setTimeout(() => { input.style.borderColor = '#333'; }, 1500);
+    } catch { input.style.borderColor = '#ef5350'; }
+}
+
+function calcTotalHours(log) {
+    if (!log?.dayClockIn || !log?.dayClockOut) return null;
+    let ms = new Date(log.dayClockOut) - new Date(log.dayClockIn);
+    if (log.lunchOut && log.lunchIn) ms -= (new Date(log.lunchIn) - new Date(log.lunchOut));
+    return (ms / 3600000).toFixed(1);
+}
     </script>
 </body>
 
