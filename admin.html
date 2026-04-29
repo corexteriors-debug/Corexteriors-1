@@ -1231,6 +1231,38 @@
                     </div>
                 </div>
 
+                <!-- Jobs / Work Orders -->
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>&#x1F528; Jobs</h2>
+                        <div style="display:flex;gap:.5rem;align-items:center">
+                            <input type="date" id="jobsDatePicker" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.4rem .75rem;color:#fff;font-size:.85rem">
+                            <button onclick="loadAdminJobs()" style="background:#1565c0;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">Load</button>
+                            <button onclick="showAddJobForm()" style="background:#2e7d32;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">+ Add Job</button>
+                        </div>
+                    </div>
+                    <div id="addJobForm" style="display:none;padding:1rem;border-top:1px solid rgba(255,255,255,.1)">
+                        <div style="display:flex;flex-direction:column;gap:.6rem;max-width:480px">
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Job Title *</label>
+                                <input id="newJobTitle" placeholder="e.g. Window cleaning – 123 Main St" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
+                            </div>
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Notes (optional)</label>
+                                <textarea id="newJobDesc" rows="2" placeholder="Address, instructions, client name…" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
+                            </div>
+                            <div style="display:flex;gap:.5rem">
+                                <button onclick="saveNewJob()" style="background:#2e7d32;border:none;border-radius:8px;padding:.5rem 1rem;color:#fff;cursor:pointer;font-size:.9rem">Save Job</button>
+                                <button onclick="document.getElementById('addJobForm').style.display='none'" style="background:#333;border:none;border-radius:8px;padding:.5rem 1rem;color:#aaa;cursor:pointer;font-size:.9rem">Cancel</button>
+                            </div>
+                            <div id="addJobMsg" style="font-size:.85rem"></div>
+                        </div>
+                    </div>
+                    <div id="jobsListContainer" style="padding:.75rem">
+                        <p style="color:#888;text-align:center;padding:1.5rem">Select a date and click Load</p>
+                    </div>
+                </div>
+
                 <!-- Daily Activity -->
                 <div class="table-card">
                     <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
@@ -2936,7 +2968,13 @@
 
         // Auto-load calendar when tab is clicked
         document.querySelector('[data-tab="calendar"]').addEventListener('click', loadCalendarEvents);
-        document.querySelector('[data-tab="labour"]').addEventListener('click', () => { loadWorkers(); loadDailyLogs(); });
+        document.querySelector('[data-tab="labour"]').addEventListener('click', () => {
+            loadWorkers();
+            loadDailyLogs();
+            const picker = document.getElementById('jobsDatePicker');
+            if (!picker.value) picker.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
+            loadAdminJobs();
+        });
 
         // TOAST
         // ── MOVE SALE → LEAD ──────────────────────────────────────────
@@ -3277,6 +3315,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const dp = document.getElementById('labourDatePicker');
     if (dp) dp.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
 });
+
+// ── Jobs / Work Orders ────────────────────────────────────────────────────────
+function showAddJobForm() {
+    const picker = document.getElementById('jobsDatePicker');
+    if (!picker.value) {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
+        picker.value = today;
+    }
+    document.getElementById('addJobForm').style.display = 'block';
+    document.getElementById('newJobTitle').focus();
+}
+
+async function saveNewJob() {
+    const date  = document.getElementById('jobsDatePicker')?.value;
+    const title = document.getElementById('newJobTitle')?.value?.trim();
+    const desc  = document.getElementById('newJobDesc')?.value?.trim();
+    const msg   = document.getElementById('addJobMsg');
+    if (!date)  { msg.style.color = '#ef5350'; msg.textContent = 'Select a date first.'; return; }
+    if (!title) { msg.style.color = '#ef5350'; msg.textContent = 'Job title is required.'; return; }
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=add-job', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ date, title, description: desc })
+        });
+        const data = await r.json();
+        if (!data.success) { msg.style.color = '#ef5350'; msg.textContent = data.error || 'Failed to add job.'; return; }
+        msg.style.color = '#4caf50'; msg.textContent = 'Job added!';
+        document.getElementById('newJobTitle').value = '';
+        document.getElementById('newJobDesc').value  = '';
+        await loadAdminJobs();
+    } catch { msg.style.color = '#ef5350'; msg.textContent = 'Connection error.'; }
+}
+
+async function removeAdminJob(date, jobId) {
+    if (!confirm('Remove this job?')) return;
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=remove-job', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ date, jobId })
+        });
+        const data = await r.json();
+        if (!data.success) { alert(data.error || 'Failed to remove job.'); return; }
+        await loadAdminJobs();
+    } catch { alert('Connection error.'); }
+}
+
+async function loadAdminJobs() {
+    const date = document.getElementById('jobsDatePicker')?.value;
+    if (!date) return;
+    const token = localStorage.getItem('admin_token') || '';
+    const container = document.getElementById('jobsListContainer');
+    container.textContent = 'Loading…';
+    try {
+        const r = await fetch('/api/labour?action=list-jobs&date=' + encodeURIComponent(date), { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await r.json();
+        if (!data.success) { container.textContent = 'Error loading jobs.'; return; }
+        if (!data.jobs.length) {
+            container.innerHTML = '<p style="color:#888;text-align:center;padding:1.5rem">No jobs for this date. Click "+ Add Job" to create one.</p>';
+            return;
+        }
+        container.innerHTML = data.jobs.map(j => `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:.75rem;border-bottom:1px solid rgba(255,255,255,.07);gap:.75rem">
+                <div>
+                    <div style="font-weight:600;color:#fff">${labEsc(j.title)}</div>
+                    ${j.description ? `<div style="font-size:.82rem;color:#aaa;margin-top:.2rem">${labEsc(j.description)}</div>` : ''}
+                </div>
+                <button onclick="removeAdminJob('${labEsc(date)}','${labEsc(j.id)}')" style="background:#c62828;border:none;border-radius:6px;padding:.3rem .65rem;color:#fff;cursor:pointer;font-size:.8rem;white-space:nowrap">Remove</button>
+            </div>`).join('');
+    } catch { container.textContent = 'Connection error.'; }
+}
 
 async function loadDailyLogs() {
     const date  = document.getElementById('labourDatePicker')?.value;

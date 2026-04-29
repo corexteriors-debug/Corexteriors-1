@@ -35,9 +35,13 @@
         .btn-out  { background: #c62828; color: #fff; }
         .btn-done { background: #333; color: #888; pointer-events: none; }
         .section-title { padding: .75rem 1.25rem .4rem; font-size: .8rem; color: #aaa; text-transform: uppercase; letter-spacing: .5px; }
-        .jobs-list { padding: 0 1.25rem 6rem; display: flex; flex-direction: column; gap: .75rem; }
+        .jobs-list { padding: 0 1.25rem 6rem; display: flex; flex-direction: column; gap: .5rem; }
+        .week-day-header { padding: .6rem 0 .25rem; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #aaa; border-top: 1px solid rgba(255,255,255,.07); margin-top: .5rem; }
+        .week-day-header:first-child { border-top: none; margin-top: 0; }
+        .week-day-header.today-header { color: #4fc3f7; }
         .job-card { background: #1a2a45; border-radius: 12px; padding: 1rem; cursor: pointer; }
         .job-card:active { background: #253a5e; }
+        .job-card.locked { opacity: .5; cursor: default; pointer-events: none; }
         .job-card-title { font-weight: 600; font-size: 1rem; margin-bottom: .3rem; }
         .job-card-time { font-size: .82rem; color: #aaa; }
         .job-card-status { font-size: .78rem; margin-top: .4rem; }
@@ -112,7 +116,7 @@
         <div class="worker-date" id="workerDate"></div>
     </div>
     <button class="day-clock-btn btn-in" id="dayClockBtn" onclick="toggleDayClock()">Clock In for Day</button>
-    <div class="section-title">Today&rsquo;s Jobs</div>
+    <div class="section-title">This Week</div>
     <div class="jobs-list" id="jobsList"></div>
 </div>
 
@@ -221,20 +225,35 @@ async function loadHome() {
     await refreshJobs();
 }
 
+let weekDays = []; // [{ date, isToday, jobs, log }]
+
 async function refreshJobs() {
     try {
-        const r = await fetch('/api/labour?action=today-jobs', {
+        const r = await fetch('/api/labour?action=week-jobs', {
             headers: { 'Authorization': 'Bearer ' + sessionToken }
         });
         if (r.status === 401) { logout(); return; }
         const data = await r.json();
-        currentJobs = data.jobs || [];
-        todayLog    = data.log;
+        weekDays    = data.days || [];
+        const today = weekDays.find(d => d.isToday) || {};
+        currentJobs = today.jobs || [];
+        todayLog    = today.log || null;
         if (currentJob) currentJob = currentJobs.find(j => j.id === currentJob.id) || currentJob;
         renderHome();
     } catch {
         document.getElementById('jobsList').textContent = 'Could not load jobs. Check your connection.';
     }
+}
+
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function fmtDayHeader(dateStr, isToday) {
+    // dateStr = YYYY-MM-DD
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dow = DAY_NAMES[new Date(y, m - 1, d).getDay()];
+    const label = `${dow} ${MONTH_NAMES[m - 1]} ${d}`;
+    return isToday ? `${label} — Today` : label;
 }
 
 function renderHome() {
@@ -251,23 +270,34 @@ function renderHome() {
     }
 
     const list = document.getElementById('jobsList');
-    if (!currentJobs.length) {
-        list.textContent = 'No jobs scheduled for today.';
+    const daysWithJobs = weekDays.filter(d => d.jobs.length > 0);
+    if (!daysWithJobs.length) {
+        list.textContent = 'No jobs scheduled this week.';
         return;
     }
-    // esc() applied to all server-provided strings before innerHTML insertion
-    list.innerHTML = currentJobs.map(job => {
-        const log = todayLog?.jobs?.find(j => j.calendarEventId === job.id);
-        const statusHtml = log
-            ? (log.clockOut
-                ? `<div class="job-card-status status-done">&#x2713; Completed</div>`
-                : `<div class="job-card-status status-active">&#x25CF; In progress</div>`)
-            : '';
-        return `<div class="job-card" onclick="openJob('${esc(job.id)}')">
-            <div class="job-card-title">${esc(job.title)}</div>
-            <div class="job-card-time">${esc(fmtTime(job.start))}</div>
-            ${statusHtml}
-        </div>`;
+
+    list.innerHTML = daysWithJobs.map(day => {
+        const headerClass = day.isToday ? 'week-day-header today-header' : 'week-day-header';
+        const cards = day.jobs.map(job => {
+            if (!day.isToday) {
+                return `<div class="job-card locked">
+                    <div class="job-card-title">${esc(job.title)}</div>
+                    <div class="job-card-time">${esc(fmtTime(job.start))}</div>
+                </div>`;
+            }
+            const log = todayLog?.jobs?.find(j => j.calendarEventId === job.id);
+            const statusHtml = log
+                ? (log.clockOut
+                    ? `<div class="job-card-status status-done">&#x2713; Completed</div>`
+                    : `<div class="job-card-status status-active">&#x25CF; In progress</div>`)
+                : '';
+            return `<div class="job-card" onclick="openJob('${esc(job.id)}')">
+                <div class="job-card-title">${esc(job.title)}</div>
+                <div class="job-card-time">${esc(fmtTime(job.start))}</div>
+                ${statusHtml}
+            </div>`;
+        }).join('');
+        return `<div class="${headerClass}">${fmtDayHeader(day.date, day.isToday)}</div>${cards}`;
     }).join('');
 }
 

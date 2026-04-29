@@ -53,8 +53,12 @@ module.exports = async function handler(req, res) {
         if (action === 'deactivate-worker') return await deactivateWorker(req, res);
         if (action === 'log')               return await writeLog(req, res);
         if (action === 'today-jobs')        return await todayJobs(req, res);
+        if (action === 'week-jobs')         return await weekJobs(req, res);
         if (action === 'daily')             return await dailyLogs(req, res);
         if (action === 'edit-log')          return await editLog(req, res);
+        if (action === 'add-job')           return await addJob(req, res);
+        if (action === 'remove-job')        return await removeJob(req, res);
+        if (action === 'list-jobs')         return await listJobs(req, res);
         return res.status(400).json({ error: 'Unknown action' });
     } catch (err) {
         console.error('Labour API error:', err.message);
@@ -168,46 +172,96 @@ function stripPricing(text) {
     return text.split('\n').filter(line => !/\$\d/.test(line)).join('\n').trim();
 }
 
+// Returns jobs for a single date from KV + Google Calendar
+async function jobsForDate(dateStr, calClient) {
+    const kvJobs = (await kv.get(`labour-jobs:${dateStr}`) || []).map(j => ({
+        id:          j.id,
+        title:       j.title,
+        description: j.description || '',
+        start:       `${dateStr}T00:00:00`,
+        end:         `${dateStr}T23:59:59`,
+        source:      'manual',
+    }));
+    let calJobs = [];
+    if (calClient) {
+        try {
+            const response = await calClient.events.list({
+                calendarId: process.env.GOOGLE_CALENDAR_ID.trim(),
+                timeMin: `${dateStr}T00:00:00`,
+                timeMax: `${dateStr}T23:59:59`,
+                timeZone: TIMEZONE,
+                singleEvents: true, orderBy: 'startTime', maxResults: 50
+            });
+            calJobs = (response.data.items || [])
+                .filter(e => (e.extendedProperties?.private?.eventType || 'job') !== 'unavailable')
+                .map(e => ({
+                    id:          e.id,
+                    title:       e.summary || 'Job',
+                    description: stripPricing(e.description || ''),
+                    start:       e.start.dateTime || e.start.date,
+                    end:         e.end.dateTime   || e.end.date,
+                    source:      'calendar',
+                }));
+        } catch (calErr) {
+            console.error(`Calendar fetch error for ${dateStr} (non-fatal):`, calErr.message);
+        }
+    }
+    return [...kvJobs, ...calJobs];
+}
+
+function buildCalClient() {
+    const email      = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
+    const key        = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
+    const calendarId = (process.env.GOOGLE_CALENDAR_ID || '').trim();
+    if (!email || !key || !calendarId) return null;
+    const auth = new google.auth.JWT({ email, key, scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
+    return google.calendar({ version: 'v3', auth });
+}
+
+// Returns Mon–Sun dates (YYYY-MM-DD) for the week containing `dateStr`
+function weekDates(dateStr) {
+    const d = new Date(`${dateStr}T12:00:00Z`);
+    const day = d.getUTCDay(); // 0=Sun,1=Mon…
+    const monday = new Date(d);
+    monday.setUTCDate(d.getUTCDate() - ((day + 6) % 7));
+    return Array.from({ length: 7 }, (_, i) => {
+        const dd = new Date(monday);
+        dd.setUTCDate(monday.getUTCDate() + i);
+        return dd.toISOString().slice(0, 10);
+    });
+}
+
 async function todayJobs(req, res) {
     if (req.method !== 'GET') return res.status(405).end();
     const sessionToken = (req.headers.authorization || '').split(' ')[1] || '';
     const session = await verifyWorkerSession(sessionToken);
     if (!session) return res.status(401).json({ error: 'Invalid session' });
 
-    const email      = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
-    const key        = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
-    const calendarId = (process.env.GOOGLE_CALENDAR_ID || '').trim();
-    if (!email || !key || !calendarId) return res.status(503).json({ error: 'Calendar not configured' });
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+    const jobs = await jobsForDate(todayStr, buildCalClient());
+    const log  = await kv.get(`labour:${todayStr}:${session.workerId}`) || null;
+    return res.status(200).json({ success: true, jobs, log, date: todayStr });
+}
 
-    const auth = new google.auth.JWT({ email, key, scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
-    const cal  = google.calendar({ version: 'v3', auth });
+async function weekJobs(req, res) {
+    if (req.method !== 'GET') return res.status(405).end();
+    const sessionToken = (req.headers.authorization || '').split(' ')[1] || '';
+    const session = await verifyWorkerSession(sessionToken);
+    if (!session) return res.status(401).json({ error: 'Invalid session' });
 
     const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE });
-    // Build Toronto-midnight timestamps by using the UTC offset for America/Toronto
-    // toLocaleDateString already gave us the correct YYYY-MM-DD for Toronto,
-    // so we append the time and let the browser/server parse with explicit offset.
-    // Safer: format as strings and let Google Calendar interpret with timeZone param.
-    const timeMin = `${todayStr}T00:00:00`;
-    const timeMax = `${todayStr}T23:59:59`;
+    const cal      = buildCalClient();
+    const dates    = weekDates(todayStr);
 
-    const response = await cal.events.list({
-        calendarId, timeMin, timeMax,
-        timeZone: TIMEZONE,
-        singleEvents: true, orderBy: 'startTime', maxResults: 50
-    });
+    const days = await Promise.all(dates.map(async (dateStr) => {
+        const jobs = await jobsForDate(dateStr, cal);
+        const log  = dateStr === todayStr
+            ? (await kv.get(`labour:${dateStr}:${session.workerId}`) || null)
+            : null;
+        return { date: dateStr, isToday: dateStr === todayStr, jobs, log };
+    }));
 
-    const jobs = (response.data.items || [])
-        .filter(e => (e.extendedProperties?.private?.eventType || 'job') !== 'unavailable')
-        .map(e => ({
-            id:          e.id,
-            title:       e.summary || 'Job',
-            description: stripPricing(e.description || ''),
-            start:       e.start.dateTime || e.start.date,
-            end:         e.end.dateTime   || e.end.date,
-        }));
-
-    const log = await kv.get(`labour:${todayStr}:${session.workerId}`) || null;
-    return res.status(200).json({ success: true, jobs, log, date: todayStr });
+    return res.status(200).json({ success: true, today: todayStr, days });
 }
 
 async function dailyLogs(req, res) {
@@ -262,4 +316,38 @@ async function editLog(req, res) {
 
     await kv.set(key, log);
     return res.status(200).json({ success: true, log });
+}
+
+async function addJob(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+    const { date, title, description } = req.body || {};
+    if (!date || !title) return res.status(400).json({ error: 'date and title required' });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+    const id = crypto.randomBytes(8).toString('hex');
+    const job = { id, title: String(title).trim(), description: String(description || '').trim() };
+    const jobs = await kv.get(`labour-jobs:${date}`) || [];
+    jobs.push(job);
+    await kv.set(`labour-jobs:${date}`, jobs);
+    return res.status(201).json({ success: true, job });
+}
+
+async function removeJob(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+    const { date, jobId } = req.body || {};
+    if (!date || !jobId) return res.status(400).json({ error: 'date and jobId required' });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+    const jobs = (await kv.get(`labour-jobs:${date}`) || []).filter(j => j.id !== jobId);
+    await kv.set(`labour-jobs:${date}`, jobs);
+    return res.status(200).json({ success: true });
+}
+
+async function listJobs(req, res) {
+    if (req.method !== 'GET') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+    const date = req.query.date || todayKey();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+    const jobs = await kv.get(`labour-jobs:${date}`) || [];
+    return res.status(200).json({ success: true, date, jobs });
 }

@@ -109,7 +109,7 @@
         }
 
         .admin-link {
-            display: block;
+            display: inline-block;
             text-align: center;
             margin-top: 1.5rem;
             color: rgba(255, 255, 255, .3);
@@ -120,6 +120,17 @@
 
         .admin-link:hover {
             color: rgba(255, 255, 255, .6)
+        }
+
+        .staff-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .staff-links .admin-link {
+            margin-top: 0;
         }
 
         /* ESTIMATOR */
@@ -877,7 +888,10 @@
                 <button type="submit" class="login-btn" style="margin-top:.75rem">Sign In</button>
             </form>
             <p class="login-error" id="loginError">Invalid password. Please try again.</p>
-            <a href="admin.html" class="admin-link">Manager access →</a>
+            <div class="staff-links">
+                <a href="admin.html" class="admin-link">Manager access →</a>
+                <a href="labour.html" class="admin-link">Labour portal →</a>
+            </div>
         </div>
     </div>
 
