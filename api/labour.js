@@ -93,6 +93,7 @@ module.exports = async function handler(req, res) {
         if (action === 'add-job')           return await addJob(req, res);
         if (action === 'remove-job')        return await removeJob(req, res);
         if (action === 'list-jobs')         return await listJobs(req, res);
+        if (action === 'preview-jobs')      return await previewJobs(req, res);
         return res.status(400).json({ error: 'Unknown action' });
     } catch (err) {
         console.error('Labour API error:', err.message);
@@ -305,14 +306,25 @@ async function completeTask(req, res) {
     if (!date || !jobId || taskIndex == null) return res.status(400).json({ error: 'date, jobId, taskIndex required' });
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
 
+    // Manual KV job — update task in-place
     const jobs = await kv.get(`labour-jobs:${date}`) || [];
-    const job = jobs.find(j => j.id === jobId);
-    if (!job) return res.status(404).json({ error: 'Job not found' });
-    if (!Array.isArray(job.tasks) || job.tasks[taskIndex] === undefined) return res.status(404).json({ error: 'Task not found' });
+    const manualJob = jobs.find(j => j.id === jobId);
+    if (manualJob) {
+        if (!Array.isArray(manualJob.tasks) || manualJob.tasks[taskIndex] === undefined) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+        manualJob.tasks[taskIndex].done = !manualJob.tasks[taskIndex].done;
+        await kv.set(`labour-jobs:${date}`, jobs);
+        return res.status(200).json({ success: true, task: manualJob.tasks[taskIndex] });
+    }
 
-    job.tasks[taskIndex].done = !job.tasks[taskIndex].done;
-    await kv.set(`labour-jobs:${date}`, jobs);
-    return res.status(200).json({ success: true, task: job.tasks[taskIndex] });
+    // Calendar job — task definitions live in the calendar description;
+    // store completion state separately so it survives without a KV job entry.
+    const stateKey = `labour-task-state:${date}:${jobId}`;
+    const state = await kv.get(stateKey) || {};
+    state[taskIndex] = !state[taskIndex];
+    await kv.set(stateKey, state);
+    return res.status(200).json({ success: true, task: { done: state[taskIndex] } });
 }
 
 // ── Jobs / Calendar ───────────────────────────────────────────────────────────
@@ -320,6 +332,66 @@ async function completeTask(req, res) {
 function stripPricing(text) {
     if (!text) return '';
     return text.split('\n').filter(line => !/\$\d/.test(line)).join('\n').trim();
+}
+
+// Parse structured sections from a Google Calendar event description.
+// Recognised headers (case-insensitive): Notes:, Materials:, Tasks:
+// Items under Materials/Tasks can be bullet lines (- / • / *) or plain lines.
+// Everything before the first section header becomes description.
+// Pricing lines ($digits) are stripped throughout.
+function parseCalDescription(raw) {
+    if (!raw) return { description: '', notes: '', materials: [], tasks: [] };
+    const lines = raw.split('\n');
+    const descLines = [];
+    let notes = '';
+    const materials = [];
+    const tasks = [];
+    let mode = 'desc'; // 'desc' | 'notes' | 'materials' | 'tasks'
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (/\$\d/.test(trimmed)) continue; // strip pricing
+
+        if (/^notes?:/i.test(trimmed)) {
+            mode = 'notes';
+            const after = trimmed.replace(/^notes?:\s*/i, '').trim();
+            if (after) notes = after;
+            continue;
+        }
+        if (/^(materials?|supplies?):/i.test(trimmed)) {
+            mode = 'materials';
+            const after = trimmed.replace(/^(materials?|supplies?):\s*/i, '').trim();
+            // Inline comma-separated list (e.g. "Materials: gravel, sand")
+            if (after) after.split(',').map(s => s.trim()).filter(Boolean).forEach(s => materials.push(s));
+            continue;
+        }
+        if (/^(tasks?|checklist):/i.test(trimmed)) {
+            mode = 'tasks';
+            const after = trimmed.replace(/^(tasks?|checklist):\s*/i, '').trim();
+            if (after) tasks.push({ label: after, done: false });
+            continue;
+        }
+
+        if (!trimmed) {
+            if (mode === 'notes') mode = 'desc'; // notes end at blank line
+            else if (mode === 'desc') descLines.push('');
+            continue;
+        }
+
+        // Bullet lines
+        if (/^[-•*]\s+/.test(trimmed)) {
+            const item = trimmed.replace(/^[-•*]\s+/, '').trim();
+            if (mode === 'materials') { materials.push(item); continue; }
+            if (mode === 'tasks')     { tasks.push({ label: item, done: false }); continue; }
+        }
+
+        if (mode === 'desc')      descLines.push(trimmed);
+        else if (mode === 'notes') notes = notes ? `${notes} ${trimmed}` : trimmed;
+        else if (mode === 'materials') materials.push(trimmed);
+        else if (mode === 'tasks')     tasks.push({ label: trimmed, done: false });
+    }
+
+    return { description: descLines.join('\n').trim(), notes, materials, tasks };
 }
 
 async function jobsForDate(dateStr, calClient) {
@@ -345,19 +417,25 @@ async function jobsForDate(dateStr, calClient) {
                 timeZone: TIMEZONE,
                 singleEvents: true, orderBy: 'startTime', maxResults: 50
             });
-            calJobs = (response.data.items || [])
+            calJobs = await Promise.all((response.data.items || [])
                 .filter(e => (e.extendedProperties?.private?.eventType || 'job') !== 'unavailable')
-                .map(e => ({
-                    id:          e.id,
-                    title:       e.summary || 'Job',
-                    description: stripPricing(e.description || ''),
-                    address:     e.location || '',
-                    notes:       '',
-                    materials:   [],
-                    tasks:       [],
-                    start:       e.start.dateTime || e.start.date,
-                    end:         e.end.dateTime   || e.end.date,
-                    source:      'calendar',
+                .map(async (e) => {
+                    const parsed = parseCalDescription(e.description || '');
+                    // Load task completion state stored separately for calendar jobs
+                    const taskState = await kv.get(`labour-task-state:${dateStr}:${e.id}`) || {};
+                    const tasks = parsed.tasks.map((t, i) => ({ ...t, done: !!taskState[i] }));
+                    return {
+                        id:          e.id,
+                        title:       e.summary || 'Job',
+                        description: parsed.description,
+                        address:     e.location || '',
+                        notes:       parsed.notes,
+                        materials:   parsed.materials,
+                        tasks,
+                        start:       e.start.dateTime || e.start.date,
+                        end:         e.end.dateTime   || e.end.date,
+                        source:      'calendar',
+                    };
                 }));
         } catch (calErr) {
             console.error(`Calendar fetch error for ${dateStr} (non-fatal):`, calErr.message);
@@ -550,5 +628,15 @@ async function listJobs(req, res) {
     const date = req.query.date || todayKey();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
     const jobs = await kv.get(`labour-jobs:${date}`) || [];
+    return res.status(200).json({ success: true, date, jobs });
+}
+
+// Admin preview: returns all jobs for a date (calendar + manual) — what workers see
+async function previewJobs(req, res) {
+    if (req.method !== 'GET') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+    const date = req.query.date || todayKey();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+    const jobs = await jobsForDate(date, buildCalClient());
     return res.status(200).json({ success: true, date, jobs });
 }

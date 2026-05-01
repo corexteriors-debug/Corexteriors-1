@@ -1237,41 +1237,28 @@
                         <h2>&#x1F528; Jobs</h2>
                         <div style="display:flex;gap:.5rem;align-items:center">
                             <input type="date" id="jobsDatePicker" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.4rem .75rem;color:#fff;font-size:.85rem">
-                            <button onclick="loadAdminJobs()" style="background:#1565c0;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">Load</button>
-                            <button onclick="showAddJobForm()" style="background:#2e7d32;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">+ Add Job</button>
+                            <button onclick="loadAdminJobs()" style="background:#1565c0;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">Preview</button>
                         </div>
                     </div>
-                    <div id="addJobForm" style="display:none;padding:1rem;border-top:1px solid rgba(255,255,255,.1)">
-                        <div style="display:flex;flex-direction:column;gap:.6rem;max-width:480px">
-                            <div>
-                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Job Title *</label>
-                                <input id="newJobTitle" placeholder="e.g. Soffit &amp; Fascia – 123 Main St" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
-                            </div>
-                            <div>
-                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Address (for Maps link)</label>
-                                <input id="newJobAddress" placeholder="123 Main St, London ON" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
-                            </div>
-                            <div>
-                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Customer Notes (gate codes, parking, etc.)</label>
-                                <textarea id="newJobNotes" rows="2" placeholder="Gate code 1234, dog in backyard, park on side street…" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
-                            </div>
-                            <div>
-                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Materials (one per line)</label>
-                                <textarea id="newJobMaterials" rows="3" placeholder="20ft aluminum soffit&#10;Caulk gun + white caulk&#10;Ladder" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
-                            </div>
-                            <div>
-                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Tasks / Checklist (one per line)</label>
-                                <textarea id="newJobTasks" rows="3" placeholder="Remove old panels&#10;Inspect for rot&#10;Install new soffit&#10;Final photo" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
-                            </div>
-                            <div style="display:flex;gap:.5rem">
-                                <button onclick="saveNewJob()" style="background:#2e7d32;border:none;border-radius:8px;padding:.5rem 1rem;color:#fff;cursor:pointer;font-size:.9rem">Save Job</button>
-                                <button onclick="document.getElementById('addJobForm').style.display='none'" style="background:#333;border:none;border-radius:8px;padding:.5rem 1rem;color:#aaa;cursor:pointer;font-size:.9rem">Cancel</button>
-                            </div>
-                            <div id="addJobMsg" style="font-size:.85rem"></div>
-                        </div>
+                    <!-- Calendar format guide -->
+                    <div style="margin:.75rem;padding:.85rem 1rem;background:rgba(21,101,192,.13);border:1px solid rgba(21,101,192,.35);border-radius:10px;font-size:.82rem;color:#90caf9">
+                        <strong style="color:#64b5f6">Jobs pull automatically from Google Calendar.</strong>
+                        To add notes, materials, or a task checklist, include these sections in the event description:
+                        <pre style="margin:.6rem 0 0;background:rgba(0,0,0,.25);border-radius:6px;padding:.6rem .75rem;color:#e0f0ff;font-size:.78rem;white-space:pre-wrap">Notes: Gate code 1234, park on street
+
+Materials:
+- 20ft aluminum soffit
+- White caulk
+
+Tasks:
+- Remove old panels
+- Inspect for rot
+- Install new soffit
+- Final photo</pre>
+                        Address for the Maps button comes from the event <em>Location</em> field.
                     </div>
                     <div id="jobsListContainer" style="padding:.75rem">
-                        <p style="color:#888;text-align:center;padding:1.5rem">Select a date and click Load</p>
+                        <p style="color:#888;text-align:center;padding:1.5rem">Select a date and click Preview to see what workers will see</p>
                     </div>
                 </div>
 
@@ -2985,7 +2972,6 @@
             loadDailyLogs();
             const picker = document.getElementById('jobsDatePicker');
             if (!picker.value) picker.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
-            loadAdminJobs();
         });
 
         // TOAST
@@ -3379,61 +3365,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dp) dp.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
 });
 
-// ── Jobs / Work Orders ────────────────────────────────────────────────────────
-function showAddJobForm() {
-    const picker = document.getElementById('jobsDatePicker');
-    if (!picker.value) {
-        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
-        picker.value = today;
-    }
-    document.getElementById('addJobForm').style.display = 'block';
-    document.getElementById('newJobTitle').focus();
-}
-
-async function saveNewJob() {
-    const date      = document.getElementById('jobsDatePicker')?.value;
-    const title     = document.getElementById('newJobTitle')?.value?.trim();
-    const address   = document.getElementById('newJobAddress')?.value?.trim();
-    const notes     = document.getElementById('newJobNotes')?.value?.trim();
-    const matRaw    = document.getElementById('newJobMaterials')?.value?.trim();
-    const taskRaw   = document.getElementById('newJobTasks')?.value?.trim();
-    const msg       = document.getElementById('addJobMsg');
-    if (!date)  { msg.style.color = '#ef5350'; msg.textContent = 'Select a date first.'; return; }
-    if (!title) { msg.style.color = '#ef5350'; msg.textContent = 'Job title is required.'; return; }
-    const materials = matRaw  ? matRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-    const tasks     = taskRaw ? taskRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-    const token     = localStorage.getItem('admin_token') || '';
-    try {
-        const r = await fetch('/api/labour?action=add-job', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({ date, title, address, notes, materials, tasks })
-        });
-        const data = await r.json();
-        if (!data.success) { msg.style.color = '#ef5350'; msg.textContent = data.error || 'Failed to add job.'; return; }
-        msg.style.color = '#4caf50'; msg.textContent = 'Job added!';
-        ['newJobTitle','newJobAddress','newJobNotes','newJobMaterials','newJobTasks'].forEach(id => {
-            const el = document.getElementById(id); if (el) el.value = '';
-        });
-        await loadAdminJobs();
-    } catch { msg.style.color = '#ef5350'; msg.textContent = 'Connection error.'; }
-}
-
-async function removeAdminJob(date, jobId) {
-    if (!confirm('Remove this job?')) return;
-    const token = localStorage.getItem('admin_token') || '';
-    try {
-        const r = await fetch('/api/labour?action=remove-job', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({ date, jobId })
-        });
-        const data = await r.json();
-        if (!data.success) { alert(data.error || 'Failed to remove job.'); return; }
-        await loadAdminJobs();
-    } catch { alert('Connection error.'); }
-}
-
+// ── Jobs — calendar preview ───────────────────────────────────────────────────
 async function loadAdminJobs() {
     const date = document.getElementById('jobsDatePicker')?.value;
     if (!date) return;
@@ -3441,21 +3373,58 @@ async function loadAdminJobs() {
     const container = document.getElementById('jobsListContainer');
     container.textContent = 'Loading…';
     try {
-        const r = await fetch('/api/labour?action=list-jobs&date=' + encodeURIComponent(date), { headers: { 'Authorization': 'Bearer ' + token } });
+        const r = await fetch('/api/labour?action=preview-jobs&date=' + encodeURIComponent(date), { headers: { 'Authorization': 'Bearer ' + token } });
         const data = await r.json();
         if (!data.success) { container.textContent = 'Error loading jobs.'; return; }
+        container.textContent = '';
         if (!data.jobs.length) {
-            container.innerHTML = '<p style="color:#888;text-align:center;padding:1.5rem">No jobs for this date. Click "+ Add Job" to create one.</p>';
+            const p = document.createElement('p');
+            p.style.cssText = 'color:#888;text-align:center;padding:1.5rem';
+            p.textContent = 'No jobs scheduled in Google Calendar for this date.';
+            container.appendChild(p);
             return;
         }
-        container.innerHTML = data.jobs.map(j => `
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:.75rem;border-bottom:1px solid rgba(255,255,255,.07);gap:.75rem">
-                <div>
-                    <div style="font-weight:600;color:#fff">${labEsc(j.title)}</div>
-                    ${j.description ? `<div style="font-size:.82rem;color:#aaa;margin-top:.2rem">${labEsc(j.description)}</div>` : ''}
-                </div>
-                <button onclick="removeAdminJob('${labEsc(date)}','${labEsc(j.id)}')" style="background:#c62828;border:none;border-radius:6px;padding:.3rem .65rem;color:#fff;cursor:pointer;font-size:.8rem;white-space:nowrap">Remove</button>
-            </div>`).join('');
+        data.jobs.forEach(j => {
+            const row = document.createElement('div');
+            row.style.cssText = 'padding:.75rem;border-bottom:1px solid rgba(255,255,255,.07)';
+
+            const badge = document.createElement('span');
+            badge.style.cssText = 'font-size:.72rem;padding:.15rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;' +
+                (j.source === 'calendar' ? 'background:rgba(21,101,192,.4);color:#90caf9' : 'background:rgba(46,125,50,.4);color:#a5d6a7');
+            badge.textContent = j.source === 'calendar' ? 'Calendar' : 'Manual';
+
+            const title = document.createElement('div');
+            title.style.cssText = 'font-weight:600;color:#fff;margin-bottom:.25rem';
+            title.textContent = j.title;
+            title.appendChild(badge);
+            row.appendChild(title);
+
+            if (j.address) {
+                const addr = document.createElement('div');
+                addr.style.cssText = 'font-size:.8rem;color:#aaa';
+                addr.textContent = '📍 ' + j.address;
+                row.appendChild(addr);
+            }
+            if (j.notes) {
+                const notes = document.createElement('div');
+                notes.style.cssText = 'font-size:.8rem;color:#aaa;margin-top:.2rem';
+                notes.textContent = '📋 ' + j.notes;
+                row.appendChild(notes);
+            }
+            if (j.materials && j.materials.length) {
+                const mat = document.createElement('div');
+                mat.style.cssText = 'font-size:.8rem;color:#aaa;margin-top:.2rem';
+                mat.textContent = '🧱 Materials: ' + j.materials.join(', ');
+                row.appendChild(mat);
+            }
+            if (j.tasks && j.tasks.length) {
+                const tasks = document.createElement('div');
+                tasks.style.cssText = 'font-size:.8rem;color:#aaa;margin-top:.2rem';
+                tasks.textContent = '✅ Tasks: ' + j.tasks.map(t => t.label).join(', ');
+                row.appendChild(tasks);
+            }
+            container.appendChild(row);
+        });
     } catch { container.textContent = 'Connection error.'; }
 }
 
