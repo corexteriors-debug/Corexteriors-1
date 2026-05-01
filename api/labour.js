@@ -334,24 +334,75 @@ function stripPricing(text) {
     return text.split('\n').filter(line => !/\$\d/.test(line)).join('\n').trim();
 }
 
-// Parse structured sections from a Google Calendar event description.
-// Recognised headers (case-insensitive): Notes:, Materials:, Tasks:
-// Items under Materials/Tasks can be bullet lines (- / • / *) or plain lines.
-// Everything before the first section header becomes description.
-// Pricing lines ($digits) are stripped throughout.
+// Parse a Google Calendar event description for the worker portal.
+//
+// Handles two formats:
+//
+// 1. Admin schedule format (auto-generated lines with emoji prefixes):
+//      📍 123 Main St  → extractedAddress (used for Maps button)
+//      🛠️ Soffit       → shown as description
+//      📝 Gate code    → shown as notes
+//      📋 Estimate #   → stripped (admin-only)
+//      👤 Contact info → stripped (admin-only)
+//      💰 Total: $X    → stripped (pricing)
+//      👷 Rep: name    → stripped (admin-only)
+//
+// 2. Structured free-text format (manually written):
+//      Notes: ...      → notes
+//      Materials: / bullet lines → materials[]
+//      Tasks: / bullet lines    → tasks[]
+//      Everything else → description
+//
+// Pricing lines (containing $digits) are always stripped.
 function parseCalDescription(raw) {
-    if (!raw) return { description: '', notes: '', materials: [], tasks: [] };
+    if (!raw) return { description: '', notes: '', materials: [], tasks: [], extractedAddress: '' };
     const lines = raw.split('\n');
     const descLines = [];
     let notes = '';
     const materials = [];
     const tasks = [];
+    let extractedAddress = '';
     let mode = 'desc'; // 'desc' | 'notes' | 'materials' | 'tasks'
 
     for (const line of lines) {
         const trimmed = line.trim();
-        if (/\$\d/.test(trimmed)) continue; // strip pricing
 
+        if (!trimmed) {
+            if (mode === 'notes') mode = 'desc';
+            else if (mode === 'desc') descLines.push('');
+            continue;
+        }
+
+        // Always strip pricing lines
+        if (/\$\d/.test(trimmed)) continue;
+
+        // Admin schedule format — strip admin-only lines
+        if (/^📋/.test(trimmed)) continue; // Estimate number — admin only
+        if (/^👤/.test(trimmed)) continue; // Client contact info — admin only
+        if (/^👷/.test(trimmed)) continue; // Rep name — admin only
+
+        // Extract address from 📍 line → used for Maps button
+        if (/^📍\s*/.test(trimmed)) {
+            const addr = trimmed.replace(/^📍\s*/, '').trim();
+            if (addr && addr !== '—') extractedAddress = addr;
+            continue; // shown via Maps button, not in description
+        }
+
+        // 🛠️ service type → show as description
+        if (/^🛠️\s*/.test(trimmed)) {
+            const svc = trimmed.replace(/^🛠️\s*/, '').trim();
+            if (svc && svc !== '—') descLines.push(svc);
+            continue;
+        }
+
+        // 📝 site notes (gate codes, parking, etc.)
+        if (/^📝\s*/.test(trimmed)) {
+            const note = trimmed.replace(/^📝\s*/, '').trim();
+            if (note) notes = notes ? `${notes} ${note}` : note;
+            continue;
+        }
+
+        // Structured section headers
         if (/^notes?:/i.test(trimmed)) {
             mode = 'notes';
             const after = trimmed.replace(/^notes?:\s*/i, '').trim();
@@ -361,7 +412,6 @@ function parseCalDescription(raw) {
         if (/^(materials?|supplies?):/i.test(trimmed)) {
             mode = 'materials';
             const after = trimmed.replace(/^(materials?|supplies?):\s*/i, '').trim();
-            // Inline comma-separated list (e.g. "Materials: gravel, sand")
             if (after) after.split(',').map(s => s.trim()).filter(Boolean).forEach(s => materials.push(s));
             continue;
         }
@@ -372,12 +422,6 @@ function parseCalDescription(raw) {
             continue;
         }
 
-        if (!trimmed) {
-            if (mode === 'notes') mode = 'desc'; // notes end at blank line
-            else if (mode === 'desc') descLines.push('');
-            continue;
-        }
-
         // Bullet lines
         if (/^[-•*]\s+/.test(trimmed)) {
             const item = trimmed.replace(/^[-•*]\s+/, '').trim();
@@ -385,13 +429,13 @@ function parseCalDescription(raw) {
             if (mode === 'tasks')     { tasks.push({ label: item, done: false }); continue; }
         }
 
-        if (mode === 'desc')      descLines.push(trimmed);
-        else if (mode === 'notes') notes = notes ? `${notes} ${trimmed}` : trimmed;
+        if (mode === 'desc')           descLines.push(trimmed);
+        else if (mode === 'notes')     notes = notes ? `${notes} ${trimmed}` : trimmed;
         else if (mode === 'materials') materials.push(trimmed);
         else if (mode === 'tasks')     tasks.push({ label: trimmed, done: false });
     }
 
-    return { description: descLines.join('\n').trim(), notes, materials, tasks };
+    return { description: descLines.join('\n').trim(), notes, materials, tasks, extractedAddress };
 }
 
 async function jobsForDate(dateStr, calClient) {
@@ -428,7 +472,7 @@ async function jobsForDate(dateStr, calClient) {
                         id:          e.id,
                         title:       e.summary || 'Job',
                         description: parsed.description,
-                        address:     e.location || '',
+                        address:     e.location || parsed.extractedAddress,
                         notes:       parsed.notes,
                         materials:   parsed.materials,
                         tasks,
