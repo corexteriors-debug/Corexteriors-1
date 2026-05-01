@@ -27,61 +27,140 @@
 
         /* Home */
         #screen-home { padding: 0; }
-        .home-header { background: #1a2a45; padding: 1.25rem 1.25rem .75rem; }
-        .worker-name { font-size: 1.1rem; font-weight: 700; }
-        .worker-date { font-size: .85rem; color: #aaa; }
-        .day-clock-btn { margin: 1rem 1.25rem; padding: 1rem; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; width: calc(100% - 2.5rem); }
-        .btn-in   { background: #2e7d32; color: #fff; }
-        .btn-out  { background: #c62828; color: #fff; }
-        .btn-done { background: #333; color: #888; pointer-events: none; }
-        .section-title { padding: .75rem 1.25rem .4rem; font-size: .8rem; color: #aaa; text-transform: uppercase; letter-spacing: .5px; }
-        .jobs-list { padding: 0 1.25rem 6rem; display: flex; flex-direction: column; gap: .5rem; }
-        .week-day-header { padding: .6rem 0 .25rem; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #aaa; border-top: 1px solid rgba(255,255,255,.07); margin-top: .5rem; }
-        .week-day-header:first-child { border-top: none; margin-top: 0; }
-        .week-day-header.today-header { color: #4fc3f7; }
-        .job-card { background: #1a2a45; border-radius: 12px; padding: 1rem; cursor: pointer; }
-        .job-card:active { background: #253a5e; }
-        .job-card.locked { opacity: .5; cursor: default; pointer-events: none; }
-        .job-card-title { font-weight: 600; font-size: 1rem; margin-bottom: .3rem; }
-        .job-card-time { font-size: .82rem; color: #aaa; }
-        .job-card-status { font-size: .78rem; margin-top: .4rem; }
-        .status-active { color: #4caf50; }
-        .status-done { color: #888; }
         .sync-banner { background: #e65100; color: #fff; text-align: center; padding: .5rem; font-size: .82rem; display: none; }
         .sync-banner.visible { display: block; }
+        .weather-strip { background: #0d2137; padding: .45rem 1rem; display: flex; justify-content: space-between; align-items: center; font-size: .78rem; color: #90caf9; min-height: 28px; }
+        .weather-strip .weather-right { color: #546e8a; font-size: .75rem; }
+        .home-header { background: #1a2a45; padding: 1rem 1.25rem .75rem; display: flex; justify-content: space-between; align-items: center; }
+        .worker-info .worker-name { font-size: 1.05rem; font-weight: 700; }
+        .worker-info .worker-date { font-size: .78rem; color: #aaa; margin-top: .15rem; }
+        .status-badge { border-radius: 20px; padding: .3rem .85rem; font-size: .75rem; font-weight: 700; }
+        .badge-active { background: #1b5e20; color: #69f0ae; }
+        .badge-out    { background: #1a2a45; color: #546e8a; border: 1px solid #263c5a; }
+        .tab-bar { display: flex; background: #1a2a45; border-bottom: 1px solid #0d1f35; }
+        .tab-btn { flex: 1; padding: .75rem; background: none; border: none; border-bottom: 2px solid transparent; color: #546e8a; font-size: .82rem; font-weight: 600; cursor: pointer; letter-spacing: .3px; }
+        .tab-btn.active { color: #4fc3f7; border-bottom-color: #4fc3f7; }
+        .tab-pane { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
+        .tab-pane.active { display: flex; }
+
+        /* Today */
+        .today-wrap { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .85rem; padding-bottom: 5rem; }
+        .clock-btn { border: none; border-radius: 14px; padding: 1.15rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; width: 100%; transition: background .15s; }
+        .clock-btn:active { opacity: .85; }
+        .btn-clock-in  { background: #1b5e20; color: #a5d6a7; }
+        .btn-clock-out { background: #b71c1c; color: #ef9a9a; }
+        .punch-timeline { background: #111e30; border-radius: 12px; padding: .85rem 1rem; }
+        .punch-timeline-title { font-size: .72rem; color: #546e8a; text-transform: uppercase; letter-spacing: .4px; margin-bottom: .6rem; }
+        .punch-row { display: flex; align-items: center; justify-content: space-between; padding: .45rem 0; border-top: 1px solid #1a2a45; font-size: .85rem; }
+        .punch-row:first-of-type { border-top: none; }
+        .punch-in-time  { color: #69f0ae; font-weight: 600; }
+        .punch-out-time { color: #ef9a9a; font-weight: 600; }
+        .punch-out-open { color: #546e8a; font-weight: 600; }
+        .punch-duration { color: #aaa; font-size: .78rem; }
+        .punch-empty { color: #546e8a; font-size: .85rem; font-style: italic; }
+        .hours-total { display: flex; justify-content: space-between; align-items: center; padding-top: .65rem; margin-top: .4rem; border-top: 1px solid #1a2a45; }
+        .hours-total .label { font-size: .75rem; color: #546e8a; text-transform: uppercase; }
+        .hours-total .value { font-size: .95rem; font-weight: 700; color: #69f0ae; }
+        .quick-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; }
+        .quick-btn { background: #1a2a45; border: none; border-radius: 10px; padding: .85rem .5rem; color: #fff; font-size: .8rem; cursor: pointer; text-align: center; line-height: 1.4; }
+        .quick-btn:active { background: #253a5e; }
+        .quick-btn .icon { font-size: 1.3rem; display: block; margin-bottom: .2rem; }
+        .hours-strip { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+        .hours-card { background: #111e30; border-radius: 10px; padding: .75rem 1rem; }
+        .hours-card .hc-label { font-size: .7rem; color: #546e8a; text-transform: uppercase; }
+        .hours-card .hc-value { font-size: 1.1rem; font-weight: 700; margin-top: .2rem; }
+        .section-title { font-size: .72rem; color: #546e8a; text-transform: uppercase; letter-spacing: .4px; margin-bottom: .4rem; }
+        .today-job-card { background: #1a2a45; border-radius: 10px; padding: .85rem 1rem; cursor: pointer; margin-bottom: .5rem; }
+        .today-job-card:active { background: #253a5e; }
+        .today-job-title { font-weight: 600; font-size: .95rem; }
+        .today-job-time { font-size: .78rem; color: #aaa; margin-top: .2rem; }
+        .today-job-addr { font-size: .75rem; color: #4fc3f7; margin-top: .15rem; }
+
+        /* Week */
+        .week-wrap { padding: .85rem 1.25rem; display: flex; flex-direction: column; gap: .4rem; padding-bottom: 4rem; }
+        .week-day-row { background: #111e30; border-radius: 12px; overflow: hidden; }
+        .week-day-header { display: flex; justify-content: space-between; align-items: center; padding: .75rem 1rem; cursor: pointer; }
+        .week-day-header:active { background: #1a2a45; }
+        .wdh-name { font-size: .9rem; font-weight: 700; }
+        .wdh-date-sub { font-size: .72rem; color: #546e8a; margin-top: .1rem; }
+        .wdh-right { text-align: right; }
+        .wdh-hours { font-size: .75rem; color: #69f0ae; font-weight: 600; }
+        .wdh-jobs  { font-size: .75rem; color: #aaa; }
+        .today-row .wdh-name { color: #4fc3f7; }
+        .week-day-jobs { padding: 0 1rem .75rem; flex-direction: column; gap: .4rem; display: none; }
+        .week-day-jobs.open { display: flex; }
+        .week-job-item { background: #1a2a45; border-radius: 8px; padding: .65rem .85rem; cursor: pointer; }
+        .week-job-item:active { background: #253a5e; }
+        .week-job-title { font-size: .88rem; font-weight: 600; }
+        .week-job-time  { font-size: .75rem; color: #aaa; margin-top: .15rem; }
+        .week-job-addr  { font-size: .73rem; color: #4fc3f7; margin-top: .1rem; }
+        .week-empty-msg { color: #546e8a; font-size: .82rem; font-style: italic; padding: .5rem 0; }
 
         /* Job detail */
-        #screen-job { padding: 0; }
-        .job-header { background: #1a2a45; padding: 1rem 1.25rem; display: flex; align-items: center; gap: .75rem; }
-        .back-btn { background: none; border: none; color: #4fc3f7; font-size: 1.4rem; cursor: pointer; padding: .25rem; line-height: 1; }
+        #screen-job { padding: 0; overflow-y: auto; }
+        .job-header { background: #1a2a45; padding: 1rem 1.25rem; display: flex; align-items: center; gap: .75rem; position: sticky; top: 0; z-index: 10; }
+        .back-btn { background: none; border: none; color: #4fc3f7; font-size: 1.5rem; cursor: pointer; padding: .2rem .4rem; line-height: 1; }
         .job-header-title { font-size: 1rem; font-weight: 700; flex: 1; }
-        .job-detail-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+        .job-header-time  { font-size: .78rem; color: #aaa; margin-top: .15rem; }
+        .job-detail-body { padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: .85rem; padding-bottom: 4rem; }
         .detail-card { background: #1a2a45; border-radius: 12px; padding: 1rem; }
-        .detail-label { font-size: .75rem; color: #aaa; text-transform: uppercase; margin-bottom: .3rem; }
-        .detail-value { font-size: .95rem; line-height: 1.5; }
-        .action-btns { display: flex; flex-direction: column; gap: .75rem; }
-        .action-btn { border: none; border-radius: 12px; padding: 1rem; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; }
-        .action-btn:active { opacity: .8; }
-        .btn-green  { background: #2e7d32; color: #fff; }
-        .btn-red    { background: #c62828; color: #fff; }
-        .btn-orange { background: #e65100; color: #fff; }
-        .btn-blue   { background: #1565c0; color: #fff; }
-        .btn-grey   { background: #333; color: #888; pointer-events: none; }
+        .detail-label { font-size: .72rem; color: #546e8a; text-transform: uppercase; letter-spacing: .3px; margin-bottom: .45rem; }
+        .detail-value { font-size: .92rem; line-height: 1.55; color: #e0e8f0; }
+        .navigate-btn { display: flex; align-items: center; gap: .75rem; background: #1565c0; border: none; border-radius: 12px; padding: 1rem; color: #fff; cursor: pointer; width: 100%; text-align: left; }
+        .navigate-btn:active { background: #1976d2; }
+        .nav-icon  { font-size: 1.5rem; }
+        .nav-label { font-size: .95rem; font-weight: 700; }
+        .nav-addr  { font-size: .8rem; color: #90caf9; margin-top: .1rem; }
+        .crew-list { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .35rem; }
+        .crew-chip { background: #0d2137; border-radius: 20px; padding: .3rem .8rem; font-size: .8rem; color: #90caf9; }
+        .crew-me   { background: #1a3a5c; color: #4fc3f7; font-weight: 600; }
+        .material-item { font-size: .88rem; color: #e0e8f0; padding: .2rem 0; }
+        .task-item { display: flex; align-items: center; gap: .75rem; cursor: pointer; padding: .3rem 0; }
+        .task-item:active { opacity: .7; }
+        .task-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid #263c5a; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: .9rem; background: transparent; transition: all .15s; }
+        .task-done .task-check { background: #1b5e20; border-color: #1b5e20; color: #69f0ae; }
+        .task-done .task-label { color: #546e8a; text-decoration: line-through; }
+        .task-label { font-size: .9rem; }
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: .5rem; }
         .photo-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; cursor: pointer; }
+        .action-btn { border: none; border-radius: 12px; padding: 1rem; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: .75rem; }
+        .btn-blue { background: #1565c0; color: #fff; }
 
         /* Loading */
         .loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 999; }
         .loading.visible { display: flex; }
         .spinner { width: 40px; height: 40px; border: 3px solid #4fc3f7; border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Incident modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; align-items: flex-end; justify-content: center; }
+        .modal-overlay.visible { display: flex; }
+        .modal-sheet { background: #1a2a45; border-radius: 16px 16px 0 0; padding: 1.5rem 1.25rem 2rem; width: 100%; max-width: 480px; }
+        .modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+        .modal-textarea { width: 100%; background: #0d1f35; border: 1px solid #263c5a; border-radius: 10px; color: #fff; font-size: .9rem; padding: .75rem; min-height: 100px; resize: none; font-family: inherit; }
+        .modal-actions { display: flex; gap: .75rem; margin-top: 1rem; }
+        .modal-btn { flex: 1; padding: .85rem; border: none; border-radius: 10px; font-size: .95rem; font-weight: 600; cursor: pointer; }
+        .modal-cancel { background: #263c5a; color: #aaa; }
+        .modal-submit { background: #e65100; color: #fff; }
     </style>
 </head>
 <body>
 
 <div class="loading" id="loading"><div class="spinner"></div></div>
 
-<!-- SCREEN 1: PIN LOGIN -->
+<!-- Incident modal -->
+<div class="modal-overlay" id="incidentModal">
+    <div class="modal-sheet">
+        <div class="modal-title">⚠️ Report Incident / Hazard</div>
+        <textarea class="modal-textarea" id="incidentText" placeholder="Describe the incident or hazard..."></textarea>
+        <div class="modal-actions">
+            <button class="modal-btn modal-cancel" onclick="closeIncidentModal()">Cancel</button>
+            <button class="modal-btn modal-submit" onclick="submitIncident()">Submit</button>
+        </div>
+    </div>
+</div>
+
+<!-- SCREEN 1: PIN -->
 <div class="screen active" id="screen-pin">
     <div class="logo">CORE <span>EXTERIORS</span></div>
     <div class="pin-label">Enter your PIN</div>
@@ -111,58 +190,103 @@
 <!-- SCREEN 2: HOME -->
 <div class="screen" id="screen-home">
     <div class="sync-banner" id="syncBanner">Syncing offline events&hellip;</div>
-    <div class="home-header">
-        <div class="worker-name" id="workerName">Worker</div>
-        <div class="worker-date" id="workerDate"></div>
+    <div class="weather-strip">
+        <span id="weatherText">Loading weather&hellip;</span>
+        <span class="weather-right">London, ON</span>
     </div>
-    <button class="day-clock-btn btn-in" id="dayClockBtn" onclick="toggleDayClock()">Clock In for Day</button>
-    <div class="section-title">This Week</div>
-    <div class="jobs-list" id="jobsList"></div>
+    <div class="home-header">
+        <div class="worker-info">
+            <div class="worker-name" id="workerName">Worker</div>
+            <div class="worker-date" id="workerDate"></div>
+        </div>
+        <div class="status-badge badge-out" id="statusBadge">OFF SITE</div>
+    </div>
+    <div class="tab-bar">
+        <button class="tab-btn active" id="tab-btn-today" onclick="switchTab('today')">TODAY</button>
+        <button class="tab-btn" id="tab-btn-week"  onclick="switchTab('week')">MY WEEK</button>
+    </div>
+
+    <!-- Today tab -->
+    <div class="tab-pane active" id="tab-today">
+        <div class="today-wrap">
+            <button class="clock-btn btn-clock-in" id="clockBtn" onclick="toggleClock()">Clock In</button>
+            <div class="punch-timeline" id="punchTimeline">
+                <div class="punch-timeline-title">Today's Punches</div>
+                <div class="punch-empty">Not clocked in yet.</div>
+            </div>
+            <div class="hours-strip">
+                <div class="hours-card">
+                    <div class="hc-label">Today</div>
+                    <div class="hc-value" id="todayHours">0m</div>
+                </div>
+                <div class="hours-card">
+                    <div class="hc-label">This Week</div>
+                    <div class="hc-value" id="weekHours">0m</div>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="triggerPhotoUploadHome()">
+                    <span class="icon">📸</span>Photo
+                </button>
+                <button class="quick-btn" onclick="openJobDoneModal()">
+                    <span class="icon">🏁</span>Job Done
+                </button>
+                <button class="quick-btn" onclick="openIncidentModal()">
+                    <span class="icon">⚠️</span>Report
+                </button>
+            </div>
+            <div>
+                <div class="section-title">Today's Jobs</div>
+                <div id="todayJobsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Week tab -->
+    <div class="tab-pane" id="tab-week">
+        <div class="week-wrap" id="weekList"></div>
+    </div>
+
+    <input type="file" id="photoInputHome" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotoSelectHome(event)">
 </div>
 
 <!-- SCREEN 3: JOB DETAIL -->
 <div class="screen" id="screen-job">
     <div class="job-header">
-        <button class="back-btn" onclick="showScreen('home')">&#x2039;</button>
-        <div class="job-header-title" id="jobDetailTitle">Job</div>
-    </div>
-    <div class="job-detail-body">
-        <div class="detail-card">
-            <div class="detail-label">Description / Notes</div>
-            <div class="detail-value" id="jobDetailDesc"></div>
-        </div>
-        <div class="detail-card">
-            <div class="detail-label">Scheduled Time</div>
-            <div class="detail-value" id="jobDetailTime"></div>
-        </div>
-        <div class="action-btns" id="jobActionBtns"></div>
-        <div class="detail-card">
-            <div class="detail-label">Completion Photos</div>
-            <div class="photo-grid" id="photoGrid"></div>
-            <button class="action-btn btn-blue" style="margin-top:.75rem" onclick="triggerPhotoUpload()">&#x1F4F7; Add Photos</button>
-            <input type="file" id="photoInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
+        <button class="back-btn" onclick="goBackFromJob()">&#x2039;</button>
+        <div style="flex:1">
+            <div class="job-header-title" id="jobDetailTitle"></div>
+            <div class="job-header-time"  id="jobDetailTime"></div>
         </div>
     </div>
+    <div class="job-detail-body" id="jobDetailBody"></div>
 </div>
 
 <script>
-// ── Security: all user data rendered via innerHTML must go through esc() ───────
-function esc(str) {
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;');
-}
-
-// ── State ──────────────────────────────────────────────────────────────────────
-let pin = '';
-let sessionToken = localStorage.getItem('labour_token') || null;
-let workerName   = localStorage.getItem('labour_name')  || null;
-let currentJobs  = [];
-let todayLog     = null;
+// ── State ─────────────────────────────────────────────────────────────────────
+let pin          = '';
+let sessionToken = localStorage.getItem('labour_token')     || null;
+let workerName   = localStorage.getItem('labour_name')      || null;
+let workerId     = localStorage.getItem('labour_worker_id') || null;
+let weekDays     = [];
+let todayPunches = [];
+let todayMinutes = 0;
+let weekMinutes  = 0;
 let currentJob   = null;
+let jobReturnTab = 'today';
+
+const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── DOM helpers (no innerHTML with user data) ─────────────────────────────────
+function el(tag, className, text) {
+    const e = document.createElement(tag);
+    if (className) e.className = className;
+    if (text !== undefined) e.textContent = text;
+    return e;
+}
+function append(parent, ...children) { children.forEach(c => parent.appendChild(c)); return parent; }
+function clearEl(id) { const e = document.getElementById(id); if (e) e.textContent = ''; return e; }
 
 // ── Screens ───────────────────────────────────────────────────────────────────
 function showScreen(name) {
@@ -170,38 +294,37 @@ function showScreen(name) {
     document.getElementById('screen-' + name).classList.add('active');
 }
 function showLoading(v) { document.getElementById('loading').classList.toggle('visible', v); }
+function switchTab(name) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('tab-btn-' + name).classList.add('active');
+}
 
-// ── PIN input ─────────────────────────────────────────────────────────────────
+// ── PIN ───────────────────────────────────────────────────────────────────────
 function pinPress(digit) {
     if (pin.length >= 4) return;
-    pin += digit;
-    updateDots();
+    pin += digit; updateDots();
     if (pin.length === 4) submitPin();
 }
 function pinDel() {
-    pin = pin.slice(0, -1);
-    updateDots();
+    pin = pin.slice(0, -1); updateDots();
     document.getElementById('pinError').textContent = '';
 }
 function updateDots() {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++)
         document.getElementById('dot' + i).classList.toggle('filled', i < pin.length);
-    }
 }
 async function submitPin() {
     showLoading(true);
     try {
-        const r = await fetch('/api/labour?action=verify-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin })
-        });
+        const r    = await fetch('/api/labour?action=verify-pin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin }) });
         const data = await r.json();
         if (data.success) {
-            sessionToken = data.token;
-            workerName   = data.name;
+            sessionToken = data.token; workerName = data.name; workerId = data.workerId;
             localStorage.setItem('labour_token', sessionToken);
             localStorage.setItem('labour_name', workerName);
+            localStorage.setItem('labour_worker_id', workerId);
             await loadHome();
         } else {
             document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
@@ -214,151 +337,392 @@ async function submitPin() {
     showLoading(false);
 }
 
-// ── Home screen ───────────────────────────────────────────────────────────────
+// ── Home ──────────────────────────────────────────────────────────────────────
 async function loadHome() {
     document.getElementById('workerName').textContent = workerName || 'Worker';
     document.getElementById('workerDate').textContent = new Date().toLocaleDateString('en-CA', {
         timeZone: 'America/Toronto', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
     showScreen('home');
+    fetchWeather();
     await syncOfflineQueue();
-    await refreshJobs();
+    await refreshWeekData();
 }
 
-let weekDays = []; // [{ date, isToday, jobs, log }]
-
-async function refreshJobs() {
+async function refreshWeekData() {
     try {
-        const r = await fetch('/api/labour?action=week-jobs', {
-            headers: { 'Authorization': 'Bearer ' + sessionToken }
-        });
+        const r = await fetch('/api/labour?action=week-jobs', { headers: { 'Authorization': 'Bearer ' + sessionToken } });
         if (r.status === 401) { logout(); return; }
-        const data = await r.json();
+        const data  = await r.json();
         weekDays    = data.days || [];
+        weekMinutes = data.weekTotalMinutes || 0;
         const today = weekDays.find(d => d.isToday) || {};
-        currentJobs = today.jobs || [];
-        todayLog    = today.log || null;
-        if (currentJob) currentJob = currentJobs.find(j => j.id === currentJob.id) || currentJob;
+        todayPunches = today.punches || [];
+        todayMinutes = today.totalMinutes || 0;
         renderHome();
     } catch {
-        document.getElementById('jobsList').textContent = 'Could not load jobs. Check your connection.';
+        const list = document.getElementById('todayJobsList');
+        if (list) list.textContent = 'Could not load jobs. Check connection.';
     }
-}
-
-const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function fmtDayHeader(dateStr, isToday) {
-    // dateStr = YYYY-MM-DD
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const dow = DAY_NAMES[new Date(y, m - 1, d).getDay()];
-    const label = `${dow} ${MONTH_NAMES[m - 1]} ${d}`;
-    return isToday ? `${label} — Today` : label;
 }
 
 function renderHome() {
-    const btn = document.getElementById('dayClockBtn');
-    if (todayLog?.dayClockIn && !todayLog?.dayClockOut) {
-        btn.textContent = 'Clock Out for Day';
-        btn.className = 'day-clock-btn btn-out';
-    } else if (todayLog?.dayClockOut) {
-        btn.textContent = 'Day Complete';
-        btn.className = 'day-clock-btn btn-done';
-    } else {
-        btn.textContent = 'Clock In for Day';
-        btn.className = 'day-clock-btn btn-in';
-    }
+    renderClockBtn();
+    renderPunchTimeline();
+    renderHours();
+    renderTodayJobs();
+    renderWeekList();
+}
 
-    const list = document.getElementById('jobsList');
-    const daysWithJobs = weekDays.filter(d => d.jobs.length > 0);
-    if (!daysWithJobs.length) {
-        list.textContent = 'No jobs scheduled this week.';
+function renderClockBtn() {
+    const btn   = document.getElementById('clockBtn');
+    const badge = document.getElementById('statusBadge');
+    const isIn  = todayPunches.some(p => !p.out);
+    btn.textContent = isIn ? 'Clock Out' : 'Clock In';
+    btn.className   = isIn ? 'clock-btn btn-clock-out' : 'clock-btn btn-clock-in';
+    badge.textContent = isIn ? '● ACTIVE' : 'OFF SITE';
+    badge.className   = isIn ? 'status-badge badge-active' : 'status-badge badge-out';
+}
+
+function renderPunchTimeline() {
+    const container = document.getElementById('punchTimeline');
+    container.textContent = '';
+
+    const titleEl = el('div', 'punch-timeline-title', "Today's Punches");
+    container.appendChild(titleEl);
+
+    if (!todayPunches.length) {
+        container.appendChild(el('div', 'punch-empty', 'Not clocked in yet.'));
         return;
     }
 
-    list.innerHTML = daysWithJobs.map(day => {
-        const headerClass = day.isToday ? 'week-day-header today-header' : 'week-day-header';
-        const cards = day.jobs.map(job => {
-            if (!day.isToday) {
-                return `<div class="job-card locked">
-                    <div class="job-card-title">${esc(job.title)}</div>
-                    <div class="job-card-time">${esc(fmtTime(job.start))}</div>
-                </div>`;
-            }
-            const log = todayLog?.jobs?.find(j => j.calendarEventId === job.id);
-            const statusHtml = log
-                ? (log.clockOut
-                    ? `<div class="job-card-status status-done">&#x2713; Completed</div>`
-                    : `<div class="job-card-status status-active">&#x25CF; In progress</div>`)
-                : '';
-            return `<div class="job-card" onclick="openJob('${esc(job.id)}')">
-                <div class="job-card-title">${esc(job.title)}</div>
-                <div class="job-card-time">${esc(fmtTime(job.start))}</div>
-                ${statusHtml}
-            </div>`;
-        }).join('');
-        return `<div class="${headerClass}">${fmtDayHeader(day.date, day.isToday)}</div>${cards}`;
-    }).join('');
+    todayPunches.forEach((p) => {
+        const row    = el('div', 'punch-row');
+        const inTime = p.in  ? fmtTime(p.in)  : '—';
+        const outTime= p.out ? fmtTime(p.out)  : '—';
+        const dur    = (p.in && p.out)
+            ? fmtMinutes((new Date(p.out) - new Date(p.in)) / 60000)
+            : (p.in ? 'ongoing' : '');
+
+        append(row,
+            el('span', 'punch-in-time',  '▶ ' + inTime),
+            el('span', p.out ? 'punch-out-time' : 'punch-out-open', '◼ ' + outTime),
+            el('span', 'punch-duration', dur)
+        );
+        container.appendChild(row);
+    });
+
+    const totRow   = el('div', 'hours-total');
+    append(totRow, el('span', 'label', 'Total today'), el('span', 'value', fmtMinutes(todayMinutes)));
+    container.appendChild(totRow);
 }
 
-// ── Day clock ─────────────────────────────────────────────────────────────────
-async function toggleDayClock() {
-    const event = (todayLog?.dayClockIn && !todayLog?.dayClockOut) ? 'dayClockOut' : 'dayClockIn';
-    await logEvent({ event });
-    await refreshJobs();
+function renderHours() {
+    document.getElementById('todayHours').textContent = fmtMinutes(todayMinutes);
+    document.getElementById('weekHours').textContent  = fmtMinutes(weekMinutes);
+}
+
+function renderTodayJobs() {
+    const list  = document.getElementById('todayJobsList');
+    list.textContent = '';
+    const today = weekDays.find(d => d.isToday) || {};
+    const jobs  = today.jobs || [];
+
+    if (!jobs.length) {
+        list.appendChild(el('div', 'punch-empty', 'No jobs scheduled today.'));
+        return;
+    }
+
+    jobs.forEach(job => {
+        const card = el('div', 'today-job-card');
+        card.addEventListener('click', () => openJob(job.id, 'today'));
+
+        const title = el('div', 'today-job-title', job.title);
+        const time  = el('div', 'today-job-time',  fmtTime(job.start) + (job.end ? ' – ' + fmtTime(job.end) : ''));
+        append(card, title, time);
+        if (job.address) {
+            const addr = el('div', 'today-job-addr', '📍 ' + job.address);
+            card.appendChild(addr);
+        }
+        list.appendChild(card);
+    });
+}
+
+function renderWeekList() {
+    const list = document.getElementById('weekList');
+    list.textContent = '';
+
+    weekDays.forEach((day, idx) => {
+        const [y, m, d] = day.date.split('-').map(Number);
+        const dow   = DAY_NAMES[new Date(y, m - 1, d).getDay()];
+        const label = dow + ', ' + MONTH_NAMES[m - 1] + ' ' + d;
+
+        const row    = el('div', 'week-day-row' + (day.isToday ? ' today-row' : ''));
+        const header = el('div', 'week-day-header');
+        header.addEventListener('click', () => toggleDayExpand(idx));
+
+        const left  = el('div');
+        const name  = el('div', 'wdh-name', (day.isToday ? '★ ' : '') + label + (day.isToday ? ' — Today' : ''));
+        left.appendChild(name);
+
+        const right = el('div', 'wdh-right');
+        if (day.totalMinutes > 0) right.appendChild(el('div', 'wdh-hours', fmtMinutes(day.totalMinutes)));
+        right.appendChild(el('div', 'wdh-jobs', day.jobs.length === 1 ? '1 job' : day.jobs.length + ' jobs'));
+
+        append(header, left, right);
+        row.appendChild(header);
+
+        const jobsWrap = el('div', 'week-day-jobs' + (day.isToday ? ' open' : ''));
+        jobsWrap.id = 'week-day-' + idx;
+
+        if (!day.jobs.length) {
+            jobsWrap.appendChild(el('div', 'week-empty-msg', 'No jobs scheduled.'));
+        } else {
+            day.jobs.forEach(job => {
+                const item = el('div', 'week-job-item');
+                item.addEventListener('click', () => openJob(job.id, 'week', day.date));
+                const jTitle = el('div', 'week-job-title', job.title);
+                const jTime  = el('div', 'week-job-time',  fmtTime(job.start) + (job.end ? ' – ' + fmtTime(job.end) : ''));
+                append(item, jTitle, jTime);
+                if (job.address) item.appendChild(el('div', 'week-job-addr', '📍 ' + job.address));
+                jobsWrap.appendChild(item);
+            });
+        }
+
+        row.appendChild(jobsWrap);
+        list.appendChild(row);
+    });
+}
+
+function toggleDayExpand(idx) {
+    document.getElementById('week-day-' + idx)?.classList.toggle('open');
+}
+
+// ── Clock in / out ────────────────────────────────────────────────────────────
+async function toggleClock() {
+    const isIn  = todayPunches.some(p => !p.out);
+    const action= isIn ? 'clock-out' : 'clock-in';
+    showLoading(true);
+    try {
+        const r    = await fetch('/api/labour?action=' + action, { method: 'POST', headers: { 'Authorization': 'Bearer ' + sessionToken } });
+        if (r.status === 401) { logout(); return; }
+        const data = await r.json();
+        if (data.success) {
+            todayPunches = data.punches || [];
+            todayMinutes = data.totalMinutes || 0;
+            const today  = weekDays.find(d => d.isToday);
+            if (today) { today.punches = todayPunches; today.totalMinutes = todayMinutes; }
+            weekMinutes  = weekDays.reduce((s, d) => s + (d.totalMinutes || 0), 0);
+            renderHome();
+        } else {
+            alert(data.error || 'Could not update clock. Try again.');
+        }
+    } catch {
+        await logEvent({ event: isIn ? 'dayClockOut' : 'dayClockIn' });
+        await refreshWeekData();
+    }
+    showLoading(false);
 }
 
 // ── Job detail ────────────────────────────────────────────────────────────────
-function openJob(jobId) {
-    currentJob = currentJobs.find(j => j.id === jobId);
-    if (!currentJob) return;
-    // textContent for user data avoids innerHTML XSS
-    document.getElementById('jobDetailTitle').textContent = currentJob.title;
-    document.getElementById('jobDetailDesc').textContent  = currentJob.description || '—';
-    document.getElementById('jobDetailTime').textContent  = fmtTime(currentJob.start) + (currentJob.end ? ' – ' + fmtTime(currentJob.end) : '');
-    renderJobActions();
-    renderPhotoGrid();
-    showScreen('job');
-}
-
-function renderJobActions() {
-    const log = todayLog?.jobs?.find(j => j.calendarEventId === currentJob.id);
-    const btns = document.getElementById('jobActionBtns');
-    if (!log?.clockIn) {
-        btns.innerHTML = `<button class="action-btn btn-green" onclick="jobClockIn()">Clock In to Job</button>`;
-    } else if (!log.clockOut) {
-        const onLunch = todayLog?.lunchOut && !todayLog?.lunchIn;
-        btns.innerHTML = onLunch
-            ? `<button class="action-btn btn-orange" onclick="lunchEnd()">End Lunch Break</button>
-               <button class="action-btn btn-red" onclick="jobClockOut()">Clock Out of Job</button>`
-            : `<button class="action-btn btn-orange" onclick="lunchStart()">Start Lunch Break</button>
-               <button class="action-btn btn-red" onclick="jobClockOut()">Clock Out of Job</button>`;
-    } else {
-        btns.innerHTML = `<button class="action-btn btn-grey">Job Complete &#x2713;</button>`;
+function openJob(jobId, fromTab, dateStr) {
+    jobReturnTab = fromTab || 'today';
+    let job = null;
+    for (const day of weekDays) {
+        const found = day.jobs.find(j => j.id === jobId);
+        if (found) { job = Object.assign({}, found, { _date: dateStr || day.date }); break; }
     }
+    if (!job) return;
+    currentJob = job;
+
+    document.getElementById('jobDetailTitle').textContent = job.title;
+    document.getElementById('jobDetailTime').textContent  = fmtTime(job.start) + (job.end ? ' – ' + fmtTime(job.end) : '');
+
+    renderJobDetail();
+    showScreen('job');
+    fetchCrewStatus();
 }
 
-async function jobClockIn()  { await logEvent({ event: 'jobClockIn', calendarEventId: currentJob.id, jobTitle: currentJob.title }); await refreshJobs(); renderJobActions(); }
-async function jobClockOut() { await logEvent({ event: 'jobClockOut', calendarEventId: currentJob.id }); await refreshJobs(); renderJobActions(); }
-async function lunchStart()  { await logEvent({ event: 'lunchOut' }); await refreshJobs(); renderJobActions(); }
-async function lunchEnd()    { await logEvent({ event: 'lunchIn' });  await refreshJobs(); renderJobActions(); }
+function goBackFromJob() { showScreen('home'); switchTab(jobReturnTab); }
+
+function renderJobDetail() {
+    const body = document.getElementById('jobDetailBody');
+    body.textContent = '';
+    const job  = currentJob;
+
+    // Navigate button
+    if (job.address) {
+        const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(job.address);
+        const navBtn  = el('button', 'navigate-btn');
+        navBtn.addEventListener('click', () => window.open(mapsUrl, '_blank'));
+        const icon    = el('span', 'nav-icon', '📍');
+        const navText = el('div');
+        append(navText, el('div', 'nav-label', 'Open in Maps'), el('div', 'nav-addr', job.address));
+        append(navBtn, icon, navText);
+        body.appendChild(navBtn);
+    }
+
+    // Crew
+    const crewCard = el('div', 'detail-card');
+    crewCard.appendChild(el('div', 'detail-label', '👷 Crew on Site'));
+    const crewList = el('div', 'crew-list');
+    crewList.id = 'crewList';
+    crewList.appendChild(el('span', null, 'Loading…'));
+    crewCard.appendChild(crewList);
+    body.appendChild(crewCard);
+
+    // Notes
+    const notes = job.notes || job.description;
+    if (notes) {
+        const noteCard = el('div', 'detail-card');
+        append(noteCard, el('div', 'detail-label', '📋 Notes'), el('div', 'detail-value', notes));
+        body.appendChild(noteCard);
+    }
+
+    // Materials
+    if (job.materials && job.materials.length) {
+        const matCard = el('div', 'detail-card');
+        matCard.appendChild(el('div', 'detail-label', '🧱 Materials'));
+        job.materials.forEach(m => {
+            const item = el('div', 'material-item', m);
+            matCard.appendChild(item);
+        });
+        body.appendChild(matCard);
+    }
+
+    // Tasks
+    if (job.tasks && job.tasks.length) {
+        const taskCard = el('div', 'detail-card');
+        taskCard.appendChild(el('div', 'detail-label', '✅ Tasks'));
+        job.tasks.forEach((t, i) => {
+            const item  = el('div', 'task-item' + (t.done ? ' task-done' : ''));
+            item.id     = 'task-' + i;
+            item.addEventListener('click', () => toggleTask(i));
+            const check = el('div', 'task-check', t.done ? '✓' : '');
+            const label = el('div', 'task-label', t.label);
+            append(item, check, label);
+            taskCard.appendChild(item);
+        });
+        body.appendChild(taskCard);
+    }
+
+    // Photos
+    const photoCard = el('div', 'detail-card');
+    photoCard.appendChild(el('div', 'detail-label', '📸 Photos'));
+    const photoGrid = el('div', 'photo-grid');
+    photoGrid.id = 'photoGrid';
+    const addPhotoBtn = el('button', 'action-btn btn-blue', 'Add Photos');
+    addPhotoBtn.addEventListener('click', () => document.getElementById('photoInput')?.click());
+    const photoInput = document.createElement('input');
+    photoInput.type    = 'file';
+    photoInput.id      = 'photoInput';
+    photoInput.accept  = 'image/*';
+    photoInput.multiple= true;
+    photoInput.setAttribute('capture', 'environment');
+    photoInput.style.display = 'none';
+    photoInput.addEventListener('change', handlePhotoSelect);
+    append(photoCard, photoGrid, addPhotoBtn, photoInput);
+    body.appendChild(photoCard);
+}
+
+async function fetchCrewStatus() {
+    try {
+        const r    = await fetch('/api/labour?action=crew-status', { headers: { 'Authorization': 'Bearer ' + sessionToken } });
+        const data = await r.json();
+        const list = document.getElementById('crewList');
+        if (!list) return;
+        list.textContent = '';
+        if (!data.crew || !data.crew.length) {
+            list.appendChild(el('span', 'punch-empty', 'No one clocked in yet.'));
+            return;
+        }
+        data.crew.forEach(w => {
+            const chip = el('span', 'crew-chip' + (w.id === workerId ? ' crew-me' : ''), w.name + (w.id === workerId ? ' (you)' : ''));
+            list.appendChild(chip);
+        });
+    } catch { /* non-fatal */ }
+}
+
+async function toggleTask(taskIndex) {
+    if (!currentJob || !currentJob._date) return;
+    try {
+        const r    = await fetch('/api/labour?action=complete-task', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+            body: JSON.stringify({ date: currentJob._date, jobId: currentJob.id, taskIndex })
+        });
+        const data = await r.json();
+        if (data.success && currentJob.tasks[taskIndex]) {
+            currentJob.tasks[taskIndex].done = data.task.done;
+            const item  = document.getElementById('task-' + taskIndex);
+            if (item) {
+                item.className = 'task-item' + (data.task.done ? ' task-done' : '');
+                const check = item.querySelector('.task-check');
+                if (check) check.textContent = data.task.done ? '✓' : '';
+            }
+        }
+    } catch { /* offline — skip */ }
+}
+
+function openJobDoneModal() {
+    const today = weekDays.find(d => d.isToday) || {};
+    const jobs  = today.jobs || [];
+    if      (jobs.length === 1) openJob(jobs[0].id, 'today');
+    else if (jobs.length  > 1) switchTab('week');
+}
+
+// ── Weather ───────────────────────────────────────────────────────────────────
+function fetchWeather() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+            const { latitude: lat, longitude: lon } = pos.coords;
+            const r    = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,precipitation_probability,weathercode&timezone=auto');
+            const data = await r.json();
+            const cur  = data.current;
+            const temp = Math.round(cur.temperature_2m);
+            const rain = cur.precipitation_probability;
+            const icon = weatherIcon(cur.weathercode);
+            document.getElementById('weatherText').textContent = icon + ' ' + temp + '\u00b0C \u00b7 ' + rain + '% rain';
+        } catch { /* non-fatal */ }
+    }, () => {}, { timeout: 5000 });
+}
+function weatherIcon(code) {
+    if (code === 0) return '\u2600\ufe0f';
+    if (code <= 3)  return '\u26c5';
+    if (code <= 67) return '\uD83C\uDF27\uFE0F';
+    if (code <= 77) return '\u2744\uFE0F';
+    return '\uD83C\uDF29\uFE0F';
+}
+
+// ── Incident report ───────────────────────────────────────────────────────────
+function openIncidentModal()  { document.getElementById('incidentModal').classList.add('visible'); }
+function closeIncidentModal() { document.getElementById('incidentModal').classList.remove('visible'); document.getElementById('incidentText').value = ''; }
+async function submitIncident() {
+    const text = document.getElementById('incidentText').value.trim();
+    if (!text) return;
+    try {
+        await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: workerName || 'Worker', email: 'labour@internal', message: '[INCIDENT REPORT] ' + text, subject: 'Labour Incident Report' }) });
+    } catch { /* non-fatal */ }
+    closeIncidentModal();
+    alert('Report submitted.');
+}
 
 // ── Offline queue ─────────────────────────────────────────────────────────────
 async function logEvent(payload) {
     const queue = getQueue();
-    queue.push({ ...payload, _ts: Date.now() });
+    queue.push(Object.assign({}, payload, { _ts: Date.now() }));
     saveQueue(queue);
     if (!navigator.onLine) return;
     await syncOfflineQueue();
 }
-
 function getQueue()   { return JSON.parse(localStorage.getItem('labour_queue') || '[]'); }
 function saveQueue(q) { localStorage.setItem('labour_queue', JSON.stringify(q)); }
 
 let _syncing = false;
 async function syncOfflineQueue() {
-    if (_syncing) return;
-    _syncing = true;
+    if (_syncing) return; _syncing = true;
     try {
         const queue = getQueue();
         if (!queue.length) return;
@@ -367,114 +731,88 @@ async function syncOfflineQueue() {
         for (const item of queue) {
             const { _ts, ...payload } = item;
             try {
-                const r = await fetch('/api/labour?action=log', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sessionToken, ...payload })
-                });
+                const r = await fetch('/api/labour?action=log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ sessionToken }, payload)) });
                 if (r.status === 401) { logout(); break; }
                 if (!r.ok) remaining.push(item);
             } catch { remaining.push(item); }
         }
         saveQueue(remaining);
         if (!remaining.length) document.getElementById('syncBanner').classList.remove('visible');
-    } finally {
-        _syncing = false;
-    }
+    } finally { _syncing = false; }
 }
-
 window.addEventListener('online', syncOfflineQueue);
 
 // ── Photo upload ──────────────────────────────────────────────────────────────
-function triggerPhotoUpload() { document.getElementById('photoInput').click(); }
-
-async function handlePhotoSelect(event) {
+function triggerPhotoUploadHome() {
+    const today = weekDays.find(d => d.isToday) || {};
+    const jobs  = today.jobs || [];
+    if (!jobs.length) { alert('No jobs scheduled today.'); return; }
+    if (jobs.length === 1) currentJob = Object.assign({}, jobs[0], { _date: today.date });
+    document.getElementById('photoInputHome')?.click();
+}
+async function handlePhotoSelectHome(event) {
     for (const file of Array.from(event.target.files)) {
-        try {
-            const compressed = await compressImage(file, 1024);
-            await uploadPhoto(compressed);
-        } catch { /* skip unreadable files */ }
+        try { await uploadPhoto(await compressImage(file, 1024)); } catch {}
     }
     event.target.value = '';
 }
-
+async function handlePhotoSelect(event) {
+    for (const file of Array.from(event.target.files)) {
+        try { await uploadPhoto(await compressImage(file, 1024)); } catch {}
+    }
+    event.target.value = '';
+}
 function compressImage(file, maxPx) {
     return new Promise((resolve, reject) => {
-        const img = new Image();
-        const url = URL.createObjectURL(file);
+        const img = new Image(), url = URL.createObjectURL(file);
         img.onload = () => {
             const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
             const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-            const canvas = document.createElement('canvas');
-            canvas.width = w; canvas.height = h;
+            const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
             const ctx = canvas.getContext('2d');
             if (!ctx) { URL.revokeObjectURL(url); reject(new Error('Canvas unavailable')); return; }
-            ctx.drawImage(img, 0, 0, w, h);
-            URL.revokeObjectURL(url);
+            ctx.drawImage(img, 0, 0, w, h); URL.revokeObjectURL(url);
             resolve(canvas.toDataURL('image/jpeg', 0.82));
         };
         img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
         img.src = url;
     });
 }
-
 async function uploadPhoto(base64) {
     if (!currentJob) return;
     const grid = document.getElementById('photoGrid');
-    const pending = document.createElement('div');
-    pending.style.cssText = 'background:#1a2a45;border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.5rem';
-    pending.textContent = '\u23F3';
-    grid.appendChild(pending);
+    if (!grid) return;
+    const pending = el('div'); pending.style.cssText = 'background:#1a2a45;border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.5rem';
+    pending.textContent = '\u23F3'; grid.appendChild(pending);
     try {
-        const r = await fetch('/api/labour-photo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionToken, calendarEventId: currentJob.id, jobTitle: currentJob.title, photoData: base64 })
-        });
+        const r    = await fetch('/api/labour-photo', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionToken, calendarEventId: currentJob.id, jobTitle: currentJob.title, photoData: base64 }) });
         const data = await r.json();
         if (data.success) {
-            const img = document.createElement('img');
-            img.className = 'photo-thumb';
-            img.src = data.url;
+            const img = document.createElement('img'); img.className = 'photo-thumb'; img.src = data.url;
             img.addEventListener('click', () => window.open(data.url, '_blank'));
             pending.replaceWith(img);
-            await refreshJobs();
-        } else {
-            pending.textContent = '\u2717';
-        }
+        } else { pending.textContent = '\u2717'; }
     } catch { pending.textContent = '\u2717'; }
-}
-
-function renderPhotoGrid() {
-    const log    = todayLog?.jobs?.find(j => j.calendarEventId === currentJob?.id);
-    const grid   = document.getElementById('photoGrid');
-    const photos = log?.photos || [];
-    grid.innerHTML = '';
-    photos.forEach(url => {
-        const img = document.createElement('img');
-        img.className = 'photo-thumb';
-        img.src = url;
-        img.addEventListener('click', () => window.open(url, '_blank'));
-        grid.appendChild(img);
-    });
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 function fmtTime(iso) {
     if (!iso) return '\u2014';
-    return new Date(iso).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: 'numeric', minute: '2-digit', hour12: true });
+    try { return new Date(iso).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: 'numeric', minute: '2-digit', hour12: true }); }
+    catch { return iso; }
 }
-
+function fmtMinutes(mins) {
+    const m = Math.round(mins), h = Math.floor(m / 60), rem = m % 60;
+    return h === 0 ? rem + 'm' : h + 'h ' + rem + 'm';
+}
 function logout() {
-    localStorage.removeItem('labour_token');
-    localStorage.removeItem('labour_name');
-    localStorage.removeItem('labour_queue');
-    sessionToken = null; workerName = null; pin = '';
-    updateDots();
-    showScreen('pin');
+    ['labour_token','labour_name','labour_worker_id','labour_queue'].forEach(k => localStorage.removeItem(k));
+    sessionToken = null; workerName = null; workerId = null; pin = '';
+    updateDots(); showScreen('pin');
 }
 
-// Auto-login if session token already stored
+// ── Auto-login ────────────────────────────────────────────────────────────────
 (async () => {
     if (sessionToken && workerName) {
         showLoading(true);

@@ -1245,11 +1245,23 @@
                         <div style="display:flex;flex-direction:column;gap:.6rem;max-width:480px">
                             <div>
                                 <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Job Title *</label>
-                                <input id="newJobTitle" placeholder="e.g. Window cleaning – 123 Main St" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
+                                <input id="newJobTitle" placeholder="e.g. Soffit &amp; Fascia – 123 Main St" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
                             </div>
                             <div>
-                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Notes (optional)</label>
-                                <textarea id="newJobDesc" rows="2" placeholder="Address, instructions, client name…" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Address (for Maps link)</label>
+                                <input id="newJobAddress" placeholder="123 Main St, London ON" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
+                            </div>
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Customer Notes (gate codes, parking, etc.)</label>
+                                <textarea id="newJobNotes" rows="2" placeholder="Gate code 1234, dog in backyard, park on side street…" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
+                            </div>
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Materials (one per line)</label>
+                                <textarea id="newJobMaterials" rows="3" placeholder="20ft aluminum soffit&#10;Caulk gun + white caulk&#10;Ladder" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
+                            </div>
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Tasks / Checklist (one per line)</label>
+                                <textarea id="newJobTasks" rows="3" placeholder="Remove old panels&#10;Inspect for rot&#10;Install new soffit&#10;Final photo" style="width:100%;background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;resize:vertical"></textarea>
                             </div>
                             <div style="display:flex;gap:.5rem">
                                 <button onclick="saveNewJob()" style="background:#2e7d32;border:none;border-radius:8px;padding:.5rem 1rem;color:#fff;cursor:pointer;font-size:.9rem">Save Job</button>
@@ -3264,50 +3276,101 @@ async function deactivateWorker(workerId) {
     } catch(e) { console.error(e); alert('Connection error. Could not deactivate worker.'); }
 }
 
+function labEl(tag, style, text) {
+    const e = document.createElement(tag);
+    if (style) e.style.cssText = style;
+    if (text !== undefined) e.textContent = text;
+    return e;
+}
+
 function renderDailyLogs(workers, date) {
     const container = document.getElementById('dailyLogsContainer');
+    container.textContent = '';
     if (!workers.length) { container.textContent = 'No workers found.'; return; }
 
-    container.innerHTML = workers.map(({ worker, log }) => {
-        if (!worker) { console.warn('Labour: log entry found for unknown worker'); return ''; }
-        const statusLabel = !log ? '⚫ Not started'
-            : (log.lunchOut && !log.lunchIn) ? '🟡 On lunch'
-            : (log.dayClockIn && !log.dayClockOut) ? '🟢 Clocked in'
-            : log.dayClockOut ? '✓ Done' : '⚫ Not started';
-        const totalHours = calcTotalHours(log);
+    workers.forEach(({ worker, log, totalMinutes }) => {
+        if (!worker) { console.warn('Labour: log entry found for unknown worker'); return; }
+        const punches = log?.punches || [];
+        const isIn    = punches.some(p => p.in && !p.out);
+        const statusLabel = !punches.length ? '\u26ab Not started' : isIn ? '\uD83D\uDFE2 Clocked in' : '\u2713 Done';
+        const hrsText = totalMinutes ? (totalMinutes / 60).toFixed(1) + ' hrs' : '\u2014';
 
-        return `<div style="background:#1a2a45;border-radius:12px;margin-bottom:1rem;overflow:hidden">
-            <div style="padding:1rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer"
-                 onclick="toggleLabourRow('lrow-${labEsc(worker.id)}')">
-                <div>
-                    <div style="font-weight:700">${labEsc(worker.name)}</div>
-                    <div style="font-size:.8rem;color:#aaa;margin-top:.2rem">${statusLabel}</div>
-                </div>
-                <div style="text-align:right;font-size:.85rem;color:#aaa">${totalHours ? totalHours + ' hrs' : '&mdash;'}</div>
-            </div>
-            <div id="lrow-${labEsc(worker.id)}" style="display:none;border-top:1px solid rgba(255,255,255,.07);padding:1rem">
-                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1rem">
-                    ${labTimeField('Day In',    log?.dayClockIn,  worker.id, date, 'dayClockIn',  null)}
-                    ${labTimeField('Day Out',   log?.dayClockOut, worker.id, date, 'dayClockOut', null)}
-                    ${labTimeField('Lunch Out', log?.lunchOut,    worker.id, date, 'lunchOut',    null)}
-                    ${labTimeField('Lunch In',  log?.lunchIn,     worker.id, date, 'lunchIn',     null)}
-                </div>
-                ${(log?.jobs || []).map((job, i) => `
-                    <div style="background:#0f1e35;border-radius:8px;padding:.75rem;margin-bottom:.75rem">
-                        <div style="font-weight:600;margin-bottom:.5rem">${labEsc(job.jobTitle)}</div>
-                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:.75rem">
-                            ${labTimeField('Job In',  job.clockIn,  worker.id, date, 'jobClockIn',  i)}
-                            ${labTimeField('Job Out', job.clockOut, worker.id, date, 'jobClockOut', i)}
-                        </div>
-                        ${job.photos?.length
-                            ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem">
-                                ${job.photos.map(url => `<img src="${labEsc(url)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer" onclick="window.open(this.src,'_blank')">`).join('')}
-                               </div>`
-                            : '<div style="font-size:.8rem;color:#555">No photos</div>'}
-                    </div>`).join('')}
-            </div>
-        </div>`;
-    }).join('');
+        // Outer card
+        const card = labEl('div', 'background:#1a2a45;border-radius:12px;margin-bottom:1rem;overflow:hidden');
+
+        // Header row (clickable)
+        const rowId  = 'lrow-' + worker.id;
+        const header = labEl('div', 'padding:1rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer');
+        header.addEventListener('click', () => toggleLabourRow(rowId));
+        const leftCol = labEl('div');
+        leftCol.appendChild(labEl('div', 'font-weight:700', worker.name));
+        leftCol.appendChild(labEl('div', 'font-size:.8rem;color:#aaa;margin-top:.2rem', statusLabel));
+        header.appendChild(leftCol);
+        header.appendChild(labEl('div', 'text-align:right;font-size:.85rem;color:#aaa', hrsText));
+        card.appendChild(header);
+
+        // Expandable detail
+        const detail = labEl('div', 'display:none;border-top:1px solid rgba(255,255,255,.07);padding:1rem');
+        detail.id = rowId;
+
+        // Punch rows
+        if (punches.length) {
+            detail.appendChild(labEl('div', 'font-size:.72rem;color:#aaa;text-transform:uppercase;margin-bottom:.4rem', 'Punches'));
+            punches.forEach((p, i) => {
+                const punchGrid = labEl('div', 'display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.5rem');
+                const inVal  = p.in  ? new Date(p.in).toLocaleTimeString('en-CA',  { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                const outVal = p.out ? new Date(p.out).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                punchGrid.appendChild(buildTimeInput('In #' + (i + 1),  inVal,  worker.id, date, 'punchIn',  null, i));
+                punchGrid.appendChild(buildTimeInput('Out #' + (i + 1), outVal, worker.id, date, 'punchOut', null, i));
+                detail.appendChild(punchGrid);
+            });
+        }
+
+        // Job rows
+        (log?.jobs || []).forEach((job, i) => {
+            const jobBox = labEl('div', 'background:#0f1e35;border-radius:8px;padding:.75rem;margin-bottom:.75rem');
+            jobBox.appendChild(labEl('div', 'font-weight:600;margin-bottom:.5rem', job.jobTitle));
+            const jobGrid = labEl('div', 'display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:.75rem');
+            jobGrid.appendChild(buildTimeInput('Job In',  job.clockIn,  worker.id, date, 'jobClockIn',  i, null));
+            jobGrid.appendChild(buildTimeInput('Job Out', job.clockOut, worker.id, date, 'jobClockOut', i, null));
+            jobBox.appendChild(jobGrid);
+            if (job.photos?.length) {
+                const photoGrid = labEl('div', 'display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem');
+                job.photos.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer';
+                    img.addEventListener('click', () => window.open(url, '_blank'));
+                    photoGrid.appendChild(img);
+                });
+                jobBox.appendChild(photoGrid);
+            } else {
+                jobBox.appendChild(labEl('div', 'font-size:.8rem;color:#555', 'No photos'));
+            }
+            detail.appendChild(jobBox);
+        });
+
+        card.appendChild(detail);
+        container.appendChild(card);
+    });
+}
+
+function buildTimeInput(label, val, workerId, date, field, jobIndex, punchIndex) {
+    const wrap  = document.createElement('div');
+    const lbl   = labEl('div', 'font-size:.72rem;color:#aaa;margin-bottom:.25rem', label);
+    const input = document.createElement('input');
+    input.type  = 'time';
+    input.value = val || '';
+    input.dataset.worker     = workerId;
+    input.dataset.date       = date;
+    input.dataset.field      = field;
+    input.style.cssText = 'background:#0a1628;border:1px solid #333;border-radius:6px;padding:.35rem .5rem;color:#fff;font-size:.85rem;width:100%';
+    if (jobIndex   != null) input.dataset.jobindex   = jobIndex;
+    if (punchIndex != null) input.dataset.punchindex = punchIndex;
+    input.addEventListener('change', () => adminEditTime(input));
+    wrap.appendChild(lbl);
+    wrap.appendChild(input);
+    return wrap;
 }
 
 // Set date picker to today on page load
@@ -3328,24 +3391,30 @@ function showAddJobForm() {
 }
 
 async function saveNewJob() {
-    const date  = document.getElementById('jobsDatePicker')?.value;
-    const title = document.getElementById('newJobTitle')?.value?.trim();
-    const desc  = document.getElementById('newJobDesc')?.value?.trim();
-    const msg   = document.getElementById('addJobMsg');
+    const date      = document.getElementById('jobsDatePicker')?.value;
+    const title     = document.getElementById('newJobTitle')?.value?.trim();
+    const address   = document.getElementById('newJobAddress')?.value?.trim();
+    const notes     = document.getElementById('newJobNotes')?.value?.trim();
+    const matRaw    = document.getElementById('newJobMaterials')?.value?.trim();
+    const taskRaw   = document.getElementById('newJobTasks')?.value?.trim();
+    const msg       = document.getElementById('addJobMsg');
     if (!date)  { msg.style.color = '#ef5350'; msg.textContent = 'Select a date first.'; return; }
     if (!title) { msg.style.color = '#ef5350'; msg.textContent = 'Job title is required.'; return; }
-    const token = localStorage.getItem('admin_token') || '';
+    const materials = matRaw  ? matRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const tasks     = taskRaw ? taskRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const token     = localStorage.getItem('admin_token') || '';
     try {
         const r = await fetch('/api/labour?action=add-job', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({ date, title, description: desc })
+            body: JSON.stringify({ date, title, address, notes, materials, tasks })
         });
         const data = await r.json();
         if (!data.success) { msg.style.color = '#ef5350'; msg.textContent = data.error || 'Failed to add job.'; return; }
         msg.style.color = '#4caf50'; msg.textContent = 'Job added!';
-        document.getElementById('newJobTitle').value = '';
-        document.getElementById('newJobDesc').value  = '';
+        ['newJobTitle','newJobAddress','newJobNotes','newJobMaterials','newJobTasks'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
         await loadAdminJobs();
     } catch { msg.style.color = '#ef5350'; msg.textContent = 'Connection error.'; }
 }
@@ -3410,31 +3479,26 @@ function toggleLabourRow(id) {
 }
 
 function labTimeField(label, isoValue, workerId, date, field, jobIndex) {
+    // Kept for any remaining callers; delegates to DOM builder
     const val = isoValue
         ? new Date(isoValue).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false })
         : '';
-    const jiAttr = jobIndex != null ? `data-jobindex="${jobIndex}"` : '';
-    return `<div>
-        <div style="font-size:.72rem;color:#aaa;margin-bottom:.25rem">${label}</div>
-        <input type="time" value="${labEsc(val)}"
-            data-worker="${labEsc(workerId)}" data-date="${labEsc(date)}" data-field="${labEsc(field)}" ${jiAttr}
-            onchange="adminEditTime(this)"
-            style="background:#0a1628;border:1px solid #333;border-radius:6px;padding:.35rem .5rem;color:#fff;font-size:.85rem;width:100%">
-    </div>`;
+    return buildTimeInput(label, val, workerId, date, field, jobIndex, null).outerHTML;
 }
 
 async function adminEditTime(input) {
-    const token    = localStorage.getItem('admin_token') || '';
-    const workerId = input.dataset.worker;
-    const date     = input.dataset.date;
-    const field    = input.dataset.field;
-    const jobIndex = input.dataset.jobindex !== undefined ? parseInt(input.dataset.jobindex) : undefined;
-    const value    = input.value;
+    const token      = localStorage.getItem('admin_token') || '';
+    const workerId   = input.dataset.worker;
+    const date       = input.dataset.date;
+    const field      = input.dataset.field;
+    const jobIndex   = input.dataset.jobindex   != null ? parseInt(input.dataset.jobindex)   : undefined;
+    const punchIndex = input.dataset.punchindex != null ? parseInt(input.dataset.punchindex) : undefined;
+    const value      = input.value;
     try {
         const r = await fetch('/api/labour?action=edit-log', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({ workerId, date, field, value, jobIndex })
+            body: JSON.stringify({ workerId, date, field, value, jobIndex, punchIndex })
         });
         const data = await r.json();
         input.style.borderColor = data.success ? '#4caf50' : '#ef5350';
@@ -3443,15 +3507,19 @@ async function adminEditTime(input) {
 }
 
 function calcTotalHours(log) {
-    if (!log?.dayClockIn || !log?.dayClockOut) return null;
-    let ms = new Date(log.dayClockOut) - new Date(log.dayClockIn);
-    if (log.lunchOut && log.lunchIn) {
-        ms -= (new Date(log.lunchIn) - new Date(log.lunchOut));
-    } else if (log.lunchOut && !log.lunchIn) {
-        ms -= (Date.now() - new Date(log.lunchOut));
+    const punches = log?.punches || [];
+    if (!punches.length) {
+        // Legacy fallback
+        if (!log?.dayClockIn || !log?.dayClockOut) return null;
+        let ms = new Date(log.dayClockOut) - new Date(log.dayClockIn);
+        if (ms < 0) return null;
+        return (ms / 3600000).toFixed(1);
     }
-    if (ms < 0) return null;
-    return (ms / 3600000).toFixed(1);
+    const ms = punches.reduce((sum, p) => {
+        if (!p.in || !p.out) return sum;
+        return sum + Math.max(0, new Date(p.out) - new Date(p.in));
+    }, 0);
+    return ms > 0 ? (ms / 3600000).toFixed(1) : null;
 }
     </script>
 </body>
