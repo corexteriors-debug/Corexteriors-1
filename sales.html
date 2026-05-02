@@ -1529,7 +1529,7 @@
                     deckPrice = linft * 12.50;
                 } else {
                     const sqft = parseFloat(document.getElementById('deck_sqft').value) || 0;
-                    let rate = 5.05 + (5 - cond) * 0.5;
+                    let rate = 5.05 + (5 - cond) * 0.05;
                     const stain = parseInt(document.getElementById('deck_stain').value);
                     if (stain <= 2) rate += 0.05;
                     else rate += 0.15;
