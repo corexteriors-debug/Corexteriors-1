@@ -981,7 +981,7 @@
                     <div class="toggle-row">
                         <label class="toggle"><input type="checkbox" id="deck_rails" onchange="calcAll()"><span
                                 class="slider"></span></label>
-                        <span class="toggle-label">Rails or Stairs (adds $0.60/sqft)</span>
+                        <span class="toggle-label">Rails or Stairs (adds $0.25/sqft)</span>
                     </div>
                     <div class="rotten-notice" id="rottenNotice">⚠️ Condition 0 (Rotten): Pricing switches to Linear
                         Foot at $12.50/ft</div>
@@ -1529,13 +1529,11 @@
                     deckPrice = linft * 12.50;
                 } else {
                     const sqft = parseFloat(document.getElementById('deck_sqft').value) || 0;
-                    let rate = 3.00;
-                    if (cond >= 4) rate += 0.05;
-                    else if (cond >= 1) rate += 0.20;
+                    let rate = 5.05 + (cond - 1) * 0.05;
                     const stain = parseInt(document.getElementById('deck_stain').value);
                     if (stain <= 2) rate += 0.05;
                     else rate += 0.15;
-                    if (document.getElementById('deck_rails').checked) rate += 0.60;
+                    if (document.getElementById('deck_rails').checked) rate += 0.25;
                     deckPrice = sqft * rate;
                 }
                 document.getElementById('price_deck').textContent = '$' + deckPrice.toFixed(2);
