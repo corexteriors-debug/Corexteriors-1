@@ -454,12 +454,13 @@ async function jobsForDate(dateStr, calClient) {
     let calJobs = [];
     if (calClient) {
         try {
+            // Use explicit UTC (Z) timestamps — Google Calendar API requires RFC3339
+            // with a timezone offset. Covering full UTC day captures all Toronto-time events.
             const response = await calClient.events.list({
                 calendarId: process.env.GOOGLE_CALENDAR_ID.trim(),
-                timeMin: `${dateStr}T00:00:00`,
-                timeMax: `${dateStr}T23:59:59`,
-                timeZone: TIMEZONE,
-                singleEvents: true, orderBy: 'startTime', maxResults: 50
+                timeMin: `${dateStr}T00:00:00Z`,
+                timeMax: `${dateStr}T23:59:59Z`,
+                singleEvents: true, orderBy: 'startTime', maxResults: 50,
             });
             calJobs = await Promise.all((response.data.items || [])
                 .filter(e => (e.extendedProperties?.private?.eventType || 'job') !== 'unavailable')
@@ -482,7 +483,7 @@ async function jobsForDate(dateStr, calClient) {
                     };
                 }));
         } catch (calErr) {
-            console.error(`Calendar fetch error for ${dateStr} (non-fatal):`, calErr.message);
+            console.error(`Calendar fetch error for ${dateStr}:`, calErr.message, calErr.code || '');
         }
     }
     return [...kvJobs, ...calJobs];
@@ -492,8 +493,12 @@ function buildCalClient() {
     const email      = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
     const key        = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
     const calendarId = (process.env.GOOGLE_CALENDAR_ID || '').trim();
-    if (!email || !key || !calendarId) return null;
-    const auth = new google.auth.JWT({ email, key, scopes: ['https://www.googleapis.com/auth/calendar.readonly'] });
+    if (!email || !key || !calendarId) {
+        console.warn('Labour calendar: missing env var(s), skipping calendar fetch');
+        return null;
+    }
+    // Use same scope as api/calendar.js (full calendar access)
+    const auth = new google.auth.JWT({ email, key, scopes: ['https://www.googleapis.com/auth/calendar'] });
     return google.calendar({ version: 'v3', auth });
 }
 
