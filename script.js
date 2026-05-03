@@ -552,11 +552,65 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add exit animation
                 document.body.classList.add('page-exit');
 
-                // Navigate after animation
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 300);
-            }
+
+    // ==========================================
+    // Service Modal
+    // ==========================================
+
+    var modalBackdrop = document.getElementById('modalBackdrop');
+
+    if (modalBackdrop) {
+        document.querySelectorAll('.service-card[data-modal]').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var id = card.getAttribute('data-modal');
+                var src = document.getElementById('data-' + id);
+                if (!src) return;
+
+                var titleEl   = src.querySelector('.modal-title-text');
+                var subEl     = src.querySelector('.modal-sub-text');
+                var descEl    = src.querySelector('.modal-desc');
+                var detailsEl = src.querySelector('.modal-details');
+                var ctaEl     = src.querySelector('.modal-cta-text');
+                var iconEl    = card.querySelector('.service-icon');
+
+                document.getElementById('mTitle').textContent  = titleEl   ? titleEl.textContent   : '';
+                document.getElementById('mSub').textContent    = subEl     ? subEl.textContent     : '';
+                document.getElementById('mDesc').textContent   = descEl    ? descEl.textContent    : '';
+
+                var mDetails = document.getElementById('mDetails');
+                mDetails.textContent = '';
+                if (detailsEl) {
+                    mDetails.appendChild(detailsEl.cloneNode(true));
+                }
+
+                document.getElementById('mCta').textContent = ctaEl ? ctaEl.textContent : 'Get a Free Quote';
+
+                var mIcon = document.getElementById('mIcon');
+                mIcon.textContent = '';
+                if (iconEl) {
+                    mIcon.appendChild(iconEl.cloneNode(true));
+                }
+
+                modalBackdrop.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            });
         });
-    });
+
+        function closeModal() {
+            modalBackdrop.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('mClose').addEventListener('click', closeModal);
+        document.getElementById('mCta').addEventListener('click', function() {
+            closeModal();
+            window.location.href = 'contact.html';
+        });
+        modalBackdrop.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+    }
 });
