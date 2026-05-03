@@ -14,6 +14,7 @@
     --light-gray: #F4F4F4;
     --medium-gray: #6C757D;
     --dark-gray: #343A40;
+    --winter-blue: #1a3a5c;
 
     /* Gradients */
     --gradient-blue: linear-gradient(135deg, #002147 0%, #001535 100%);
@@ -3192,7 +3193,7 @@ body.page-exit {
 
 .modal-body > p {
     font-size: 15px;
-    color: #444;
+    color: var(--dark-gray);
     line-height: 1.7;
     margin-bottom: 20px;
 }
@@ -3296,7 +3297,7 @@ body.page-exit {
 }
 
 .season-badge.winter {
-    background: #1a3a5c;
+    background: var(--winter-blue);
 }
 
 /* Card hint shown on hover */
