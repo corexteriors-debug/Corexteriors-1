@@ -552,6 +552,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add exit animation
                 document.body.classList.add('page-exit');
 
+                // Navigate after animation
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            }
+        });
+    });
 
     // ==========================================
     // Service Modal
