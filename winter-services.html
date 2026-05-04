@@ -82,85 +82,149 @@
     </header>
 
     <!-- Hero -->
-    <section class="blog-hero" style="padding: 80px 24px 60px;">
-        <h1 style="font-size: 2.8rem; font-weight: 800; margin-bottom: 16px;">Winter Services in London, Ontario</h1>
-        <p style="font-size: 1.1rem; opacity: 0.85; max-width: 600px; margin: 0 auto 28px;">Snow removal, fall yard cleanup and spring property refresh. 24/7 response, fully insured, WSIB compliant.</p>
-        <a href="contact.html" class="cta-button" style="display: inline-block;">Get a Free Quote</a>
+    <section class="blog-hero">
+        <h1>Winter Services in London, Ontario</h1>
+        <p>Snow removal, fall cleanup and spring property refresh. 24/7 response, fully insured, WSIB compliant.</p>
+        <a href="contact.html" class="cta-button" style="display:inline-flex;margin-top:24px;">Get a Free Quote</a>
     </section>
 
-    <!-- Services Content -->
-    <main style="max-width: 860px; margin: 0 auto; padding: 64px 24px;">
+    <style>
+        .winter-svc { padding: 72px 0; border-bottom: 1px solid var(--light-gray); }
+        .winter-svc:nth-child(odd) { background: var(--light-gray); }
+        .winter-inner { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+        .winter-hdr { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+        .winter-hdr-icon { width: 52px; height: 52px; color: var(--sky-blue); flex-shrink: 0; }
+        .winter-hdr-icon svg { width: 100%; height: 100%; }
+        .winter-hdr h2 { font-size: 1.9rem; font-weight: 800; color: var(--black); margin: 0; }
+        .winter-inner > p { font-size: 1rem; color: var(--medium-gray); line-height: 1.75; margin-bottom: 28px; max-width: 720px; }
+        .winter-cta { margin-top: 28px; }
+        .winter-trust { padding: 64px 0; text-align: center; }
+        .winter-trust-inner { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+        .winter-trust h2 { font-size: 1.7rem; font-weight: 800; color: var(--black); margin-bottom: 36px; }
+        .winter-trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .winter-trust-card { background: var(--light-gray); border-radius: 16px; padding: 32px 24px; }
+        .winter-trust-check { font-size: 2rem; color: var(--sky-blue); margin-bottom: 10px; }
+        .winter-trust-card h3 { font-size: 1rem; font-weight: 700; color: var(--black); margin-bottom: 6px; }
+        .winter-trust-card p { font-size: 0.875rem; color: var(--medium-gray); margin: 0; }
+        @media (max-width: 640px) {
+            .winter-trust-grid { grid-template-columns: 1fr; }
+            .winter-hdr h2 { font-size: 1.4rem; }
+            .detail-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 
-        <!-- Leaf Removal and Fall Cleanup -->
-        <section style="margin-bottom: 72px;">
-            <h2 style="font-size: 1.9rem; font-weight: 800; color: var(--black); margin-bottom: 12px;">Leaf Removal and Fall Cleanup</h2>
-            <p style="font-size: 1rem; color: var(--medium-gray); margin-bottom: 20px; line-height: 1.7;">We do fall cleanup across London Ontario before the ground freezes and the real mess sets in. Every leaf gets bagged and hauled away, not blown to the edge of the property. Garden beds get cleared of dead annuals and fallen branches. Gutters get vacuumed clean and every downspout gets flushed and confirmed before winter. You get one visit that takes care of everything so the property goes into the cold months in good shape.</p>
-            <div class="detail-grid" style="max-width: 680px;">
+    <section class="winter-svc">
+        <div class="winter-inner">
+            <div class="winter-hdr">
+                <div class="winter-hdr-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M32 8 Q48 12 52 28 Q48 44 32 48 Q16 44 12 28 Q16 12 32 8Z"/>
+                        <path d="M32 48 L32 58" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M22 20 Q32 32 42 20" stroke-linecap="round"/>
+                        <path d="M18 30 Q32 36 46 30" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h2>Leaf Removal and Fall Cleanup</h2>
+            </div>
+            <p>We do fall cleanup across London Ontario before the ground freezes and the real mess sets in. Every leaf gets bagged and hauled away, not blown to the edge of the property. Garden beds get cleared of dead annuals and fallen branches. Gutters get vacuumed and every downspout gets flushed and confirmed before winter. One visit covers everything so your property goes into the cold months in good shape.</p>
+            <div class="detail-grid">
                 <div class="detail-tile"><h4>Leaf Removal</h4><p>Full yard cleared and all leaves bagged and hauled away from the property.</p></div>
                 <div class="detail-tile"><h4>Garden Beds Cleared</h4><p>Dead annuals, debris and fallen branches removed from every bed.</p></div>
                 <div class="detail-tile"><h4>Gutters Vacuumed</h4><p>Leaves and debris pulled from gutters before the first freeze.</p></div>
                 <div class="detail-tile"><h4>Downspouts Confirmed</h4><p>Every downspout flushed and confirmed flowing before winter sets in.</p></div>
             </div>
-            <div style="margin-top: 24px;">
-                <a href="contact.html" class="cta-button" style="display: inline-block;">Book Fall Cleanup</a>
+            <div class="winter-cta">
+                <a href="contact.html" class="cta-button">Book Fall Cleanup</a>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Spring Property Refresh -->
-        <section style="margin-bottom: 72px;">
-            <h2 style="font-size: 1.9rem; font-weight: 800; color: var(--black); margin-bottom: 12px;">Spring Property Refresh</h2>
-            <p style="font-size: 1rem; color: var(--medium-gray); margin-bottom: 20px; line-height: 1.7;">After a London Ontario winter the property needs attention before the season starts. We wash the salt and grit off all the walkways and the driveway, clean out the garden beds, refresh the mulch, clear the gutters of any winter buildup and trim dead branches that came down over the cold months. Patio furniture gets set up if needed. One visit covers it all and the property is ready for spring without you having to coordinate multiple contractors.</p>
-            <div class="detail-grid" style="max-width: 680px;">
+    <section class="winter-svc">
+        <div class="winter-inner">
+            <div class="winter-hdr">
+                <div class="winter-hdr-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="32" cy="32" r="12"/>
+                        <line x1="32" y1="8" x2="32" y2="16"/>
+                        <line x1="32" y1="48" x2="32" y2="56"/>
+                        <line x1="8" y1="32" x2="16" y2="32"/>
+                        <line x1="48" y1="32" x2="56" y2="32"/>
+                        <line x1="15" y1="15" x2="21" y2="21"/>
+                        <line x1="43" y1="43" x2="49" y2="49"/>
+                        <line x1="49" y1="15" x2="43" y2="21"/>
+                        <line x1="21" y1="43" x2="15" y2="49"/>
+                    </svg>
+                </div>
+                <h2>Spring Property Refresh</h2>
+            </div>
+            <p>After a London Ontario winter the property needs attention before the season starts. We wash the salt and grit off all the walkways and the driveway, clean out the garden beds, refresh the mulch, clear the gutters of any winter buildup and trim dead branches that came down over the cold months. Patio furniture gets set up if needed. One visit covers it all.</p>
+            <div class="detail-grid">
                 <div class="detail-tile"><h4>Salt and Grit Wash</h4><p>Walkways and driveway cleared of all winter salt and abrasive residue.</p></div>
                 <div class="detail-tile"><h4>Garden Beds</h4><p>Cleaned out, mulch refreshed and beds ready for planting.</p></div>
                 <div class="detail-tile"><h4>Gutters Cleared</h4><p>Any winter buildup removed and flow confirmed.</p></div>
                 <div class="detail-tile"><h4>Dead Branches Trimmed</h4><p>Winter damage cleaned up and patio furniture set up on request.</p></div>
             </div>
-            <div style="margin-top: 24px;">
-                <a href="contact.html" class="cta-button" style="display: inline-block;">Book Spring Property Refresh</a>
+            <div class="winter-cta">
+                <a href="contact.html" class="cta-button">Book Spring Refresh</a>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Snow Clearing and Salting -->
-        <section style="margin-bottom: 72px;">
-            <h2 style="font-size: 1.9rem; font-weight: 800; color: var(--black); margin-bottom: 12px;">Snow Clearing and Salting</h2>
-            <p style="font-size: 1rem; color: var(--medium-gray); margin-bottom: 20px; line-height: 1.7;">Snow removal in London Ontario means being ready before the storm ends, not after. We monitor weather conditions 24 hours a day through the full snow season and respond to every event without waiting for a call from you. Driveways, walkways, parking lots, fire routes and accessible entrances all get cleared and salted in the same visit. Every service call gets documented with a timestamp and the weather conditions at the time so you have a record if you ever need it. Available as a seasonal flat rate or per visit.</p>
-            <div class="detail-grid" style="max-width: 680px;">
+    <section class="winter-svc">
+        <div class="winter-inner">
+            <div class="winter-hdr">
+                <div class="winter-hdr-icon">
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="32" y1="8" x2="32" y2="56" stroke-width="2.5"/>
+                        <line x1="8" y1="32" x2="56" y2="32" stroke-width="2.5"/>
+                        <line x1="15" y1="15" x2="49" y2="49" stroke-width="2.5"/>
+                        <line x1="49" y1="15" x2="15" y2="49" stroke-width="2.5"/>
+                        <circle cx="32" cy="32" r="4" fill="currentColor" stroke="none"/>
+                        <circle cx="32" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="32" cy="52" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="12" cy="32" r="2.5" fill="currentColor" stroke="none"/>
+                        <circle cx="52" cy="32" r="2.5" fill="currentColor" stroke="none"/>
+                    </svg>
+                </div>
+                <h2>Snow Clearing and Salting</h2>
+            </div>
+            <p>Snow removal in London Ontario means being ready before the storm ends, not after. We monitor weather conditions 24 hours a day through the full snow season and respond to every event without waiting for a call from you. Driveways, walkways, parking lots, fire routes and accessible entrances all get cleared and salted in the same visit. Every service call gets documented with a timestamp and weather conditions for your records. Available as a seasonal flat rate or per visit.</p>
+            <div class="detail-grid">
                 <div class="detail-tile"><h4>Residential Driveways</h4><p>Cleared and salted on every snowfall, same visit every time.</p></div>
                 <div class="detail-tile"><h4>Commercial Lots</h4><p>Parking lots, fire routes and accessible entrances kept clear and compliant.</p></div>
                 <div class="detail-tile"><h4>24/7 Monitoring</h4><p>We track every storm and respond without you needing to call or text.</p></div>
                 <div class="detail-tile gold"><h4>Documented Visits</h4><p>Every visit logged with timestamps and weather conditions for your records.</p></div>
             </div>
-            <div style="margin-top: 24px;">
-                <a href="contact.html" class="cta-button" style="display: inline-block;">Get a Snow Removal Quote</a>
+            <div class="winter-cta">
+                <a href="contact.html" class="cta-button">Get a Snow Removal Quote</a>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Why Us strip -->
-        <section style="background: var(--light-gray); border-radius: 16px; padding: 40px 32px; text-align: center; margin-bottom: 48px;">
-            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--black); margin-bottom: 24px;">Why London Homeowners Choose Core Exteriors</h2>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
-                <div>
-                    <div style="font-size: 1.6rem; margin-bottom: 8px;">&#10003;</div>
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--black); margin-bottom: 4px;">Fully Insured</h3>
-                    <p style="font-size: 0.85rem; color: var(--medium-gray);">Full liability coverage on every job.</p>
+    <section class="winter-trust">
+        <div class="winter-trust-inner">
+            <h2>Why London Homeowners Choose Core Exteriors</h2>
+            <div class="winter-trust-grid">
+                <div class="winter-trust-card">
+                    <div class="winter-trust-check">&#10003;</div>
+                    <h3>Fully Insured</h3>
+                    <p>Full liability coverage on every job.</p>
                 </div>
-                <div>
-                    <div style="font-size: 1.6rem; margin-bottom: 8px;">&#10003;</div>
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--black); margin-bottom: 4px;">WSIB Compliant</h3>
-                    <p style="font-size: 0.85rem; color: var(--medium-gray);">Workers protected on every visit.</p>
+                <div class="winter-trust-card">
+                    <div class="winter-trust-check">&#10003;</div>
+                    <h3>WSIB Compliant</h3>
+                    <p>Workers protected on every visit.</p>
                 </div>
-                <div>
-                    <div style="font-size: 1.6rem; margin-bottom: 8px;">&#10003;</div>
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--black); margin-bottom: 4px;">Satisfaction Guarantee</h3>
-                    <p style="font-size: 0.85rem; color: var(--medium-gray);">We come back if you are not happy.</p>
+                <div class="winter-trust-card">
+                    <div class="winter-trust-check">&#10003;</div>
+                    <h3>Satisfaction Guarantee</h3>
+                    <p>We come back if you are not happy.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-    </main>
-
-    <!-- Footer (same as all pages) -->
+        <!-- Footer (same as all pages) -->
     <footer class="footer" id="contact">
         <div class="footer-container">
             <div class="footer-main">
