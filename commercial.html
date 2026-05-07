@@ -55,9 +55,11 @@
         }
         .prop-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
         }
+        @media (max-width: 900px) { .prop-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 520px) { .prop-grid { grid-template-columns: 1fr; } }
         .prop-card {
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -318,10 +320,12 @@
         .comm-why-inner { max-width: 1100px; margin: 0 auto; }
         .why-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.25rem;
             margin-top: 2.5rem;
         }
+        @media (max-width: 900px) { .why-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 520px) { .why-grid { grid-template-columns: 1fr; } }
         .why-card {
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -778,6 +782,8 @@
                 <div class="prop-card"><span class="prop-dot"></span>Hotels &amp; hospitality</div>
                 <div class="prop-card"><span class="prop-dot"></span>Condominiums &amp; strata buildings</div>
                 <div class="prop-card"><span class="prop-dot"></span>New construction &amp; development sites</div>
+                <div class="prop-card"><span class="prop-dot"></span>Educational institutions &amp; universities</div>
+                <div class="prop-card"><span class="prop-dot"></span>Automotive dealerships &amp; service centres</div>
             </div>
         </div>
     </section>
@@ -1139,6 +1145,20 @@
                     </div>
                     <div class="why-title">Fully Eco-Friendly</div>
                     <p class="why-desc">We use eco-friendly products on every single job. Safe for your tenants, your landscaping, and the environment.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <div class="why-title">Before &amp; After Reports</div>
+                    <p class="why-desc">Every completed job includes timestamped before-and-after photos sent directly to your inbox — documentation your property file actually needs.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="why-title">Direct Owner Access</div>
+                    <p class="why-desc">You deal with the owners directly — not a call centre, not a dispatcher. Luke and Mirko are reachable on every account, every time.</p>
                 </div>
             </div>
         </div>
