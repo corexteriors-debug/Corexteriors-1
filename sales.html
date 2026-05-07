@@ -109,7 +109,7 @@
         }
 
         .admin-link {
-            display: block;
+            display: inline-block;
             text-align: center;
             margin-top: 1.5rem;
             color: rgba(255, 255, 255, .3);
@@ -120,6 +120,17 @@
 
         .admin-link:hover {
             color: rgba(255, 255, 255, .6)
+        }
+
+        .staff-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .staff-links .admin-link {
+            margin-top: 0;
         }
 
         /* ESTIMATOR */
@@ -775,6 +786,30 @@
             transform: none
         }
 
+        .invoice-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: transform .2s, box-shadow .2s
+        }
+
+        .invoice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, .4)
+        }
+
+        .invoice-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none
+        }
+
         .pdf-btn {
             padding: 12px 20px;
             background: rgba(255, 255, 255, .1);
@@ -853,7 +888,10 @@
                 <button type="submit" class="login-btn" style="margin-top:.75rem">Sign In</button>
             </form>
             <p class="login-error" id="loginError">Invalid password. Please try again.</p>
-            <a href="admin.html" class="admin-link">Manager access →</a>
+            <div class="staff-links">
+                <a href="admin.html" class="admin-link">Manager access →</a>
+                <a href="labour.html" class="admin-link">Labour portal →</a>
+            </div>
         </div>
     </div>
 
@@ -943,7 +981,7 @@
                     <div class="toggle-row">
                         <label class="toggle"><input type="checkbox" id="deck_rails" onchange="calcAll()"><span
                                 class="slider"></span></label>
-                        <span class="toggle-label">Rails or Stairs (adds $0.60/sqft)</span>
+                        <span class="toggle-label">Rails or Stairs (adds $0.25/sqft)</span>
                     </div>
                     <div class="rotten-notice" id="rottenNotice">⚠️ Condition 0 (Rotten): Pricing switches to Linear
                         Foot at $12.50/ft</div>
@@ -961,13 +999,12 @@
                             <label>Stories <span class="req">*</span></label>
                             <div class="radio-group">
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_1"
-                                        value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story
-                                        ($275)</label></div>
+                                        value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story ($175)</label></div>
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_2"
-                                        value="2" onchange="calcAll()"><label for="gutter_2">2 Story ($475)</label>
+                                        value="2" onchange="calcAll()"><label for="gutter_2">2 Story ($245)</label>
                                 </div>
                                 <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_3"
-                                        value="3" onchange="calcAll()"><label for="gutter_3">3 Story ($675)</label>
+                                        value="3" onchange="calcAll()"><label for="gutter_3">3 Story ($300)</label>
                                 </div>
                             </div>
                         </div>
@@ -992,10 +1029,10 @@
                         <div class="field">
                             <label>Re leveling Severity</label>
                             <select id="interlock_severity" onchange="calcAll()">
-                                <option value="none">None (Base $2.05/sqft)</option>
+                                <option value="none">None (Base $1.75/sqft)</option>
                                 <option value="minor">Minor ($2.60/sqft total)</option>
                                 <option value="moderate">Moderate ($3.25/sqft total)</option>
-                                <option value="significant">Significant ($4.10/sqft total)</option>
+                                <option value="significant">Significant ($6.60/sqft total)</option>
                             </select>
                         </div>
                     </div>
@@ -1044,12 +1081,12 @@
                             <div class="radio-group">
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_1"
                                         value="1" onchange="calcAll()" checked><label for="siding_1">1 Story
-                                        ($250)</label></div>
+                                        ($145)</label></div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_2"
-                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($300)</label>
+                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($220)</label>
                                 </div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_3"
-                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($375)</label>
+                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($275)</label>
                                 </div>
                             </div>
                         </div>
@@ -1285,39 +1322,15 @@
             </div>
             <div class="footer-actions">
                 <button class="pdf-btn" onclick="exportPDF()">📄 PDF</button>
-                <button class="submit-btn" id="submitEstBtn" onclick="submitEstimate()">Submit Estimate</button>
+                <button class="submit-btn" id="submitEstBtn" onclick="submitEstimate()">📧 Send Estimate</button>
+                <button class="invoice-btn" id="submitInvBtn" onclick="submitInvoice()">📄 Send Invoice</button>
             </div>
             <div style="text-align:right;padding:.5rem 1rem .25rem;display:flex;gap:.5rem;justify-content:flex-end">
-                <button onclick="openLeadListModal()" style="background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.25);color:#e67e22;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">📋 Lead List</button>
                 <button onclick="openAvailModal()" style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:#2ecc71;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">📅 Set My Availability</button>
             </div>
         </div>
     </div>
 
-    <!-- LEAD LIST MODAL -->
-    <div id="leadListModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1.5rem 1rem">
-        <div style="background:#0f1f38;border:1px solid rgba(230,126,34,.25);border-radius:16px;padding:1.75rem;width:100%;max-width:520px;margin:auto">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
-                <h3 style="margin:0;color:#fff">📋 Lead List</h3>
-                <button onclick="closeLeadListModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:1.2rem;cursor:pointer">✕</button>
-            </div>
-
-            <!-- Add Lead Form -->
-            <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;margin-bottom:1.25rem">
-                <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Add New Lead</p>
-                <input id="qlName" type="text" placeholder="Client Name *" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;margin-bottom:.5rem;outline:none">
-                <input id="qlAddress" type="text" placeholder="Address *" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;margin-bottom:.5rem;outline:none">
-                <textarea id="qlNotes" placeholder="Notes" rows="2" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.9rem;resize:vertical;outline:none;font-family:inherit"></textarea>
-                <button onclick="addQuickLead()" id="qlAddBtn" style="margin-top:.6rem;width:100%;background:#e67e22;border:none;color:#fff;font-weight:700;padding:.65rem;border-radius:8px;cursor:pointer;font-size:.9rem">+ Add Lead</button>
-                <div id="qlMsg" style="display:none;margin-top:.5rem;font-size:.82rem;padding:.5rem .75rem;border-radius:6px"></div>
-            </div>
-
-            <!-- Lead List -->
-            <div id="qlList" style="display:flex;flex-direction:column;gap:.6rem;max-height:320px;overflow-y:auto">
-                <p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">Loading leads...</p>
-            </div>
-        </div>
-    </div>
 
     <!-- AVAILABILITY MODAL -->
     <div id="availModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1.5rem 1rem">
@@ -1516,13 +1529,11 @@
                     deckPrice = linft * 12.50;
                 } else {
                     const sqft = parseFloat(document.getElementById('deck_sqft').value) || 0;
-                    let rate = 3.00;
-                    if (cond >= 4) rate += 0.05;
-                    else if (cond >= 1) rate += 0.20;
+                    let rate = 5.05 + (5 - cond) * 0.05;
                     const stain = parseInt(document.getElementById('deck_stain').value);
                     if (stain <= 2) rate += 0.05;
                     else rate += 0.15;
-                    if (document.getElementById('deck_rails').checked) rate += 0.60;
+                    if (document.getElementById('deck_rails').checked) rate += 0.25;
                     deckPrice = sqft * rate;
                 }
                 document.getElementById('price_deck').textContent = '$' + deckPrice.toFixed(2);
@@ -1532,7 +1543,7 @@
             // GUTTER
             if (document.getElementById('svc_gutter').checked) {
                 const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
-                const base = { 1: 275, 2: 475, 3: 675 }[stories] || 275;
+                const base = { 1: 175, 2: 245, 3: 300 }[stories] || 175;
                 let gutterPrice = base;
                 if (document.getElementById('gutter_deep').checked) {
                     gutterPrice += 100 + (parseInt(stories) * 50);
@@ -1545,8 +1556,8 @@
             if (document.getElementById('svc_interlock').checked) {
                 const sqft = parseFloat(document.getElementById('interlock_sqft').value) || 0;
                 const sev = document.getElementById('interlock_severity').value;
-                const rates = { none: 2.05, minor: 2.60, moderate: 3.25, significant: 4.10 };
-                let intPrice = sqft * (rates[sev] || 2.05);
+                const rates = { none: 1.75, minor: 2.60, moderate: 3.25, significant: 6.60 };
+                let intPrice = sqft * (rates[sev] || 1.75);
                 if (document.getElementById('interlock_seal').checked) intPrice += 250;
                 document.getElementById('price_interlock').textContent = '$' + intPrice.toFixed(2);
                 subtotal += intPrice;
@@ -1565,7 +1576,7 @@
             // SIDING
             if (document.getElementById('svc_siding').checked) {
                 const stories = document.querySelector('input[name="siding_stories"]:checked').value;
-                let sidPrice = { 1: 250, 2: 300, 3: 375 }[stories] || 250;
+                let sidPrice = { 1: 145, 2: 220, 3: 275 }[stories] || 145;
                 document.getElementById('price_siding').textContent = '$' + sidPrice.toFixed(2);
                 subtotal += sidPrice;
             } else { document.getElementById('price_siding').textContent = '$0.00' }
@@ -1908,7 +1919,7 @@
             calcAll();
         }
 
-        // SUBMIT
+        // SUBMIT — saves to Leads tab (quick-leads), sends estimate PDF to client
         async function submitEstimate() {
             const name = document.getElementById('clientName').value.trim();
             const phone = document.getElementById('clientPhone').value.trim();
@@ -1926,7 +1937,6 @@
                 return;
             }
 
-            // Check legal
             const l1 = document.getElementById('legal_cooling').checked;
             const l2 = document.getElementById('legal_wsib').checked;
             const l3 = document.getElementById('legal_deposit').checked;
@@ -1941,58 +1951,194 @@
             const btn = document.getElementById('submitEstBtn'); btn.disabled = true; btn.textContent = 'Submitting...';
 
             const estimate = buildEstimateObject();
-            // Override with validated values from the top of submitEstimate
             estimate.clientName = name; estimate.phone = phone; estimate.email = email; estimate.address = address;
             estimate.salesRep = rep;
             estimate.legal = { cooling: l1, wsib: l2, deposit: l3 };
-            estimate.hasSignature = !isCanvasBlank();
-
-            // Capture signature (client signed on canvas)
-            const signatureData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
 
             try {
-                const r = await fetch(API_BASE + '/leads', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken }, body: JSON.stringify(estimate) });
-                if (r.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired. Please log in again.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return }
+                msg.className = 'msg success'; msg.textContent = '⏳ Saving estimate...'; msg.style.display = 'block';
+                const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
+
+                // Save to Leads tab (quick-leads)
+                const r = await fetch(API_BASE + '/quick-leads', { method: 'POST', headers, body: JSON.stringify(estimate) });
+                if (r.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired. Please log in again.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return; }
                 const d = await r.json();
-                if (d.success) {
-                    // If card payment was already sent via payment.js, don't send another email
-                    if (window._cardPaymentSent) {
-                        msg.className = 'msg success';
-                        msg.textContent = '✅ Estimate #' + estimateNumber + ' saved! Contract & payment link already sent to ' + email;
-                        msg.style.display = 'block';
-                        localStorage.removeItem('estimate_draft');
-                    } else {
-                        // Non-card payment: send contract + estimate PDF to client
-                        msg.className = 'msg success'; msg.textContent = '✅ Estimate saved! Sending contract & estimate to ' + email + '...'; msg.style.display = 'block';
-                        const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
-                        const conRes = await fetch(API_BASE + '/contract', { method: 'POST', headers, body: JSON.stringify({ estimate, signatureData }) }).catch(() => null);
-                        const conData = conRes ? await conRes.json().catch(() => ({})) : {};
-                        // Also send estimate PDF
-                        const estRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'estimate' }) }).catch(() => null);
-                        const estData = estRes ? await estRes.json().catch(() => ({})) : {};
-                        if (conData.emailSent && estData.emailSent) {
-                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract & estimate emailed to ' + email;
-                        } else if (conData.emailSent) {
-                            msg.textContent = '✅ Estimate #' + estimateNumber + ' submitted! Contract emailed to ' + email + (estData.error ? ' ⚠️ Estimate PDF failed' : '');
-                        } else {
-                            msg.textContent = '✅ Estimate #' + estimateNumber + ' saved!' + (conData.error ? ' ⚠️ Email failed: ' + conData.error : '');
-                        }
-                        localStorage.removeItem('estimate_draft');
-                    }
-                } else { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to submit.'; msg.style.display = 'block' }
+                if (!d.success) { msg.className = 'msg error'; msg.textContent = d.error || 'Failed to save.'; msg.style.display = 'block'; return; }
+
+                // Send estimate PDF + optional Stripe deposit link to client in one email
+                msg.textContent = '⏳ Sending estimate to ' + email + '...';
+                const paymentRequest = getCardPaymentRequest();
+                const estRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'estimate', paymentRequest }) }).catch(() => null);
+                const estData = estRes ? await estRes.json().catch(() => ({})) : {};
+
+                if (estData.emailSent) {
+                    msg.textContent = '✅ Estimate #' + estimateNumber + ' emailed to ' + email
+                        + (estData.paymentLinkSent ? ' with payment link' : '');
+                    if (estData.paymentLinkSent) window._cardPaymentSent = true;
+                } else {
+                    msg.textContent = '✅ Estimate #' + estimateNumber + ' saved!'
+                        + (estData.error ? ' ⚠️ Email failed: ' + estData.error : ' (check email config)');
+                }
+                localStorage.removeItem('estimate_draft');
+            } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block'; }
+            finally { btn.disabled = false; btn.textContent = '📧 Send Estimate'; }
+        }
+
+        // INVOICE — full validation, requires signature + legal, sends contract PDF
+        async function submitInvoice() {
+            const name      = document.getElementById('clientName').value.trim();
+            const phone     = document.getElementById('clientPhone').value.trim();
+            const email     = document.getElementById('clientEmail').value.trim();
+            const address   = document.getElementById('clientAddress').value.trim();
+            const rep       = document.getElementById('salesRep').value.trim();
+            const visitDate = document.getElementById('visitDate').value;
+            const msg       = document.getElementById('submitMsg');
+
+            const missing = [];
+            if (!name)      missing.push('Client Name');
+            if (!phone)     missing.push('Phone');
+            if (!email)     missing.push('Email');
+            if (!address)   missing.push('Address');
+            if (!rep)       missing.push('Sales Rep');
+            if (!visitDate) missing.push('Date of Service');
+            if (!document.getElementById('clientEmail').value.includes('@')) missing.push('Valid Email');
+
+            const services = buildEstimateObject().services;
+            if (!services || !services.length) missing.push('At least one Service');
+
+            if (missing.length) {
+                msg.className = 'msg error';
+                msg.textContent = 'Invoice requires: ' + missing.join(', ');
+                msg.style.display = 'block';
+                return;
+            }
+
+            const l1 = document.getElementById('legal_cooling').checked;
+            const l2 = document.getElementById('legal_wsib').checked;
+            const l3 = document.getElementById('legal_deposit').checked;
+            if (!l1 || !l2 || !l3) {
+                msg.className = 'msg error'; msg.textContent = 'All legal checkpoints must be acknowledged before sending an invoice.'; msg.style.display = 'block';
+                if (!l1) document.getElementById('legal1wrap').classList.add('error');
+                if (!l2) document.getElementById('legal2wrap').classList.add('error');
+                if (!l3) document.getElementById('legal3wrap').classList.add('error');
+                return;
+            }
+
+            const btn = document.getElementById('submitInvBtn'); btn.disabled = true; btn.textContent = 'Sending...';
+            const signatureData = isCanvasBlank() ? null : canvas.toDataURL('image/png');
+
+            const estimate = buildEstimateObject();
+            estimate.type = 'invoice';
+            estimate.legal = { cooling: l1, wsib: l2, deposit: l3 };
+            estimate.hasSignature = !isCanvasBlank();
+
+            try {
+                const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken };
+
+                msg.className = 'msg success'; msg.textContent = '📄 Saving and sending invoice...'; msg.style.display = 'block';
+                const lr = await fetch(API_BASE + '/leads', { method: 'POST', headers, body: JSON.stringify(estimate) });
+                if (lr.status === 401) { localStorage.removeItem('sales_token'); msg.className = 'msg error'; msg.textContent = 'Session expired.'; msg.style.display = 'block'; setTimeout(() => location.reload(), 2000); return; }
+
+                // Send invoice PDF + optional Stripe deposit/payment link to client in one email
+                const paymentRequest = getCardPaymentRequest();
+                const invRes = await fetch(API_BASE + '/invoice', { method: 'POST', headers, body: JSON.stringify({ estimate, documentType: 'invoice', signatureData, paymentRequest }) }).catch(() => null);
+                const invData = invRes ? await invRes.json().catch(() => ({})) : {};
+
+                msg.className = 'msg success';
+                if (invData.emailSent) {
+                    msg.textContent = '✅ Invoice #' + estimateNumber + ' sent to ' + email
+                        + (invData.paymentLinkSent ? ' with payment link' : '') + ' and saved!';
+                    if (invData.paymentLinkSent) window._cardPaymentSent = true;
+                } else {
+                    msg.textContent = '✅ Invoice #' + estimateNumber + ' saved!'
+                        + (invData.error ? ' ⚠️ Email failed: ' + invData.error : ' (check email config)');
+                }
+                msg.style.display = 'block';
+                localStorage.removeItem('estimate_draft');
             } catch (e) { msg.className = 'msg error'; msg.textContent = 'Connection error. Please try again.'; msg.style.display = 'block' }
-            finally { btn.disabled = false; btn.textContent = 'Submit Estimate' }
+            finally { btn.disabled = false; btn.textContent = '📄 Send Invoice' }
+        }
+
+        // Returns a paymentRequest object if card payment is selected and not already sent, otherwise null
+        function getCardPaymentRequest() {
+            if (window._cardPaymentSent) return null; // already sent via "Collect Payment" button
+            const method = document.getElementById('paymentMethod').value;
+            const type   = document.getElementById('paymentType').value;
+            if (method !== 'card' || type === 'none') return null;
+            const total = getTotal();
+            let amount = 0;
+            if (type === 'deposit')     amount = total * 0.25;
+            else if (type === 'full')   amount = total;
+            else if (type === 'custom') amount = parseFloat(document.getElementById('customPayAmount').value) || 0;
+            if (amount < 0.50) return null;
+            const address = document.getElementById('clientAddress').value;
+            return { amount, type, description: address ? 'Services at ' + address : 'Exterior Services' };
         }
 
         // Builds the estimate object from the current form state (shared by payment + submit)
         function buildEstimateObject() {
             const services = [];
-            const svcNames = { deck: 'Deck Restoration', gutter: 'Gutter Cleaning', interlock: 'Interlock Restoration', window: 'Window Cleaning', siding: 'Siding (Soft Wash)', garden: 'Garden Maintenance' };
-            ['deck', 'gutter', 'interlock', 'window', 'siding', 'garden'].forEach(s => {
-                if (document.getElementById('svc_' + s).checked) {
-                    services.push({ name: svcNames[s], price: document.getElementById('price_' + s).textContent });
+
+            // DECK
+            if (document.getElementById('svc_deck').checked) {
+                const cond = parseInt(document.getElementById('deck_condition').value);
+                let deckDetail = '';
+                if (cond === 0) {
+                    const linft = document.getElementById('deck_linft').value || '0';
+                    deckDetail = linft + ' lin ft (Replacement)';
+                } else {
+                    const sqft = document.getElementById('deck_sqft').value || '0';
+                    const rails = document.getElementById('deck_rails').checked ? ' + Rails' : '';
+                    deckDetail = sqft + ' sqft' + rails;
                 }
-            });
+                services.push({ name: 'Deck Restoration – ' + deckDetail, price: document.getElementById('price_deck').textContent });
+            }
+
+            // GUTTER
+            if (document.getElementById('svc_gutter').checked) {
+                const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
+                const storyLabel = { 1: '1 Story', 2: '2 Story', 3: '3 Story' }[stories] || '1 Story';
+                const deep = document.getElementById('gutter_deep').checked ? ' + Deep Clean' : '';
+                services.push({ name: 'Gutter Cleaning – ' + storyLabel + deep, price: document.getElementById('price_gutter').textContent });
+            }
+
+            // INTERLOCK
+            if (document.getElementById('svc_interlock').checked) {
+                const sqft = document.getElementById('interlock_sqft').value || '0';
+                const sev = document.getElementById('interlock_severity').value;
+                const sevLabel = { none: 'No Releveling', minor: 'Minor Releveling', moderate: 'Moderate Releveling', significant: 'Significant Releveling' }[sev] || sev;
+                const seal = document.getElementById('interlock_seal').checked ? ' + Seal' : '';
+                services.push({ name: 'Interlock Restoration – ' + sqft + ' sqft (' + sevLabel + ')' + seal, price: document.getElementById('price_interlock').textContent });
+            }
+
+            // WINDOW
+            if (document.getElementById('svc_window').checked) {
+                const count = document.getElementById('window_count').value || '0';
+                const type = document.querySelector('input[name="window_type"]:checked').value;
+                const typeLabel = type === 'full' ? 'Full Service' : 'Exterior Only';
+                services.push({ name: 'Window Cleaning – ' + count + ' Windows (' + typeLabel + ')', price: document.getElementById('price_window').textContent });
+            }
+
+            // SIDING
+            if (document.getElementById('svc_siding').checked) {
+                const stories = document.querySelector('input[name="siding_stories"]:checked').value;
+                const storyLabel = { 1: '1 Story', 2: '2 Story', 3: '3 Story' }[stories] || '1 Story';
+                services.push({ name: 'Siding Soft Wash – ' + storyLabel, price: document.getElementById('price_siding').textContent });
+            }
+
+            // GARDEN
+            if (document.getElementById('svc_garden').checked) {
+                services.push({ name: 'Garden Maintenance', price: document.getElementById('price_garden').textContent });
+            }
+
+            // OTHER — each custom item becomes its own line on the PDF
+            if (document.getElementById('svc_other').checked) {
+                getOtherItems().forEach(item => {
+                    if (item.name || item.price > 0) {
+                        services.push({ name: item.name || 'Other', price: '$' + (item.price || 0).toFixed(2) });
+                    }
+                });
+            }
             const hazards = [];
             document.querySelectorAll('.hazard-item.checked input').forEach(h => hazards.push(h.value));
             return {
@@ -2118,130 +2264,11 @@ corexteriors.ca
 
         // ── AVAILABILITY ───────────────────────────────────────────────────
         // ── LEAD LIST ──────────────────────────────────────────────
-        function openLeadListModal() {
-            const modal = document.getElementById('leadListModal');
-            modal.style.display = 'flex';
-            loadQuickLeads();
-        }
-
-        function closeLeadListModal() {
-            document.getElementById('leadListModal').style.display = 'none';
-            document.getElementById('qlName').value = '';
-            document.getElementById('qlAddress').value = '';
-            document.getElementById('qlNotes').value = '';
-            document.getElementById('qlMsg').style.display = 'none';
-        }
-
-        async function loadQuickLeads() {
-            const list = document.getElementById('qlList');
-            list.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">Loading...</p>';
-            try {
-                const r = await fetch(API_BASE + '/quick-leads', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
-                });
-                const d = await r.json();
-                if (!d.success || !d.leads.length) {
-                    list.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">No leads yet. Add your first one above.</p>';
-                    return;
-                }
-                list.innerHTML = d.leads.map(lead => `
-                    <div id="ql-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.85rem 1rem;position:relative">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
-                            <div style="flex:1;min-width:0">
-                                <div style="font-weight:700;color:#fff;font-size:.95rem;margin-bottom:.2rem">${escHtml(lead.name)}</div>
-                                <div style="font-size:.82rem;color:rgba(255,255,255,.55);margin-bottom:${lead.notes ? '.3rem' : '0'}">📍 ${escHtml(lead.address)}</div>
-                                ${lead.notes ? `<div style="font-size:.82rem;color:rgba(255,255,255,.45);white-space:pre-wrap">${escHtml(lead.notes)}</div>` : ''}
-                                <div style="font-size:.72rem;color:rgba(255,255,255,.25);margin-top:.4rem">${new Date(lead.createdAt).toLocaleDateString('en-CA', {month:'short',day:'numeric',year:'numeric'})}</div>
-                            </div>
-                            <button onclick="deleteQuickLead('${lead.id}')" style="background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:1rem;padding:2px 4px;flex-shrink:0" title="Delete">✕</button>
-                        </div>
-                    </div>`).join('');
-            } catch (e) {
-                list.innerHTML = '<p style="text-align:center;color:#e74c3c;font-size:.85rem;padding:1rem 0">Failed to load leads.</p>';
-            }
-        }
-
-        async function addQuickLead() {
-            const name = document.getElementById('qlName').value.trim();
-            const address = document.getElementById('qlAddress').value.trim();
-            const notes = document.getElementById('qlNotes').value.trim();
-            const msg = document.getElementById('qlMsg');
-            const btn = document.getElementById('qlAddBtn');
-
-            if (!name || !address) {
-                msg.style.display = 'block';
-                msg.style.background = 'rgba(231,76,60,.15)';
-                msg.style.color = '#e74c3c';
-                msg.textContent = 'Name and address are required.';
-                return;
-            }
-
-            btn.disabled = true; btn.textContent = 'Saving...';
-            msg.style.display = 'none';
-
-            try {
-                const r = await fetch(API_BASE + '/quick-leads', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ name, address, notes })
-                });
-                if (r.status === 401) {
-                    localStorage.removeItem('sales_token'); authToken = '';
-                    msg.style.display = 'block'; msg.style.background = 'rgba(231,76,60,.15)'; msg.style.color = '#e74c3c';
-                    msg.textContent = 'Session expired. Please log in again.';
-                    setTimeout(() => location.reload(), 2000);
-                    btn.disabled = false; btn.textContent = '+ Add Lead'; return;
-                }
-                const d = await r.json();
-                if (d.success) {
-                    document.getElementById('qlName').value = '';
-                    document.getElementById('qlAddress').value = '';
-                    document.getElementById('qlNotes').value = '';
-                    msg.style.display = 'block';
-                    msg.style.background = 'rgba(46,204,113,.12)';
-                    msg.style.color = '#2ecc71';
-                    msg.textContent = 'Lead added!';
-                    setTimeout(() => { msg.style.display = 'none'; }, 2000);
-                    loadQuickLeads();
-                } else {
-                    throw new Error(d.error || 'Failed');
-                }
-            } catch (e) {
-                msg.style.display = 'block';
-                msg.style.background = 'rgba(231,76,60,.15)';
-                msg.style.color = '#e74c3c';
-                msg.textContent = e.message || 'Error saving lead.';
-            }
-            btn.disabled = false; btn.textContent = '+ Add Lead';
-        }
-
-        async function deleteQuickLead(id) {
-            if (!confirm('Delete this lead?')) return;
-            try {
-                const r = await fetch(API_BASE + '/quick-leads', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ id })
-                });
-                const d = await r.json();
-                if (d.success) {
-                    const el = document.getElementById('ql-' + id);
-                    if (el) el.remove();
-                    const list = document.getElementById('qlList');
-                    if (!list.children.length) list.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;padding:1rem 0">No leads yet.</p>';
-                }
-            } catch (e) { alert('Error deleting lead.'); }
-        }
-
-        function escHtml(str) {
-            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        }
-        // ── END LEAD LIST ──────────────────────────────────────────
 
         function openAvailModal() {
             document.getElementById('availSlots').innerHTML = '';
             document.getElementById('availMsg').style.display = 'none';
-            addAvailSlot(); // start with one slot
+            addAvailSlot();
             document.getElementById('availModal').style.display = 'flex';
         }
 
@@ -2265,9 +2292,7 @@ corexteriors.ca
         async function submitAvailability() {
             const rep = repName || document.getElementById('salesRep')?.value?.trim() || 'Rep';
             const slots = document.querySelectorAll('#availSlots > div');
-
             if (slots.length === 0) { showAvailMsg('Add at least one date', 'error'); return; }
-
             const entries = [];
             for (const slot of slots) {
                 const date = slot.querySelector('.avail-date').value;
@@ -2276,10 +2301,8 @@ corexteriors.ca
                 if (!date) { showAvailMsg('Fill in all dates', 'error'); return; }
                 entries.push({ date, start, end });
             }
-
             const btn = document.getElementById('availSubmitBtn');
             btn.disabled = true; btn.textContent = 'Saving...';
-
             let saved = 0;
             try {
                 for (const e of entries) {
@@ -2289,12 +2312,8 @@ corexteriors.ca
                         body: JSON.stringify({
                             title: '✅ AVAILABLE — ' + rep,
                             description: rep + ' available ' + e.start + '–' + e.end,
-                            date: e.date,
-                            startTime: e.start,
-                            endTime: e.end,
-                            allDay: false,
-                            repName: rep,
-                            eventType: 'available',
+                            date: e.date, startTime: e.start, endTime: e.end,
+                            allDay: false, repName: rep, eventType: 'available',
                         }),
                     });
                     const d = await r.json();
@@ -2319,5 +2338,4 @@ corexteriors.ca
         }
     </script>
 </body>
-
 </html>

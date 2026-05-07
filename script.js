@@ -362,8 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners for Gallery Images (Home & Gallery Pages)
-    // Selects both .gallery-card images (Home) and .photo-card images (Gallery)
-    const galleryImages = document.querySelectorAll('.gallery-card img, .photo-card img');
+    // Selects both .gallery-card images (Home), .photo-card images (Gallery), and .hardscape-card images
+    const galleryImages = document.querySelectorAll('.gallery-card img, .photo-card img, .hardscape-card img');
 
     galleryImages.forEach(img => {
         img.style.cursor = 'pointer'; // Indicate clickable
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // If not in a before-after container (e.g., single image card), use the card itself
             if (!container) {
-                container = this.closest('.gallery-card, .photo-card');
+                container = this.closest('.gallery-card, .photo-card, .hardscape-card');
             }
 
             if (!container) return; // Should not happen based on selector
@@ -559,4 +559,65 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // ==========================================
+    // Service Modal
+    // ==========================================
+
+    var modalBackdrop = document.getElementById('modalBackdrop');
+
+    if (modalBackdrop) {
+        document.querySelectorAll('.service-card[data-modal]').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var id = card.getAttribute('data-modal');
+                var src = document.getElementById('data-' + id);
+                if (!src) return;
+
+                var titleEl   = src.querySelector('.modal-title-text');
+                var subEl     = src.querySelector('.modal-sub-text');
+                var descEl    = src.querySelector('.modal-desc');
+                var detailsEl = src.querySelector('.modal-details');
+                var ctaEl     = src.querySelector('.modal-cta-text');
+                var iconEl    = card.querySelector('.service-icon');
+
+                document.getElementById('mTitle').textContent  = titleEl   ? titleEl.textContent   : '';
+                document.getElementById('mSub').textContent    = subEl     ? subEl.textContent     : '';
+                document.getElementById('mDesc').textContent   = descEl    ? descEl.textContent    : '';
+
+                var mDetails = document.getElementById('mDetails');
+                mDetails.textContent = '';
+                if (detailsEl) {
+                    mDetails.appendChild(detailsEl.cloneNode(true));
+                }
+
+                document.getElementById('mCta').textContent = ctaEl ? ctaEl.textContent : 'Get a Free Quote';
+
+                var mIcon = document.getElementById('mIcon');
+                mIcon.textContent = '';
+                if (iconEl) {
+                    mIcon.appendChild(iconEl.cloneNode(true));
+                }
+
+                modalBackdrop.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        function closeModal() {
+            modalBackdrop.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('mClose').addEventListener('click', closeModal);
+        document.getElementById('mCta').addEventListener('click', function() {
+            closeModal();
+            window.location.href = 'contact.html';
+        });
+        modalBackdrop.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+    }
 });

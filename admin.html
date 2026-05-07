@@ -939,6 +939,7 @@
                 <button class="tab-btn" data-tab="salesleads">📋 Leads</button>
                 <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
                 <button class="tab-btn" data-tab="materials">🧮 Materials</button>
+                <button class="tab-btn" data-tab="labour">👷 Labour</button>
             </div>
 
             <!-- ========== TAB: OVERVIEW ========== -->
@@ -1195,6 +1196,87 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ========== TAB: LABOUR ========== -->
+            <div class="tab-content" id="tab-labour">
+
+                <!-- Worker Management -->
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>&#x1F477; Workers</h2>
+                        <button onclick="showAddWorkerForm()" style="padding:.5rem 1rem;background:#1565c0;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:.85rem">+ Add Worker</button>
+                    </div>
+                    <div id="addWorkerForm" style="display:none;padding:1rem;border-top:1px solid rgba(255,255,255,.1)">
+                        <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">Name</label>
+                                <input id="newWorkerName" placeholder="Worker name" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem">
+                            </div>
+                            <div>
+                                <label style="font-size:.8rem;color:#aaa;display:block;margin-bottom:.3rem">4-Digit PIN</label>
+                                <input id="newWorkerPin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="e.g. 5291" maxlength="4" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.5rem .75rem;color:#fff;font-size:.9rem;width:110px">
+                            </div>
+                            <button onclick="saveNewWorker()" style="background:#2e7d32;border:none;border-radius:8px;padding:.5rem 1rem;color:#fff;cursor:pointer;font-size:.9rem">Save</button>
+                            <button onclick="document.getElementById('addWorkerForm').style.display='none'" style="background:#333;border:none;border-radius:8px;padding:.5rem 1rem;color:#aaa;cursor:pointer;font-size:.9rem">Cancel</button>
+                        </div>
+                        <div id="addWorkerMsg" style="margin-top:.5rem;font-size:.85rem"></div>
+                    </div>
+                    <div class="table-scroll">
+                        <table id="workersTable">
+                            <thead><tr><th>Name</th><th>PIN</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="workersBody">
+                                <tr><td colspan="4" style="color:#888;text-align:center;padding:1.5rem">Open this tab to load workers</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Jobs / Work Orders -->
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>&#x1F528; Jobs</h2>
+                        <div style="display:flex;gap:.5rem;align-items:center">
+                            <input type="date" id="jobsDatePicker" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.4rem .75rem;color:#fff;font-size:.85rem">
+                            <button onclick="loadAdminJobs()" style="background:#1565c0;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">Preview</button>
+                        </div>
+                    </div>
+                    <!-- Calendar format guide -->
+                    <div style="margin:.75rem;padding:.85rem 1rem;background:rgba(21,101,192,.13);border:1px solid rgba(21,101,192,.35);border-radius:10px;font-size:.82rem;color:#90caf9">
+                        <strong style="color:#64b5f6">Jobs pull automatically from Google Calendar.</strong>
+                        To add notes, materials, or a task checklist, include these sections in the event description:
+                        <pre style="margin:.6rem 0 0;background:rgba(0,0,0,.25);border-radius:6px;padding:.6rem .75rem;color:#e0f0ff;font-size:.78rem;white-space:pre-wrap">Notes: Gate code 1234, park on street
+
+Materials:
+- 20ft aluminum soffit
+- White caulk
+
+Tasks:
+- Remove old panels
+- Inspect for rot
+- Install new soffit
+- Final photo</pre>
+                        Address for the Maps button comes from the event <em>Location</em> field.
+                    </div>
+                    <div id="jobsListContainer" style="padding:.75rem">
+                        <p style="color:#888;text-align:center;padding:1.5rem">Select a date and click Preview to see what workers will see</p>
+                    </div>
+                </div>
+
+                <!-- Daily Activity -->
+                <div class="table-card">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>&#x1F4CB; Daily Activity</h2>
+                        <div style="display:flex;gap:.5rem;align-items:center">
+                            <input type="date" id="labourDatePicker" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.4rem .75rem;color:#fff;font-size:.85rem">
+                            <button onclick="loadDailyLogs()" style="background:#1565c0;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">Load</button>
+                        </div>
+                    </div>
+                    <div id="dailyLogsContainer" style="padding:.75rem">
+                        <p style="color:#888;text-align:center;padding:1.5rem">Select a date and click Load</p>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -1313,9 +1395,23 @@
                     </div>
                 </div>
 
-                <div style="grid-column:1/-1;display:flex;align-items:center;gap:.5rem">
-                    <input type="checkbox" id="ns_sendemail" checked style="width:16px;height:16px;cursor:pointer">
-                    <label for="ns_sendemail" style="font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">Send invoice email to customer</label>
+                <div style="grid-column:1/-1">
+                    <label style="font-size:.75rem;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">📧 Email to Customer</label>
+                    <div style="display:flex;gap:.5rem">
+                        <label style="flex:1;display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.5rem .75rem;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.55)">
+                            <input type="radio" name="ns_emailtype" value="none" style="accent-color:#e67e22"> None
+                        </label>
+                        <label style="flex:1;display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.5rem .75rem;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.55)">
+                            <input type="radio" name="ns_emailtype" value="estimate" style="accent-color:#3498db"> Estimate
+                        </label>
+                        <label style="flex:1;display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.5rem .75rem;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.55)">
+                            <input type="radio" name="ns_emailtype" value="invoice" checked style="accent-color:#2ecc71"> Invoice
+                        </label>
+                    </div>
+                    <label id="ns_paylink_wrap" style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;padding:.45rem .75rem;background:rgba(245,184,0,.06);border:1px solid rgba(245,184,0,.2);border-radius:8px;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.65)">
+                        <input type="checkbox" id="ns_send_paylink" style="accent-color:#F5B800;width:15px;height:15px">
+                        💳 Include Stripe credit card payment link in email
+                    </label>
                 </div>
             </div>
 
@@ -1886,7 +1982,8 @@
             const now = new Date();
             document.getElementById('ns_date').value = now.toISOString().split('T')[0];
             document.getElementById('ns_time').value = now.toTimeString().slice(0,5);
-            document.getElementById('ns_sendemail').checked = true;
+            const invoiceRadio = document.querySelector('input[name="ns_emailtype"][value="invoice"]');
+            if (invoiceRadio) invoiceRadio.checked = true;
             document.getElementById('nsSaleMsg').style.display = 'none';
             calcNSTotal();
             document.getElementById('newSaleModal').style.display = 'flex';
@@ -1955,7 +2052,7 @@
             const payStatus = document.getElementById('ns_pay_status').value;
             const payMethod = document.getElementById('ns_pay_method').value;
             const payAmount = parseFloat(document.getElementById('ns_pay_amount').value) || 0;
-            const sendEmail = document.getElementById('ns_sendemail').checked;
+            const emailType = document.querySelector('input[name="ns_emailtype"]:checked')?.value || 'none';
 
             const estimate = {
                 clientName: name,
@@ -1999,24 +2096,38 @@
                 allLeads.unshift(d.lead);
                 renderLeads(); updateStats(); renderCharts();
 
-                // Send invoice email
-                if (sendEmail) {
+                // Send estimate or invoice email (+ optional Stripe payment link)
+                if (emailType !== 'none' && email) {
                     btn.textContent = 'Sending email...';
+                    const docLabel = emailType === 'estimate' ? 'Estimate' : 'Invoice';
+
+                    // Build payment request if checkbox is checked
+                    let paymentRequest = null;
+                    if (document.getElementById('ns_send_paylink').checked) {
+                        const linkAmount = payAmount > 0 ? payAmount : total;
+                        if (linkAmount >= 0.50) {
+                            paymentRequest = {
+                                amount: linkAmount,
+                                type: payStatus === 'Deposit' ? 'deposit' : 'full',
+                                description: address ? 'Services at ' + address : 'Exterior Services'
+                            };
+                        }
+                    }
+
                     try {
                         const er = await fetch(`${API_BASE}/invoice`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                            body: JSON.stringify({ estimate, documentType: 'invoice', leadId: d.lead.id, paymentStatus: payStatus, paymentAmount: payAmount })
+                            body: JSON.stringify({ estimate, documentType: emailType, paymentRequest })
                         });
                         const ed = await er.json();
+                        msg.style.display = 'block';
                         if (ed.emailSent) {
-                            msg.style.display = 'block';
                             msg.style.background = 'rgba(46,204,113,.12)'; msg.style.color = '#2ecc71';
-                            msg.textContent = `✅ Sale saved & invoice emailed to ${email}`;
+                            msg.textContent = `✅ Sale saved & ${docLabel} emailed to ${email}` + (ed.paymentLinkSent ? ' with payment link' : '');
                         } else {
-                            msg.style.display = 'block';
                             msg.style.background = 'rgba(230,126,34,.12)'; msg.style.color = '#e67e22';
-                            msg.textContent = '✅ Sale saved. ⚠️ Email failed — check SMTP config.';
+                            msg.textContent = `✅ Sale saved. ⚠️ ${docLabel} email failed — check SMTP config.`;
                         }
                     } catch {
                         msg.style.display = 'block';
@@ -2084,22 +2195,28 @@
             container.innerHTML = `<div style="display:flex;flex-direction:column;gap:.5rem;padding:.75rem">` +
                 leads.map(lead => {
                     const dateStr = new Date(lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const svcList = (lead.services || []).map(s => s.name).filter(Boolean).join(', ');
+                    const visitStr = lead.visitDate ? new Date(lead.visitDate + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                     return `<div id="qlrow-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.9rem 1rem">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:.5rem">
                             <div>
-                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}</div>
-                                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">📍 ${esc(lead.address)}</div>
+                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}</div>
+                                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address)}</div>
+                                ${lead.phone || lead.email ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(lead.phone||'') + (lead.phone&&lead.email?' &middot; ':'') + esc(lead.email||'') + '</div>' : ''}
                             </div>
                             <div style="font-size:.72rem;color:rgba(255,255,255,.3);white-space:nowrap;text-align:right">
                                 ${dateStr}<br>
-                                <span style="color:rgba(255,255,255,.4)">${esc(lead.salesRep || '—')}</span>
+                                <span style="color:rgba(255,255,255,.4)">${esc(lead.salesRep || '-')}</span>
+                                ${lead.total ? '<br><span style="color:#2ecc71;font-weight:700;font-size:.8rem">' + esc(lead.total) + '</span>' : ''}
                             </div>
                         </div>
-                        ${lead.notes ? `<div style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">📝 ${esc(lead.notes)}</div>` : ''}
+                        ${svcList ? '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.4rem">' + esc(svcList) + '</div>' : ''}
+                        ${visitStr ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:.4rem">Service date: ' + visitStr + '</div>' : ''}
+                        ${lead.notes ? '<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.6rem">' + esc(lead.notes) + '</div>' : ''}
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">
-                            <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">✏️ Edit</button>
-                            <button onclick="openPromoteToSaleModal('${lead.id}')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">💰 To Sale</button>
-                            <button onclick="deleteQL('${lead.id}')" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">🗑 Delete</button>
+                            <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">Edit</button>
+                            <button onclick="openPromoteToSaleModal('${lead.id}')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">To Sale</button>
+                            <button onclick="deleteQL('${lead.id}')" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">Delete</button>
                         </div>
                     </div>`;
                 }).join('') + `</div>`;
@@ -2850,35 +2967,51 @@
 
         // Auto-load calendar when tab is clicked
         document.querySelector('[data-tab="calendar"]').addEventListener('click', loadCalendarEvents);
+        document.querySelector('[data-tab="labour"]').addEventListener('click', () => {
+            loadWorkers();
+            loadDailyLogs();
+            const picker = document.getElementById('jobsDatePicker');
+            if (!picker.value) picker.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
+        });
 
         // TOAST
         // ── MOVE SALE → LEAD ──────────────────────────────────────────
         async function moveToLead(saleId) {
             const sale = allLeads.find(l => l.id === saleId);
             if (!sale) return;
-            if (!confirm(`Move "${sale.clientName}" from Sales to Leads?\n\nAll their details will be saved in the lead notes so nothing is lost.`)) return;
-
-            // Build a note summary from the sale details
-            const noteParts = [
-                sale.phone         ? `Phone: ${sale.phone}`                 : '',
-                sale.email         ? `Email: ${sale.email}`                 : '',
-                sale.serviceType   ? `Service: ${sale.serviceType}`         : '',
-                sale.total         ? `Total: ${sale.total}`                 : (sale.estimatedValue ? `Est: $${sale.estimatedValue}` : ''),
-                sale.estimateNumber ? `Est#: ${sale.estimateNumber}`        : '',
-                sale.salesRep      ? `Rep: ${sale.salesRep}`               : '',
-                sale.notes         ? `Notes: ${sale.notes}`                 : '',
-            ].filter(Boolean);
+            if (!confirm(`Move "${sale.clientName}" from Sales to Leads?\n\nAll details will be fully preserved.`)) return;
 
             try {
-                // 1. Create quick lead
+                // 1. Create quick lead — carry over every field from the sale
                 const createR = await fetch(`${API_BASE}/quick-leads`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({
-                        name: sale.clientName,
-                        address: sale.address || '',
-                        notes: noteParts.join(' · '),
-                        salesRep: sale.salesRep || ''
+                        name:           sale.clientName,
+                        address:        sale.address        || '',
+                        phone:          sale.phone          || '',
+                        email:          sale.email          || '',
+                        salesRep:       sale.salesRep       || '',
+                        estimateNumber: sale.estimateNumber || '',
+                        services:       sale.services       || [],
+                        serviceType:    sale.serviceType    || '',
+                        subtotal:       sale.subtotal       || '',
+                        hst:            sale.hst            || '',
+                        total:          sale.total          || '',
+                        discount:       sale.discount       || 0,
+                        bundleDiscount: sale.bundleDiscount || 0,
+                        estimatedValue: sale.estimatedValue || '',
+                        saleDate:       sale.saleDate       || '',
+                        saleTime:       sale.saleTime       || '',
+                        paymentStatus:  sale.paymentStatus  || 'Unpaid',
+                        paymentMethod:  sale.paymentMethod  || '',
+                        paymentAmount:  sale.paymentAmount  || 0,
+                        notes:          sale.notes          || '',
+                        jobDetails:     sale.jobDetails     || null,
+                        survey:         sale.survey         || {},
+                        legal:          sale.legal          || {},
+                        hasSignature:   sale.hasSignature   || false,
+                        status:         sale.status         || '',
                     })
                 });
                 const createD = await createR.json();
@@ -2906,16 +3039,19 @@
         function openPromoteToSaleModal(qlId) {
             const lead = allQLLeads.find(l => l.id === qlId);
             if (!lead) return;
-            document.getElementById('promoteQLId').value   = qlId;
-            document.getElementById('promoteName').value   = lead.name    || '';
-            document.getElementById('promoteAddress').value= lead.address || '';
-            document.getElementById('promoteRep').value    = lead.salesRep|| '';
-            document.getElementById('promotePhone').value  = '';
-            document.getElementById('promoteEmail').value  = '';
-            document.getElementById('promoteService').value= '';
-            document.getElementById('promoteValue').value  = '';
-            // Pre-fill notes, stripping any "To Lead" summary if present
-            document.getElementById('promoteNotes').value  = lead.notes   || '';
+            const serviceLabel = lead.serviceType || (lead.services || []).map(s => s.name).filter(Boolean).join(', ') || '';
+            const valueLabel   = lead.estimatedValue
+                || (lead.total ? String(lead.total).replace(/[^0-9.]/g, '') : '')
+                || '';
+            document.getElementById('promoteQLId').value    = qlId;
+            document.getElementById('promoteName').value    = lead.name     || '';
+            document.getElementById('promoteAddress').value = lead.address  || '';
+            document.getElementById('promoteRep').value     = lead.salesRep || '';
+            document.getElementById('promotePhone').value   = lead.phone    || '';
+            document.getElementById('promoteEmail').value   = lead.email    || '';
+            document.getElementById('promoteService').value = serviceLabel;
+            document.getElementById('promoteValue').value   = valueLabel;
+            document.getElementById('promoteNotes').value   = lead.notes    || '';
             document.getElementById('promoteMsg').style.display = 'none';
             document.getElementById('promoteSaveBtn').disabled = false;
             document.getElementById('promoteSaveBtn').textContent = '💰 Create Sale';
@@ -2945,7 +3081,12 @@
             msg.style.display = 'none';
 
             try {
-                // 1. Create full lead/sale
+                // Retrieve full quick lead data to carry over structured fields
+                const qlLead = allQLLeads.find(l => l.id === qlId) || {};
+                const formService = document.getElementById('promoteService').value.trim();
+                const formValue   = document.getElementById('promoteValue').value.trim();
+
+                // 1. Create full lead/sale — merge form inputs with preserved ql data
                 const createR = await fetch(`${API_BASE}/leads`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
@@ -2954,12 +3095,28 @@
                         phone:          phone,
                         email:          document.getElementById('promoteEmail').value.trim(),
                         address:        document.getElementById('promoteAddress').value.trim(),
-                        serviceType:    document.getElementById('promoteService').value.trim(),
-                        estimatedValue: document.getElementById('promoteValue').value.trim(),
+                        serviceType:    formService || qlLead.serviceType || '',
+                        estimatedValue: formValue   || qlLead.estimatedValue || '',
                         notes:          document.getElementById('promoteNotes').value.trim(),
                         salesRep:       document.getElementById('promoteRep').value.trim(),
+                        // carry over all structured data from the quick lead
+                        services:       qlLead.services       || [],
+                        subtotal:       qlLead.subtotal        || '',
+                        hst:            qlLead.hst             || '',
+                        total:          qlLead.total           || '',
+                        discount:       qlLead.discount        || 0,
+                        bundleDiscount: qlLead.bundleDiscount  || 0,
+                        estimateNumber: qlLead.estimateNumber  || '',
+                        saleDate:       qlLead.saleDate        || qlLead.visitDate || '',
+                        saleTime:       qlLead.saleTime        || '',
+                        paymentStatus:  qlLead.paymentStatus   || 'Unpaid',
+                        paymentMethod:  qlLead.paymentMethod   || '',
+                        paymentAmount:  qlLead.paymentAmount   || 0,
+                        jobDetails:     qlLead.jobDetails      || null,
+                        survey:         qlLead.survey          || {},
+                        legal:          qlLead.legal           || {},
+                        hasSignature:   qlLead.hasSignature    || false,
                         status:         'New',
-                        paymentStatus:  'Unpaid'
                     })
                 });
                 const createD = await createR.json();
@@ -2987,7 +3144,22 @@
                 document.querySelector('[data-tab="leads"]').classList.add('active');
                 document.getElementById('tab-leads').classList.add('active');
 
-                toast(`${name} promoted to Sales`, 'success');
+                // Send invoice PDF if email was provided
+                const promoteEmail = document.getElementById('promoteEmail').value.trim();
+                if (promoteEmail) {
+                    try {
+                        await fetch(`${API_BASE}/invoice`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                            body: JSON.stringify({ estimate: createD.lead, documentType: 'invoice' })
+                        });
+                        toast(`${name} promoted to Sales & invoice emailed`, 'success');
+                    } catch {
+                        toast(`${name} promoted to Sales (email failed)`, 'success');
+                    }
+                } else {
+                    toast(`${name} promoted to Sales`, 'success');
+                }
             } catch (e) {
                 msg.style.display = 'block';
                 msg.style.background = 'rgba(231,76,60,.15)';
@@ -3006,6 +3178,318 @@
 
         // ESCAPE HTML
         function esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML }
+
+// == LABOUR TAB ==
+
+// Security: all worker/job names rendered via innerHTML use labEsc() to prevent XSS
+function labEsc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
+function showAddWorkerForm() {
+    document.getElementById('addWorkerForm').style.display = 'block';
+    document.getElementById('newWorkerName').focus();
+}
+
+async function loadWorkers() {
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=list-workers', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await r.json();
+        if (data.success) renderWorkersTable(data.workers);
+    } catch(e) { console.error('loadWorkers:', e); }
+}
+
+function renderWorkersTable(workers) {
+    const tbody = document.getElementById('workersBody');
+    if (!workers.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color:#888;text-align:center;padding:1.5rem">No workers yet</td></tr>';
+        return;
+    }
+    tbody.innerHTML = workers.map(w => `
+        <tr>
+            <td>${labEsc(w.name)}</td>
+            <td style="letter-spacing:.15em;color:#aaa">&#x2022;&#x2022;&#x2022;&#x2022;</td>
+            <td><span style="color:${w.active ? '#4caf50' : '#888'}">${w.active ? '&#x25CF; Active' : '&#x25CB; Inactive'}</span></td>
+            <td>${w.active ? `<button class="lab-deactivate-btn" data-worker-id="${labEsc(w.id)}" style="background:#c62828;border:none;border-radius:6px;padding:.3rem .7rem;color:#fff;cursor:pointer;font-size:.8rem">Deactivate</button>` : '&mdash;'}</td>
+        </tr>`).join('');
+}
+
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.lab-deactivate-btn');
+    if (btn) deactivateWorker(btn.dataset.workerId);
+});
+
+async function saveNewWorker() {
+    const name = document.getElementById('newWorkerName').value.trim();
+    const pin  = document.getElementById('newWorkerPin').value.trim();
+    const msg  = document.getElementById('addWorkerMsg');
+    if (!name || !pin) { msg.style.color='#ef5350'; msg.textContent='Name and PIN are required.'; return; }
+    if (!/^\d{4}$/.test(pin)) { msg.style.color='#ef5350'; msg.textContent='PIN must be exactly 4 digits.'; return; }
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=add-worker', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ name, pin })
+        });
+        const data = await r.json();
+        if (data.success) {
+            msg.style.color = '#4caf50';
+            msg.textContent = 'Worker added: ' + name;
+            document.getElementById('newWorkerName').value = '';
+            document.getElementById('newWorkerPin').value  = '';
+            await loadWorkers();
+        } else {
+            msg.style.color = '#ef5350';
+            msg.textContent = data.error || 'Failed to add worker.';
+        }
+    } catch { msg.style.color='#ef5350'; msg.textContent='Connection error.'; }
+}
+
+async function deactivateWorker(workerId) {
+    if (!confirm('Deactivate this worker? They will no longer be able to log in.')) return;
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=deactivate-worker', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ workerId })
+        });
+        const data = await r.json();
+        if (!data.success) { alert('Failed to deactivate: ' + (data.error || 'Unknown error')); return; }
+        await loadWorkers();
+    } catch(e) { console.error(e); alert('Connection error. Could not deactivate worker.'); }
+}
+
+function labEl(tag, style, text) {
+    const e = document.createElement(tag);
+    if (style) e.style.cssText = style;
+    if (text !== undefined) e.textContent = text;
+    return e;
+}
+
+function renderDailyLogs(workers, date) {
+    const container = document.getElementById('dailyLogsContainer');
+    container.textContent = '';
+    if (!workers.length) { container.textContent = 'No workers found.'; return; }
+
+    workers.forEach(({ worker, log, totalMinutes }) => {
+        if (!worker) { console.warn('Labour: log entry found for unknown worker'); return; }
+        const punches = log?.punches || [];
+        const isIn    = punches.some(p => p.in && !p.out);
+        const statusLabel = !punches.length ? '\u26ab Not started' : isIn ? '\uD83D\uDFE2 Clocked in' : '\u2713 Done';
+        const hrsText = totalMinutes ? (totalMinutes / 60).toFixed(1) + ' hrs' : '\u2014';
+
+        // Outer card
+        const card = labEl('div', 'background:#1a2a45;border-radius:12px;margin-bottom:1rem;overflow:hidden');
+
+        // Header row (clickable)
+        const rowId  = 'lrow-' + worker.id;
+        const header = labEl('div', 'padding:1rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer');
+        header.addEventListener('click', () => toggleLabourRow(rowId));
+        const leftCol = labEl('div');
+        leftCol.appendChild(labEl('div', 'font-weight:700', worker.name));
+        leftCol.appendChild(labEl('div', 'font-size:.8rem;color:#aaa;margin-top:.2rem', statusLabel));
+        header.appendChild(leftCol);
+        header.appendChild(labEl('div', 'text-align:right;font-size:.85rem;color:#aaa', hrsText));
+        card.appendChild(header);
+
+        // Expandable detail
+        const detail = labEl('div', 'display:none;border-top:1px solid rgba(255,255,255,.07);padding:1rem');
+        detail.id = rowId;
+
+        // Punch rows
+        if (punches.length) {
+            detail.appendChild(labEl('div', 'font-size:.72rem;color:#aaa;text-transform:uppercase;margin-bottom:.4rem', 'Punches'));
+            punches.forEach((p, i) => {
+                const punchGrid = labEl('div', 'display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.5rem');
+                const inVal  = p.in  ? new Date(p.in).toLocaleTimeString('en-CA',  { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                const outVal = p.out ? new Date(p.out).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                punchGrid.appendChild(buildTimeInput('In #' + (i + 1),  inVal,  worker.id, date, 'punchIn',  null, i));
+                punchGrid.appendChild(buildTimeInput('Out #' + (i + 1), outVal, worker.id, date, 'punchOut', null, i));
+                detail.appendChild(punchGrid);
+            });
+        }
+
+        // Job rows
+        (log?.jobs || []).forEach((job, i) => {
+            const jobBox = labEl('div', 'background:#0f1e35;border-radius:8px;padding:.75rem;margin-bottom:.75rem');
+            jobBox.appendChild(labEl('div', 'font-weight:600;margin-bottom:.5rem', job.jobTitle));
+            const jobGrid = labEl('div', 'display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:.75rem');
+            jobGrid.appendChild(buildTimeInput('Job In',  job.clockIn,  worker.id, date, 'jobClockIn',  i, null));
+            jobGrid.appendChild(buildTimeInput('Job Out', job.clockOut, worker.id, date, 'jobClockOut', i, null));
+            jobBox.appendChild(jobGrid);
+            if (job.photos?.length) {
+                const photoGrid = labEl('div', 'display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem');
+                job.photos.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer';
+                    img.addEventListener('click', () => window.open(url, '_blank'));
+                    photoGrid.appendChild(img);
+                });
+                jobBox.appendChild(photoGrid);
+            } else {
+                jobBox.appendChild(labEl('div', 'font-size:.8rem;color:#555', 'No photos'));
+            }
+            detail.appendChild(jobBox);
+        });
+
+        card.appendChild(detail);
+        container.appendChild(card);
+    });
+}
+
+function buildTimeInput(label, val, workerId, date, field, jobIndex, punchIndex) {
+    const wrap  = document.createElement('div');
+    const lbl   = labEl('div', 'font-size:.72rem;color:#aaa;margin-bottom:.25rem', label);
+    const input = document.createElement('input');
+    input.type  = 'time';
+    input.value = val || '';
+    input.dataset.worker     = workerId;
+    input.dataset.date       = date;
+    input.dataset.field      = field;
+    input.style.cssText = 'background:#0a1628;border:1px solid #333;border-radius:6px;padding:.35rem .5rem;color:#fff;font-size:.85rem;width:100%';
+    if (jobIndex   != null) input.dataset.jobindex   = jobIndex;
+    if (punchIndex != null) input.dataset.punchindex = punchIndex;
+    input.addEventListener('change', () => adminEditTime(input));
+    wrap.appendChild(lbl);
+    wrap.appendChild(input);
+    return wrap;
+}
+
+// Set date picker to today on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const dp = document.getElementById('labourDatePicker');
+    if (dp) dp.value = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
+});
+
+// ── Jobs — calendar preview ───────────────────────────────────────────────────
+async function loadAdminJobs() {
+    const date = document.getElementById('jobsDatePicker')?.value;
+    if (!date) return;
+    const token = localStorage.getItem('admin_token') || '';
+    const container = document.getElementById('jobsListContainer');
+    container.textContent = 'Loading…';
+    try {
+        const r = await fetch('/api/labour?action=preview-jobs&date=' + encodeURIComponent(date), { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await r.json();
+        if (!data.success) { container.textContent = 'Error loading jobs.'; return; }
+        container.textContent = '';
+        if (!data.jobs.length) {
+            const p = document.createElement('p');
+            p.style.cssText = 'color:#888;text-align:center;padding:1.5rem';
+            p.textContent = 'No jobs scheduled in Google Calendar for this date.';
+            container.appendChild(p);
+            return;
+        }
+        data.jobs.forEach(j => {
+            const row = document.createElement('div');
+            row.style.cssText = 'padding:.75rem;border-bottom:1px solid rgba(255,255,255,.07)';
+
+            const badge = document.createElement('span');
+            badge.style.cssText = 'font-size:.72rem;padding:.15rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;' +
+                (j.source === 'calendar' ? 'background:rgba(21,101,192,.4);color:#90caf9' : 'background:rgba(46,125,50,.4);color:#a5d6a7');
+            badge.textContent = j.source === 'calendar' ? 'Calendar' : 'Manual';
+
+            const title = document.createElement('div');
+            title.style.cssText = 'font-weight:600;color:#fff;margin-bottom:.25rem';
+            title.textContent = j.title;
+            title.appendChild(badge);
+            row.appendChild(title);
+
+            if (j.address) {
+                const addr = document.createElement('div');
+                addr.style.cssText = 'font-size:.8rem;color:#aaa';
+                addr.textContent = '📍 ' + j.address;
+                row.appendChild(addr);
+            }
+            if (j.notes) {
+                const notes = document.createElement('div');
+                notes.style.cssText = 'font-size:.8rem;color:#aaa;margin-top:.2rem';
+                notes.textContent = '📋 ' + j.notes;
+                row.appendChild(notes);
+            }
+            if (j.materials && j.materials.length) {
+                const mat = document.createElement('div');
+                mat.style.cssText = 'font-size:.8rem;color:#aaa;margin-top:.2rem';
+                mat.textContent = '🧱 Materials: ' + j.materials.join(', ');
+                row.appendChild(mat);
+            }
+            if (j.tasks && j.tasks.length) {
+                const tasks = document.createElement('div');
+                tasks.style.cssText = 'font-size:.8rem;color:#aaa;margin-top:.2rem';
+                tasks.textContent = '✅ Tasks: ' + j.tasks.map(t => t.label).join(', ');
+                row.appendChild(tasks);
+            }
+            container.appendChild(row);
+        });
+    } catch { container.textContent = 'Connection error.'; }
+}
+
+async function loadDailyLogs() {
+    const date  = document.getElementById('labourDatePicker')?.value;
+    if (!date) return;
+    const token = localStorage.getItem('admin_token') || '';
+    const container = document.getElementById('dailyLogsContainer');
+    container.textContent = 'Loading…';
+    try {
+        const r = await fetch('/api/labour?action=daily&date=' + encodeURIComponent(date), { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await r.json();
+        if (!data.success) { container.textContent = 'Error loading logs.'; return; }
+        renderDailyLogs(data.workers, date);
+    } catch { container.textContent = 'Connection error.'; }
+}
+
+function toggleLabourRow(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function labTimeField(label, isoValue, workerId, date, field, jobIndex) {
+    // Kept for any remaining callers; delegates to DOM builder
+    const val = isoValue
+        ? new Date(isoValue).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false })
+        : '';
+    return buildTimeInput(label, val, workerId, date, field, jobIndex, null).outerHTML;
+}
+
+async function adminEditTime(input) {
+    const token      = localStorage.getItem('admin_token') || '';
+    const workerId   = input.dataset.worker;
+    const date       = input.dataset.date;
+    const field      = input.dataset.field;
+    const jobIndex   = input.dataset.jobindex   != null ? parseInt(input.dataset.jobindex)   : undefined;
+    const punchIndex = input.dataset.punchindex != null ? parseInt(input.dataset.punchindex) : undefined;
+    const value      = input.value;
+    try {
+        const r = await fetch('/api/labour?action=edit-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ workerId, date, field, value, jobIndex, punchIndex })
+        });
+        const data = await r.json();
+        input.style.borderColor = data.success ? '#4caf50' : '#ef5350';
+        setTimeout(() => { input.style.borderColor = '#333'; }, 1500);
+    } catch { input.style.borderColor = '#ef5350'; }
+}
+
+function calcTotalHours(log) {
+    const punches = log?.punches || [];
+    if (!punches.length) {
+        // Legacy fallback
+        if (!log?.dayClockIn || !log?.dayClockOut) return null;
+        let ms = new Date(log.dayClockOut) - new Date(log.dayClockIn);
+        if (ms < 0) return null;
+        return (ms / 3600000).toFixed(1);
+    }
+    const ms = punches.reduce((sum, p) => {
+        if (!p.in || !p.out) return sum;
+        return sum + Math.max(0, new Date(p.out) - new Date(p.in));
+    }, 0);
+    return ms > 0 ? (ms / 3600000).toFixed(1) : null;
+}
     </script>
 </body>
 
