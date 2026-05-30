@@ -285,15 +285,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 source: window.location.pathname.split('/').pop() || 'index.html'
             };
 
+            const submitBtn = quoteForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) { submitBtn.textContent = 'Sending...'; submitBtn.disabled = true; }
+
             try {
-                if (window.crmService) {
-                    await window.crmService.saveLead(leadData);
-                }
-                alert('Thank you! We will contact you within 24 hours.');
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: leadData.name,
+                        phone: leadData.phone,
+                        email: leadData.email,
+                        service: leadData.service,
+                        message: ''
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.error || 'Failed');
+                alert('Thank you! We\'ll be in touch within 24 hours.');
                 quoteForm.reset();
             } catch (error) {
                 console.error('Error saving lead:', error);
                 alert('There was an error sending your request. Please try again or call us directly.');
+            } finally {
+                if (submitBtn) { submitBtn.textContent = originalText; submitBtn.disabled = false; }
             }
         });
     }
