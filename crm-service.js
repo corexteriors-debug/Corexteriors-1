@@ -145,6 +145,28 @@ class CRMService {
             return false;
         }
     }
+
+    /**
+     * Save a new lead from the website quote form
+     */
+    async saveLead(leadData) {
+        const response = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: leadData.name,
+                phone: leadData.phone,
+                email: leadData.email || '',
+                service: leadData.service || '',
+                message: leadData.source ? `Source page: ${leadData.source}` : ''
+            })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to submit');
+        }
+        return result;
+    }
 }
 
 const crmService = new CRMService();
