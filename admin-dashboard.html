@@ -385,7 +385,11 @@
             </div>
         </div>
         <div style="display: flex; gap: 0.75rem;">
-            <button class="logout-btn" onclick="runScraper()"
+            <button class="logout-btn" onclick="location.href='admin-photos.html'"
+                style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none;">
+                📸 Job Photos
+            </button>
+            <button class="logout-btn" onclick="location.href='outreach-finder.html'"
                 style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;">
                 🔍 Find More Leads
             </button>
@@ -615,18 +619,6 @@
             }
         });
 
-        // Run scraper function for "Find More Leads" button
-        function runScraper() {
-            const query = prompt("What type of commercial leads do you want to find?\n\nExamples:\n- Property Management London Ontario\n- HOA London Ontario\n- Condo Management London Ontario\n- Commercial Cleaning London Ontario", "Property Management London Ontario");
-
-            if (!query) return;
-
-            const confirmed = confirm(`This will run the scraper to find "${query}" and add them to your Commercial Google Sheet.\n\nThis may take 1-2 minutes.\n\nContinue?`);
-
-            if (!confirmed) return;
-
-            alert(`Scraper started!\n\nSearch: "${query}"\n\nTo run the scraper:\n\n1. Open PowerShell or Command Prompt\n2. Run these commands:\n\ncd c:\\Users\\oblok\\Desktop\\Corexteriors\\crm\nnode scripts/scraper.js "${query}"\n\n3. Once complete, refresh this admin page to see the new leads.`);
-        }
     </script>
 </body>
 

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Finder | Core Exteriors</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 1rem; }
+        .logo-box {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+        .logo-text h1 { font-size: 1.25rem; color: #1e293b; }
+        .logo-text p { font-size: 0.875rem; color: #64748b; }
+
+        .nav-btns { display: flex; gap: 0.75rem; }
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-ghost {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+        }
+        .btn-ghost:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37,99,235,0.4); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .btn-green:hover { transform: translateY(-1px); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+        .search-card {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .search-card h2 { font-size: 1.125rem; color: #1e293b; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .form-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 1rem; align-items: end; }
+
+        .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+        .form-group label { font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-group input, .form-group select {
+            padding: 0.625rem 0.875rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            background: white;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: #2563eb; }
+        .form-group input::placeholder { color: #94a3b8; }
+
+        #queryGroup, #bboxGroup { transition: opacity 0.2s; }
+        .hidden { display: none !important; }
+
+        .hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+
+        .results-card {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .results-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: linear-gradient(to right, #f8fafc, white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .results-header h3 { font-size: 1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; }
+
+        .progress-bar-wrap {
+            height: 4px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #2563eb, #10b981);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        thead th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #f8fafc; }
+        tbody td { padding: 0.875rem 1rem; vertical-align: middle; }
+
+        .biz-name { font-weight: 600; color: #1e293b; }
+        .biz-website a { color: #2563eb; text-decoration: none; font-size: 0.8rem; }
+        .biz-website a:hover { text-decoration: underline; }
+        .biz-type { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 6px; display: inline-block; }
+
+        .contact-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .chip-email { background: #dcfce7; color: #15803d; }
+        .chip-form { background: #dbeafe; color: #1d4ed8; }
+        .chip-social { background: #fce7f3; color: #be185d; }
+        .chip-none { background: #f1f5f9; color: #94a3b8; }
+        .chip-scanning { background: #fef3c7; color: #92400e; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+
+        .contact-details { color: #475569; font-size: 0.8rem; margin-top: 0.2rem; word-break: break-all; }
+
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: #94a3b8;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state p { font-size: 1rem; font-weight: 500; }
+
+        .stats-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .stat-badge .count { font-size: 1rem; color: #1e293b; }
+
+        .error-msg {
+            padding: 1rem 1.5rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="logo-section">
+        <div class="logo-box">C</div>
+        <div class="logo-text">
+            <h1>Core Exteriors CRM</h1>
+            <p>Lead Finder — Commercial Outreach</p>
+        </div>
+    </div>
+    <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="location.href='admin.html'">← Back to Dashboard</button>
+        <button class="btn btn-ghost" onclick="logout()">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <div id="errorBox" class="error-msg hidden"></div>
+
+    <div class="search-card">
+        <h2>🔍 Find Commercial Businesses</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Search Mode</label>
+                <select id="modeSelect" onchange="onModeChange()">
+                    <option value="overpass">OpenStreetMap (Free)</option>
+                    <option value="text">Google Places (needs API key)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="queryGroup" style="display:none">
+                <label>Search Query</label>
+                <input type="text" id="queryInput" placeholder="e.g. property management London Ontario" value="property management London Ontario">
+                <span class="hint">Each search returns up to 20 results from Google Places</span>
+            </div>
+
+            <div class="form-group" id="bboxGroup">
+                <label>Map Area (south,west,north,east)</label>
+                <input type="text" id="bboxInput" placeholder="43.50,-81.40,43.10,-81.10" value="42.95,-81.35,43.10,-81.10">
+                <span class="hint">London, Ontario default. <a href="https://boundingbox.klokantech.com/" target="_blank" style="color:#2563eb">Get bbox →</a></span>
+            </div>
+
+            <div class="form-group">
+                <label>Max Results</label>
+                <input type="number" id="limitInput" value="50" min="5" max="200" style="width:90px">
+            </div>
+
+            <div class="form-group" style="justify-content:flex-end">
+                <button class="btn btn-primary" id="searchBtn" onclick="runSearch()">Find Businesses</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-card" id="resultsCard" style="display:none">
+        <div class="results-header">
+            <h3 id="resultsTitle">Results</h3>
+            <div class="stats-row" id="statsRow"></div>
+            <button class="btn btn-green" id="exportBtn" onclick="exportCsv()" style="display:none">⬇ Export CSV</button>
+        </div>
+        <div class="progress-bar-wrap" id="progressWrap" style="display:none">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div id="tableWrap">
+            <div class="empty-state">
+                <div class="icon">📋</div>
+                <p>Run a search above to find businesses</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API_BASE = '/api';
+    const authToken = localStorage.getItem('admin_token') || '';
+
+    if (!authToken) {
+        window.location.href = 'admin.html';
+    }
+
+    function logout() {
+        localStorage.removeItem('admin_token');
+        window.location.href = 'admin.html';
+    }
+
+    function onModeChange() {
+        const mode = document.getElementById('modeSelect').value;
+        document.getElementById('queryGroup').style.display = mode === 'text' ? '' : 'none';
+        document.getElementById('bboxGroup').style.display = mode === 'overpass' ? '' : 'none';
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('errorBox');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+    }
+    function hideError() { document.getElementById('errorBox').classList.add('hidden'); }
+
+    // --- State ---
+    let businesses = [];
+    let scrapeResults = {};
+    let scrapeDone = 0;
+    let scrapeTotal = 0;
+
+    async function runSearch() {
+        hideError();
+        const mode = document.getElementById('modeSelect').value;
+        const query = document.getElementById('queryInput').value.trim();
+        const bbox = document.getElementById('bboxInput').value.trim();
+        const limit = parseInt(document.getElementById('limitInput').value) || 50;
+        const btn = document.getElementById('searchBtn');
+
+        if (mode === 'text' && !query) { showError('Enter a search query.'); return; }
+        if (mode === 'overpass' && !bbox) { showError('Enter a bounding box.'); return; }
+
+        btn.disabled = true;
+        btn.textContent = 'Searching…';
+        document.getElementById('resultsCard').style.display = '';
+        document.getElementById('exportBtn').style.display = 'none';
+        document.getElementById('statsRow').innerHTML = '';
+        document.getElementById('progressWrap').style.display = 'none';
+        document.getElementById('progressBar').style.width = '0%';
+
+        renderTable([]);
+        document.getElementById('resultsTitle').textContent = 'Fetching businesses…';
+
+        try {
+            const body = { mode, limit };
+            if (mode === 'text') body.query = query;
+            if (mode === 'overpass') body.bbox = bbox;
+
+            const res = await fetch(`${API_BASE}/outreach-finder`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify(body),
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                showError(data.error || `Error ${res.status}`);
+                btn.disabled = false;
+                btn.textContent = 'Find Businesses';
+                document.getElementById('resultsTitle').textContent = 'Results';
+                return;
+            }
+
+            businesses = data.businesses || [];
+            scrapeResults = {};
+            scrapeDone = 0;
+            scrapeTotal = businesses.length;
+
+            document.getElementById('resultsTitle').textContent = `${businesses.length} business${businesses.length !== 1 ? 'es' : ''} found — scanning for contact info…`;
+
+            if (businesses.length === 0) {
+                renderTable([]);
+                btn.disabled = false;
+                btn.textContent = 'Find Businesses';
+                updateStats();
+                return;
+            }
+
+            renderTable(businesses);
+            startScraping(businesses);
+
+        } catch (err) {
+            showError(`Network error: ${err.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Find Businesses';
+        }
+    }
+
+    function renderTable(list) {
+        const wrap = document.getElementById('tableWrap');
+        if (!list.length) {
+            wrap.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>No businesses found. Try a wider area or different query.</p></div>`;
+            return;
+        }
+        wrap.innerHTML = `
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Business</th>
+      <th>Website</th>
+      <th>Type</th>
+      <th>Contact</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${list.map((b, i) => `
+    <tr id="row-${i}">
+      <td style="color:#94a3b8;font-size:0.8rem">${i + 1}</td>
+      <td><div class="biz-name">${esc(b.name)}</div></td>
+      <td class="biz-website"><a href="${esc(b.website)}" target="_blank">${esc(trimUrl(b.website))}</a></td>
+      <td>${b.type ? `<span class="biz-type">${esc(b.type)}</span>` : ''}</td>
+      <td id="contact-${i}"><span class="contact-chip chip-scanning">⏳ Scanning…</span></td>
+      <td id="details-${i}" style="color:#94a3b8;font-size:0.8rem"></td>
+    </tr>`).join('')}
+  </tbody>
+</table>`;
+    }
+
+    function updateRow(i, result) {
+        const contactCell = document.getElementById(`contact-${i}`);
+        const detailsCell = document.getElementById(`details-${i}`);
+        if (!contactCell) return;
+
+        if (!result.reachable) {
+            contactCell.innerHTML = `<span class="contact-chip chip-none">— None</span>`;
+            detailsCell.textContent = result.reason || '';
+            return;
+        }
+        const { contactMethod, details } = result;
+        const chips = {
+            email: `<span class="contact-chip chip-email">✉ Email</span>`,
+            'contact-form': `<span class="contact-chip chip-form">📝 Form</span>`,
+            social: `<span class="contact-chip chip-social">📱 Social</span>`,
+        };
+        contactCell.innerHTML = chips[contactMethod] || `<span class="contact-chip chip-none">—</span>`;
+
+        if (contactMethod === 'email') {
+            detailsCell.innerHTML = `<a href="mailto:${esc(details)}" style="color:#2563eb">${esc(details)}</a>`;
+        } else if (contactMethod === 'contact-form') {
+            detailsCell.innerHTML = `<a href="${esc(details)}" target="_blank" style="color:#2563eb">Open form ↗</a>`;
+        } else {
+            detailsCell.textContent = details || '';
+        }
+    }
+
+    function updateStats() {
+        const email = Object.values(scrapeResults).filter(r => r?.contactMethod === 'email').length;
+        const form = Object.values(scrapeResults).filter(r => r?.contactMethod === 'contact-form').length;
+        const social = Object.values(scrapeResults).filter(r => r?.contactMethod === 'social').length;
+        const none = Object.values(scrapeResults).filter(r => r && !r.reachable).length;
+
+        document.getElementById('statsRow').innerHTML = `
+            <div class="stat-badge">✉ <span class="count">${email}</span> emails</div>
+            <div class="stat-badge">📝 <span class="count">${form}</span> forms</div>
+            <div class="stat-badge">📱 <span class="count">${social}</span> social</div>
+            <div class="stat-badge" style="color:#94a3b8">— <span class="count">${none}</span> none</div>
+        `;
+
+        const pct = scrapeTotal > 0 ? (scrapeDone / scrapeTotal) * 100 : 0;
+        document.getElementById('progressBar').style.width = `${pct}%`;
+
+        if (scrapeDone >= scrapeTotal && scrapeTotal > 0) {
+            document.getElementById('resultsTitle').textContent = `${businesses.length} businesses — scan complete`;
+            document.getElementById('progressWrap').style.display = 'none';
+            document.getElementById('exportBtn').style.display = '';
+        } else {
+            document.getElementById('progressWrap').style.display = '';
+            document.getElementById('resultsTitle').textContent = `${businesses.length} businesses — scanning ${scrapeDone}/${scrapeTotal}…`;
+        }
+    }
+
+    async function scrapeOne(i, biz) {
+        try {
+            const res = await fetch(`${API_BASE}/outreach-scrape`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ url: biz.website }),
+            });
+            const data = await res.json();
+            scrapeResults[i] = data;
+            updateRow(i, data);
+        } catch {
+            scrapeResults[i] = { reachable: false, reason: 'Request failed' };
+            updateRow(i, scrapeResults[i]);
+        } finally {
+            scrapeDone++;
+            updateStats();
+        }
+    }
+
+    async function startScraping(list) {
+        const CONCURRENCY = 5;
+        let idx = 0;
+
+        async function worker() {
+            while (idx < list.length) {
+                const i = idx++;
+                await scrapeOne(i, list[i]);
+            }
+        }
+
+        const workers = Array.from({ length: Math.min(CONCURRENCY, list.length) }, () => worker());
+        await Promise.all(workers);
+    }
+
+    function exportCsv() {
+        const rows = [['Business Name', 'Website', 'Type', 'Contact Method', 'Details', 'Source']];
+        businesses.forEach((b, i) => {
+            const r = scrapeResults[i] || {};
+            rows.push([
+                b.name,
+                b.website,
+                b.type || '',
+                r.reachable ? (r.contactMethod || '') : '',
+                r.reachable ? (r.details || '') : (r.reason || ''),
+                b.source || '',
+            ]);
+        });
+        const csv = rows.map(row =>
+            row.map(v => /[",\n\r]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v)).join(',')
+        ).join('\n') + '\n';
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function esc(s) {
+        return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function trimUrl(url) {
+        try { return new URL(url).hostname.replace(/^www\./,''); } catch { return url; }
+    }
+</script>
+
+</body>
+</html>
