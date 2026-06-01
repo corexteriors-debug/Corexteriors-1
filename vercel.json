@@ -3,6 +3,15 @@
     "trailingSlash": false,
     "headers": [
         {
+            "source": "/images/(.*)\\.webp",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        },
+        {
             "source": "/images/(.*)\\.jpg",
             "headers": [
                 {

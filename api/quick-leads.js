@@ -17,22 +17,50 @@ module.exports = async function handler(req, res) {
     if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
 
     try {
-        // POST — create quick lead
+        // POST — create lead (from sales portal estimate or manual entry)
         if (req.method === 'POST') {
-            const { name, address, notes } = req.body;
+            const b = req.body;
+            const name = b.name || b.clientName || '';
+            const address = b.address || b.clientAddress || '';
             if (!name || !address) return res.status(400).json({ error: 'Name and address are required' });
 
             const lead = {
                 id: `ql_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                // identity
                 name,
                 address,
-                notes: notes || '',
-                salesRep: tokenData.repName || '',
-                createdAt: new Date().toISOString()
+                phone:          b.phone || '',
+                email:          b.email || '',
+                salesRep:       b.salesRep || tokenData.repName || '',
+                estimateNumber: b.estimateNumber || '',
+                // services & pricing
+                services:       b.services || [],
+                serviceType:    b.serviceType || '',
+                subtotal:       b.subtotal || '',
+                hst:            b.hst || '',
+                total:          b.total || '',
+                discount:       b.discount || 0,
+                bundleDiscount: b.bundleDiscount || 0,
+                estimatedValue: b.estimatedValue || '',
+                // scheduling
+                visitDate:      b.survey?.visitDate || b.saleDate || b.visitDate || '',
+                saleDate:       b.saleDate || '',
+                saleTime:       b.saleTime || '',
+                // payment
+                paymentStatus:  b.paymentStatus || 'Unpaid',
+                paymentMethod:  b.paymentMethod || '',
+                paymentAmount:  parseFloat(b.paymentAmount) || 0,
+                // extras
+                notes:          b.notes || b.survey?.notes || '',
+                jobDetails:     b.jobDetails || null,
+                survey:         b.survey || {},
+                legal:          b.legal || {},
+                hasSignature:   b.hasSignature || false,
+                status:         b.status || 'New',
+                createdAt:      new Date().toISOString(),
             };
 
             await kv.set(`ql:${lead.id}`, lead);
-
             const ids = (await kv.get('ql_ids')) || [];
             ids.unshift(lead.id);
             await kv.set('ql_ids', ids);
@@ -54,9 +82,9 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ success: true, leads });
         }
 
-        // PATCH — edit a quick lead (admin only, or own lead)
+        // PATCH — edit a lead
         if (req.method === 'PATCH') {
-            const { id, name, address, notes } = req.body;
+            const { id, name, address, notes, phone, email } = req.body;
             if (!id) return res.status(400).json({ error: 'ID required' });
 
             const lead = await kv.get(`ql:${id}`);
@@ -65,16 +93,18 @@ module.exports = async function handler(req, res) {
                 return res.status(403).json({ error: 'Forbidden' });
             }
 
-            if (name !== undefined) lead.name = name;
+            if (name  !== undefined) lead.name  = name;
             if (address !== undefined) lead.address = address;
-            if (notes !== undefined) lead.notes = notes;
+            if (notes !== undefined) lead.notes  = notes;
+            if (phone !== undefined) lead.phone  = phone;
+            if (email !== undefined) lead.email  = email;
             lead.updatedAt = new Date().toISOString();
 
             await kv.set(`ql:${id}`, lead);
             return res.status(200).json({ success: true, lead });
         }
 
-        // DELETE — remove a lead (own leads only, or admin)
+        // DELETE — remove a lead
         if (req.method === 'DELETE') {
             const { id } = req.body;
             if (!id) return res.status(400).json({ error: 'ID required' });
