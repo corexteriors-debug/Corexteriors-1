@@ -2367,8 +2367,10 @@ corexteriors.ca
                 );
                 if (!r.ok) { panel.style.display = 'none'; return; }
                 var data = await r.json();
+                // Show ALL calendar events except "available" rep-posted slots.
+                // Manually created Google Calendar events have type 'other' — must include them.
                 var events = (data.events || []).filter(function(e) {
-                    return e.type === 'job' || e.type === 'sales_visit' || e.type === 'unavailable';
+                    return e.type !== 'available';
                 });
                 renderSlotStrip(panel, date, selectedTime, events);
             } catch (e) {
@@ -2376,15 +2378,22 @@ corexteriors.ca
             }
         }
 
+        function torontoMins(isoStr) {
+            // Convert ISO timestamp to minutes-since-midnight in Toronto time,
+            // regardless of what timezone the sales rep's browser is set to.
+            var d = new Date(isoStr);
+            var toronto = new Date(d.toLocaleString('en-US', { timeZone: 'America/Toronto' }));
+            return toronto.getHours() * 60 + toronto.getMinutes();
+        }
+
         function renderSlotStrip(panel, date, selectedTime, events) {
             var START_H = 7, END_H = 19;
             var TOTAL_MINS = (END_H - START_H) * 60;
 
             var booked = events.map(function(e) {
-                var s = new Date(e.start), en = new Date(e.end);
                 return {
-                    startMins: s.getHours() * 60 + s.getMinutes(),
-                    endMins:   en.getHours() * 60 + en.getMinutes(),
+                    startMins: torontoMins(e.start),
+                    endMins:   e.allDay ? END_H * 60 : torontoMins(e.end),
                     label: e.title.replace(/^[\u{1F7E2}\u2705]\s*(Job|AVAILABLE)\s*[\u2014-]\s*/iu, '').split('|')[0].trim(),
                     type: e.type
                 };
