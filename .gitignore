@@ -50,3 +50,5 @@ out/
 crm/scripts/setup-google-env.js
 .vercel
 .env*.local
+scripts/upload-to-r2.js
+.env.r2

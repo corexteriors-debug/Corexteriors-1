@@ -1,3 +1,6 @@
+# All images now served from Cloudflare R2 CDN
+images/
+
 # Raw source photos/videos (not used on the site)
 photos and vids for website/
 
