@@ -1,8 +1,21 @@
 # Raw source photos/videos (not used on the site)
 photos and vids for website/
 
+# Image subfolders not referenced by any page (originals/source assets)
+images/Commercial photos/
+images/Landscaping in Burlington, Oakville, Hamilton _ Creative Concepts_files/
+images/Logos/
+images/Landscape/
+
+# Large PNG fallbacks — webp versions are the primary <source> so PNGs never load on modern browsers
+images/relevel before.png
+images/relevel after.png
+
 # Separate project
 london-lead-finder-main/
+
+# Cloudflare Worker source — deployed to CF, not Vercel
+workers/
 
 # Git directory
 .git/
