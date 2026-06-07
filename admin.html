@@ -901,6 +901,7 @@
             .table-scroll table tbody { display: none }
         }
     </style>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -940,6 +941,7 @@
                 <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
                 <button class="tab-btn" data-tab="materials">🧮 Materials</button>
                 <button class="tab-btn" data-tab="labour">👷 Labour</button>
+                <button class="tab-btn" data-tab="payroll">💵 Payroll</button>
             </div>
 
             <!-- ========== TAB: OVERVIEW ========== -->
@@ -1029,9 +1031,12 @@
 
                 <!-- Table -->
                 <div class="table-card">
-                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
                         <h2>💰 Sales <span id="leadCount" style="color:rgba(255,255,255,.3);font-weight:400;font-size:.85rem"></span></h2>
-                        <button onclick="openNewSaleModal()" style="background:#e67e22;border:none;color:#fff;font-weight:700;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:.85rem">+ New Sale</button>
+                        <div style="display:flex;gap:.5rem">
+                            <button onclick="exportLeadsExcel()" style="background:#1a6b3a;border:none;color:#fff;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.85rem">⬇ Excel</button>
+                            <button onclick="openNewSaleModal()" style="background:#e67e22;border:none;color:#fff;font-weight:700;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:.85rem">+ New Sale</button>
+                        </div>
                     </div>
                     <div class="table-scroll">
                         <table>
@@ -1070,6 +1075,7 @@
                             <select id="qlRepFilter" onchange="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .75rem;color:#fff;font-size:.85rem;outline:none">
                                 <option value="all">All Reps</option>
                             </select>
+                            <button onclick="exportQLLeadsExcel()" style="background:#1a6b3a;border:none;color:#fff;font-weight:600;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">⬇ Excel</button>
                             <button onclick="loadQLLeads()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
                         </div>
                     </div>
@@ -1277,6 +1283,25 @@ Tasks:
                 </div>
 
             </div>
+
+            <!-- ========== TAB: PAYROLL ========== -->
+            <div class="tab-content" id="tab-payroll">
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>💵 Biweekly Payroll</h2>
+                        <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+                            <button onclick="shiftPayroll(-1)" title="Previous period" style="background:#1a2a45;border:none;border-radius:8px;color:#fff;font-size:1.1rem;width:36px;height:36px;cursor:pointer;line-height:1">‹</button>
+                            <input type="date" id="payrollFromPicker" style="background:#0a1628;border:1px solid #333;border-radius:8px;padding:.4rem .75rem;color:#fff;font-size:.85rem" onchange="loadPayroll()">
+                            <button onclick="shiftPayroll(1)" title="Next period" style="background:#1a2a45;border:none;border-radius:8px;color:#fff;font-size:1.1rem;width:36px;height:36px;cursor:pointer;line-height:1">›</button>
+                            <button onclick="goCurrentPayroll()" style="background:#333;border:none;border-radius:8px;padding:.4rem .75rem;color:#aaa;font-size:.8rem;cursor:pointer;height:36px">Today</button>
+                        </div>
+                    </div>
+                    <div id="payrollContainer" style="padding:.75rem">
+                        <p style="color:#888;text-align:center;padding:1.5rem">Open this tab to load payroll</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -2967,6 +2992,7 @@ Tasks:
 
         // Auto-load calendar when tab is clicked
         document.querySelector('[data-tab="calendar"]').addEventListener('click', loadCalendarEvents);
+        document.querySelector('[data-tab="payroll"]').addEventListener('click', loadPayroll);
         document.querySelector('[data-tab="labour"]').addEventListener('click', () => {
             loadWorkers();
             loadDailyLogs();
@@ -3489,6 +3515,344 @@ function calcTotalHours(log) {
         return sum + Math.max(0, new Date(p.out) - new Date(p.in));
     }, 0);
     return ms > 0 ? (ms / 3600000).toFixed(1) : null;
+}
+
+// ── EXCEL EXPORT ─────────────────────────────────────────────────────────────
+
+function exportLeadsExcel() {
+    if (!allLeads || !allLeads.length) { alert('No leads loaded.'); return; }
+
+    const rows = allLeads.map(l => {
+        const rawDate = l.saleDate || l.survey?.visitDate?.split('T')[0] || l.createdAt;
+        let dateStr = '';
+        if (rawDate) {
+            try { dateStr = new Date(rawDate).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }); } catch { dateStr = rawDate; }
+        }
+        const totalNum  = parseFloat(String(l.total || l.estimatedValue || '0').replace(/[$,]/g, '')) || 0;
+        const paidNum   = parseFloat(l.paymentAmount) || 0;
+        const owedNum   = Math.max(0, totalNum - paidNum);
+
+        return {
+            'Date':           dateStr,
+            'Client Name':    l.clientName || '',
+            'Phone':          l.phone || '',
+            'Email':          l.email || '',
+            'Address':        l.address || '',
+            'Service':        l.serviceType || '',
+            'Status':         l.status || '',
+            'Rep':            l.salesRep || '',
+            'Estimate #':     l.estimateNumber || '',
+            'Total ($)':      totalNum || '',
+            'Paid ($)':       paidNum || '',
+            'Owed ($)':       owedNum || '',
+            'Payment Status': l.paymentStatus || 'Unpaid',
+            'Payment Method': l.paymentMethod || '',
+            'Notes':          l.notes || '',
+            'Job Details':    Array.isArray(l.jobDetails) ? l.jobDetails.join(', ') : (l.jobDetails || ''),
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Column widths
+    ws['!cols'] = [
+        { wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 26 }, { wch: 28 },
+        { wch: 22 }, { wch: 12 }, { wch: 14 }, { wch: 14 },
+        { wch: 11 }, { wch: 11 }, { wch: 11 },
+        { wch: 16 }, { wch: 16 }, { wch: 30 }, { wch: 35 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+
+    const today = new Date().toLocaleDateString('en-CA').replace(/\//g, '-');
+    XLSX.writeFile(wb, 'core-exteriors-leads-' + today + '.xlsx');
+}
+
+function exportQLLeadsExcel() {
+    if (!allQLLeads || !allQLLeads.length) { alert('No leads loaded. Click Refresh first.'); return; }
+
+    const rows = allQLLeads.map(l => {
+        let dateStr = '';
+        try { dateStr = new Date(l.createdAt).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }); } catch {}
+        let visitStr = '';
+        try { if (l.visitDate) visitStr = new Date(l.visitDate + 'T12:00:00').toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }); } catch {}
+
+        return {
+            'Date Added':    dateStr,
+            'Name':          l.name || '',
+            'Phone':         l.phone || '',
+            'Email':         l.email || '',
+            'Address':       l.address || '',
+            'Services':      (l.services || []).map(s => s.name).filter(Boolean).join(', '),
+            'Visit Date':    visitStr,
+            'Total':         l.total || '',
+            'Rep':           l.salesRep || '',
+            'Estimate #':    l.estimateNumber || '',
+            'Notes':         l.notes || '',
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [
+        { wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 26 },
+        { wch: 28 }, { wch: 28 }, { wch: 14 }, { wch: 12 },
+        { wch: 14 }, { wch: 14 }, { wch: 35 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+
+    const today = new Date().toLocaleDateString('en-CA').replace(/\//g, '-');
+    XLSX.writeFile(wb, 'core-exteriors-leads-list-' + today + '.xlsx');
+}
+
+// ── PAYROLL ───────────────────────────────────────────────────────────────────
+
+function payrollDefaultFrom() {
+    // Last Monday (start of previous week in a Mon-start biweekly)
+    const today = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' }) + 'T12:00:00Z');
+    const daysSinceMonday = (today.getUTCDay() + 6) % 7;
+    const thisMonday = new Date(today);
+    thisMonday.setUTCDate(today.getUTCDate() - daysSinceMonday - 7);
+    return thisMonday.toISOString().slice(0, 10);
+}
+
+function shiftPayroll(direction) {
+    const picker = document.getElementById('payrollFromPicker');
+    if (!picker.value) picker.value = payrollDefaultFrom();
+    const d = new Date(picker.value + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + direction * 14);
+    picker.value = d.toISOString().slice(0, 10);
+    loadPayroll();
+}
+
+function goCurrentPayroll() {
+    const picker = document.getElementById('payrollFromPicker');
+    picker.value = payrollDefaultFrom();
+    loadPayroll();
+}
+
+async function loadPayroll() {
+    const picker = document.getElementById('payrollFromPicker');
+    if (!picker.value) picker.value = payrollDefaultFrom();
+    const from  = picker.value;
+    const token = localStorage.getItem('admin_token') || '';
+    const container = document.getElementById('payrollContainer');
+    container.textContent = 'Loading…';
+    try {
+        const r = await fetch('/api/labour?action=payroll&from=' + encodeURIComponent(from), {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await r.json();
+        if (!data.success) { container.textContent = 'Error: ' + (data.error || 'failed'); return; }
+        renderPayroll(data);
+    } catch { container.textContent = 'Connection error.'; }
+}
+
+function fmtPayrollDate(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dow = days[new Date(y, m - 1, d).getDay()];
+    return dow + ' ' + months[m - 1] + ' ' + d;
+}
+
+function fmtHrsDecimal(minutes) {
+    return (minutes / 60).toFixed(2);
+}
+
+function applyPaidBtnState(btn, isPaid, paidRecord) {
+    if (isPaid) {
+        btn.textContent = '✓ Paid';
+        btn.style.cssText = 'background:#1b5e20;border:none;border-radius:20px;color:#69f0ae;font-size:.8rem;font-weight:700;padding:.25rem .85rem;cursor:pointer';
+        if (paidRecord?.paidAt) {
+            const d = new Date(paidRecord.paidAt);
+            btn.title = 'Paid on ' + d.toLocaleDateString('en-CA', { timeZone: 'America/Toronto', month: 'short', day: 'numeric', year: 'numeric' }) + ' — click to undo';
+        }
+    } else {
+        btn.textContent = 'Mark Paid';
+        btn.style.cssText = 'background:#263c5a;border:none;border-radius:20px;color:#90caf9;font-size:.8rem;font-weight:600;padding:.25rem .85rem;cursor:pointer';
+        btn.title = '';
+    }
+}
+
+async function toggleWorkerPaid(btn) {
+    const token    = localStorage.getItem('admin_token') || '';
+    const workerId = btn.dataset.workerId;
+    const from     = btn.dataset.from;
+    const isPaid   = btn.textContent.includes('Paid') && !btn.textContent.includes('Mark');
+
+    // Grab gross amount from the rate input if available
+    const grossEl = document.getElementById('gross_' + workerId);
+    const amount  = grossEl ? grossEl.textContent.replace('$', '') : null;
+
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+    try {
+        const r = await fetch('/api/labour?action=toggle-paid', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ from, workerId, amount: isPaid ? null : amount })
+        });
+        const data = await r.json();
+        if (data.success) {
+            applyPaidBtnState(btn, !!data.paid, data.paid);
+            // tint the card
+            const card = btn.closest('[id^="paycard_"]') || btn.closest('div[style*="background:#111e30"]');
+            if (card) card.style.borderLeft = data.paid ? '3px solid #2e7d32' : '';
+        }
+    } catch { /* non-fatal */ }
+    btn.disabled = false;
+    btn.style.opacity = '1';
+}
+
+function renderPayroll(data) {
+    const container = document.getElementById('payrollContainer');
+    container.textContent = '';
+
+    if (!data.workers || !data.workers.length) {
+        const p = document.createElement('p');
+        p.style.cssText = 'color:#888;text-align:center;padding:1.5rem';
+        p.textContent = 'No active workers found.';
+        container.appendChild(p);
+        return;
+    }
+
+    // Period header
+    const from = data.dates[0];
+    const to   = data.dates[13];
+    const header = document.createElement('div');
+    header.style.cssText = 'margin-bottom:1.25rem;padding:.75rem 1rem;background:rgba(21,101,192,.15);border:1px solid rgba(21,101,192,.3);border-radius:10px;font-size:.9rem;color:#90caf9';
+    header.textContent = 'Pay Period: ' + fmtPayrollDate(from) + ' — ' + fmtPayrollDate(to);
+    container.appendChild(header);
+
+    data.workers.forEach(entry => {
+        const { worker, week1, week2, biweeklyMinutes } = entry;
+        const rateKey = 'payroll_rate_' + worker.id;
+        const savedRate = localStorage.getItem(rateKey) || '';
+
+        const card = document.createElement('div');
+        card.id = 'paycard_' + worker.id;
+        card.style.cssText = 'background:#111e30;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem' + (entry.paid ? ';border-left:3px solid #2e7d32' : '');
+
+        // Worker name row
+        const nameRow = document.createElement('div');
+        nameRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem';
+        const nameEl = document.createElement('div');
+        nameEl.style.cssText = 'font-size:1.05rem;font-weight:700;color:#fff';
+        nameEl.textContent = worker.name;
+
+        const badges = document.createElement('div');
+        badges.style.cssText = 'display:flex;gap:.5rem;align-items:center;flex-wrap:wrap';
+
+        const totalBadge = document.createElement('div');
+        totalBadge.style.cssText = 'font-size:.85rem;font-weight:700;color:#69f0ae;background:#1b5e20;border-radius:20px;padding:.25rem .85rem';
+        totalBadge.textContent = fmtHrsDecimal(biweeklyMinutes) + ' hrs total';
+
+        // Paid toggle button
+        const paidBtn = document.createElement('button');
+        paidBtn.id = 'paidbtn_' + worker.id;
+        paidBtn.dataset.workerId = worker.id;
+        paidBtn.dataset.from = data.from;
+        const isPaid = !!entry.paid;
+        applyPaidBtnState(paidBtn, isPaid, entry.paid);
+        paidBtn.addEventListener('click', () => toggleWorkerPaid(paidBtn));
+
+        badges.appendChild(totalBadge);
+        badges.appendChild(paidBtn);
+        nameRow.appendChild(nameEl);
+        nameRow.appendChild(badges);
+        card.appendChild(nameRow);
+
+        // Week columns
+        const weeksRow = document.createElement('div');
+        weeksRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem';
+
+        [['Week 1', week1], ['Week 2', week2]].forEach(([label, week]) => {
+            const col = document.createElement('div');
+            col.style.cssText = 'background:#0d1f35;border-radius:10px;padding:.75rem';
+
+            const colHeader = document.createElement('div');
+            colHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem';
+            const colLabel = document.createElement('span');
+            colLabel.style.cssText = 'font-size:.75rem;color:#546e8a;text-transform:uppercase;font-weight:600;letter-spacing:.4px';
+            colLabel.textContent = label;
+            const colTotal = document.createElement('span');
+            colTotal.style.cssText = 'font-size:.85rem;font-weight:700;color:#4fc3f7';
+            colTotal.textContent = fmtHrsDecimal(week.totalMinutes) + ' hrs';
+            colHeader.appendChild(colLabel);
+            colHeader.appendChild(colTotal);
+            col.appendChild(colHeader);
+
+            week.days.forEach(day => {
+                if (day.totalMinutes === 0) return; // skip zero days
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;justify-content:space-between;font-size:.8rem;padding:.2rem 0;border-top:1px solid rgba(255,255,255,.05)';
+                const dayLabel = document.createElement('span');
+                dayLabel.style.color = '#aaa';
+                dayLabel.textContent = fmtPayrollDate(day.date);
+                const dayHrs = document.createElement('span');
+                dayHrs.style.cssText = 'color:#fff;font-weight:600';
+                dayHrs.textContent = fmtHrsDecimal(day.totalMinutes) + ' hrs';
+                row.appendChild(dayLabel);
+                row.appendChild(dayHrs);
+                col.appendChild(row);
+            });
+
+            if (week.days.every(d => d.totalMinutes === 0)) {
+                const none = document.createElement('div');
+                none.style.cssText = 'font-size:.8rem;color:#546e8a;font-style:italic';
+                none.textContent = 'No hours logged';
+                col.appendChild(none);
+            }
+
+            weeksRow.appendChild(col);
+        });
+        card.appendChild(weeksRow);
+
+        // Pay calculator row
+        const payRow = document.createElement('div');
+        payRow.style.cssText = 'display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;background:#0a1628;border-radius:10px;padding:.75rem 1rem';
+
+        const rateLabel = document.createElement('label');
+        rateLabel.style.cssText = 'font-size:.8rem;color:#aaa;white-space:nowrap';
+        rateLabel.textContent = 'Hourly rate $';
+
+        const rateInput = document.createElement('input');
+        rateInput.type = 'number';
+        rateInput.min = '0';
+        rateInput.step = '0.50';
+        rateInput.placeholder = '0.00';
+        rateInput.value = savedRate;
+        rateInput.style.cssText = 'width:90px;background:#111e30;border:1px solid #333;border-radius:8px;padding:.4rem .65rem;color:#fff;font-size:.9rem;font-weight:600';
+
+        const grossLabel = document.createElement('span');
+        grossLabel.style.cssText = 'font-size:.85rem;color:#aaa;margin-left:auto';
+        grossLabel.textContent = 'Gross pay:';
+
+        const grossVal = document.createElement('span');
+        grossVal.style.cssText = 'font-size:1.1rem;font-weight:700;color:#ffb300;min-width:80px;text-align:right';
+        grossVal.id = 'gross_' + worker.id;
+
+        function recalc() {
+            const rate = parseFloat(rateInput.value) || 0;
+            const hours = biweeklyMinutes / 60;
+            grossVal.textContent = '$' + (rate * hours).toFixed(2);
+            localStorage.setItem(rateKey, rateInput.value);
+        }
+
+        rateInput.addEventListener('input', recalc);
+        if (savedRate) recalc();
+
+        payRow.appendChild(rateLabel);
+        payRow.appendChild(rateInput);
+        payRow.appendChild(grossLabel);
+        payRow.appendChild(grossVal);
+        card.appendChild(payRow);
+
+        container.appendChild(card);
+    });
 }
     </script>
 </body>

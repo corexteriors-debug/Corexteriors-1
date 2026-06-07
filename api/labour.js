@@ -94,6 +94,8 @@ module.exports = async function handler(req, res) {
         if (action === 'remove-job')        return await removeJob(req, res);
         if (action === 'list-jobs')         return await listJobs(req, res);
         if (action === 'preview-jobs')      return await previewJobs(req, res);
+        if (action === 'payroll')           return await payrollReport(req, res);
+        if (action === 'toggle-paid')       return await togglePaid(req, res);
         return res.status(400).json({ error: 'Unknown action' });
     } catch (err) {
         console.error('Labour API error:', err.message);
@@ -688,4 +690,79 @@ async function previewJobs(req, res) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
     const jobs = await jobsForDate(date, buildCalClient());
     return res.status(200).json({ success: true, date, jobs });
+}
+
+// ── Admin: biweekly payroll report ────────────────────────────────────────────
+
+async function payrollReport(req, res) {
+    if (req.method !== 'GET') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+
+    // Default: start from the Monday 14 days ago (current biweekly window)
+    let from = req.query.from;
+    if (!from || !/^\d{4}-\d{2}-\d{2}$/.test(from)) {
+        const todayStr = todayKey();
+        const today = new Date(`${todayStr}T12:00:00Z`);
+        const daysSinceMonday = (today.getUTCDay() + 6) % 7;
+        const thisMonday = new Date(today);
+        thisMonday.setUTCDate(today.getUTCDate() - daysSinceMonday);
+        thisMonday.setUTCDate(thisMonday.getUTCDate() - 7); // go back one more week
+        from = thisMonday.toISOString().slice(0, 10);
+    }
+
+    const dates = Array.from({ length: 14 }, (_, i) => {
+        const d = new Date(`${from}T12:00:00Z`);
+        d.setUTCDate(d.getUTCDate() + i);
+        return d.toISOString().slice(0, 10);
+    });
+
+    const index = await kv.get('workers:index') || [];
+    const allWorkers = (await Promise.all(index.map(id => kv.get(`worker:${id}`)))).filter(Boolean);
+    const activeWorkers = allWorkers.filter(w => w.active);
+
+    const results = await Promise.all(activeWorkers.map(async (worker) => {
+        const days = await Promise.all(dates.map(async (dateStr) => {
+            const raw = await kv.get(`labour:${dateStr}:${worker.id}`);
+            const log = normalizePunches(raw);
+            const totalMinutes = calcTotalMinutes(log.punches);
+            return { date: dateStr, punches: log.punches, totalMinutes };
+        }));
+
+        const week1 = days.slice(0, 7);
+        const week2 = days.slice(7, 14);
+        const week1Minutes = week1.reduce((s, d) => s + d.totalMinutes, 0);
+        const week2Minutes = week2.reduce((s, d) => s + d.totalMinutes, 0);
+
+        const paidRecord = await kv.get(`payroll-paid:${from}:${worker.id}`);
+
+        return {
+            worker: { id: worker.id, name: worker.name },
+            week1: { days: week1, totalMinutes: week1Minutes, formatted: fmtMinutes(week1Minutes) },
+            week2: { days: week2, totalMinutes: week2Minutes, formatted: fmtMinutes(week2Minutes) },
+            biweeklyMinutes: week1Minutes + week2Minutes,
+            biweeklyFormatted: fmtMinutes(week1Minutes + week2Minutes),
+            paid: paidRecord || null,
+        };
+    }));
+
+    return res.status(200).json({ success: true, from, dates, workers: results });
+}
+
+async function togglePaid(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+
+    const { from, workerId, amount } = req.body || {};
+    if (!from || !workerId) return res.status(400).json({ error: 'from and workerId required' });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) return res.status(400).json({ error: 'from must be YYYY-MM-DD' });
+
+    const key = `payroll-paid:${from}:${workerId}`;
+    const existing = await kv.get(key);
+    if (existing) {
+        await kv.del(key);
+        return res.status(200).json({ success: true, paid: null });
+    }
+    const record = { paidAt: nowISO(), amount: amount || null };
+    await kv.set(key, record);
+    return res.status(200).json({ success: true, paid: record });
 }
