@@ -286,7 +286,11 @@
 </div>
 
 <script>
-    const API_BASE = '/api';
+    // Cloudflare Worker URLs — update after deploying workers/outreach-finder.js and workers/outreach-scrape.js
+    const CF_FINDER_URL = 'https://outreach-finder.YOUR_SUBDOMAIN.workers.dev';
+    const CF_SCRAPE_URL  = 'https://outreach-scrape.YOUR_SUBDOMAIN.workers.dev';
+    const CF_SECRET = 'REPLACE_WITH_YOUR_OUTREACH_SECRET';
+
     const authToken = localStorage.getItem('admin_token') || '';
 
     if (!authToken) {
@@ -344,9 +348,9 @@
             if (mode === 'text') body.query = query;
             if (mode === 'overpass') body.bbox = bbox;
 
-            const res = await fetch(`${API_BASE}/outreach-finder`, {
+            const res = await fetch(CF_FINDER_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CF_SECRET}` },
                 body: JSON.stringify(body),
             });
 
@@ -472,9 +476,9 @@
 
     async function scrapeOne(i, biz) {
         try {
-            const res = await fetch(`${API_BASE}/outreach-scrape`, {
+            const res = await fetch(CF_SCRAPE_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CF_SECRET}` },
                 body: JSON.stringify({ url: biz.website }),
             });
             const data = await res.json();
