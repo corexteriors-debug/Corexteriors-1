@@ -1145,6 +1145,7 @@
                     <div class="field">
                         <label>Scheduled Visit Date <span style="color:#e74c3c;font-weight:700">*</span></label>
                         <input type="datetime-local" id="visitDate" required style="border:1px solid rgba(255,255,255,.15)">
+                        <div id="slotAvailability" style="display:none;margin-top:.6rem"></div>
                     </div>
                     <div class="field">
                         <label>Water Access</label>
@@ -2336,6 +2337,138 @@ corexteriors.ca
             el.style.border = '1px solid ' + (type === 'success' ? 'rgba(46,204,113,.3)' : 'rgba(231,76,60,.3)');
             el.textContent = text;
         }
+
+        // ── SLOT AVAILABILITY CHECKER ──────────────────────────────────────────
+        document.getElementById('visitDate').addEventListener('input', function() {
+            clearTimeout(window._slotTimer);
+            window._slotTimer = setTimeout(checkSlotAvailability, 300);
+        });
+
+        async function checkSlotAvailability() {
+            var val = document.getElementById('visitDate').value;
+            var panel = document.getElementById('slotAvailability');
+            if (!val || val.length < 10 || !authToken) { panel.style.display = 'none'; return; }
+
+            var date = val.slice(0, 10);
+            var selectedTime = val.length >= 16 ? val.slice(11, 16) : null;
+
+            panel.style.display = 'block';
+            panel.textContent = '';
+            var loading = document.createElement('div');
+            loading.style.cssText = 'color:rgba(255,255,255,.45);font-size:.82rem;padding:.25rem 0';
+            loading.textContent = '\u23F3 Checking schedule...';
+            panel.appendChild(loading);
+
+            try {
+                var r = await fetch(
+                    '/api/calendar?start=' + encodeURIComponent(date + 'T00:00:00') +
+                    '&end=' + encodeURIComponent(date + 'T23:59:59'),
+                    { headers: { 'Authorization': 'Bearer ' + authToken } }
+                );
+                if (!r.ok) { panel.style.display = 'none'; return; }
+                var data = await r.json();
+                var events = (data.events || []).filter(function(e) {
+                    return e.type === 'job' || e.type === 'sales_visit' || e.type === 'unavailable';
+                });
+                renderSlotStrip(panel, date, selectedTime, events);
+            } catch (e) {
+                panel.style.display = 'none';
+            }
+        }
+
+        function renderSlotStrip(panel, date, selectedTime, events) {
+            var START_H = 7, END_H = 19;
+            var TOTAL_MINS = (END_H - START_H) * 60;
+
+            var booked = events.map(function(e) {
+                var s = new Date(e.start), en = new Date(e.end);
+                return {
+                    startMins: s.getHours() * 60 + s.getMinutes(),
+                    endMins:   en.getHours() * 60 + en.getMinutes(),
+                    label: e.title.replace(/^[\u{1F7E2}\u2705]\s*(Job|AVAILABLE)\s*[\u2014-]\s*/iu, '').split('|')[0].trim(),
+                    type: e.type
+                };
+            });
+
+            var conflict = null;
+            if (selectedTime) {
+                var parts = selectedTime.split(':');
+                var selStart = Number(parts[0]) * 60 + Number(parts[1]);
+                var selEnd = selStart + 180;
+                for (var i = 0; i < booked.length; i++) {
+                    if (selStart < booked[i].endMins && selEnd > booked[i].startMins) { conflict = booked[i]; break; }
+                }
+            }
+
+            panel.textContent = '';
+
+            // Day heading
+            var heading = document.createElement('div');
+            heading.style.cssText = 'font-size:.75rem;font-weight:600;color:rgba(255,255,255,.4);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.04em';
+            heading.textContent = new Date(date + 'T12:00:00').toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' }) + ' \u2014 schedule';
+            panel.appendChild(heading);
+
+            // Strip
+            var strip = document.createElement('div');
+            strip.style.cssText = 'position:relative;height:26px;background:rgba(255,255,255,.05);border-radius:6px;border:1px solid rgba(255,255,255,.08)';
+            var inner = document.createElement('div');
+            inner.style.cssText = 'position:absolute;inset:0;border-radius:6px;overflow:hidden';
+
+            booked.filter(function(b) { return b.endMins > START_H * 60 && b.startMins < END_H * 60; }).forEach(function(b) {
+                var cs = Math.max(b.startMins, START_H * 60);
+                var ce = Math.min(b.endMins, END_H * 60);
+                var left  = ((cs - START_H * 60) / TOTAL_MINS * 100).toFixed(1);
+                var width = ((ce - cs) / TOTAL_MINS * 100).toFixed(1);
+                var bg = b.type === 'unavailable' ? 'rgba(149,165,166,.7)' : 'rgba(231,76,60,.8)';
+                var block = document.createElement('div');
+                block.title = b.label;
+                block.style.cssText = 'position:absolute;top:0;bottom:0;left:' + left + '%;width:' + width + '%;background:' + bg + ';border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:#fff;overflow:hidden;padding:0 3px;white-space:nowrap';
+                block.textContent = '\uD83D\uDD34 ' + (b.label.length > 18 ? b.label.slice(0, 17) + '\u2026' : b.label);
+                inner.appendChild(block);
+            });
+            strip.appendChild(inner);
+
+            // Time marker (blue line)
+            if (selectedTime) {
+                var tp = selectedTime.split(':');
+                var selMins = Number(tp[0]) * 60 + Number(tp[1]);
+                if (selMins >= START_H * 60 && selMins < END_H * 60) {
+                    var markerLeft = ((selMins - START_H * 60) / TOTAL_MINS * 100).toFixed(1);
+                    var marker = document.createElement('div');
+                    marker.style.cssText = 'position:absolute;top:-3px;bottom:-3px;left:' + markerLeft + '%;width:2px;background:#3498db;border-radius:2px;z-index:5;box-shadow:0 0 4px #3498db';
+                    strip.appendChild(marker);
+                }
+            }
+            panel.appendChild(strip);
+
+            // Hour labels
+            var labelRow = document.createElement('div');
+            labelRow.style.cssText = 'position:relative;height:16px;margin-top:2px';
+            for (var h = START_H; h <= END_H; h += 2) {
+                var pct = ((h - START_H) / (END_H - START_H) * 100).toFixed(0);
+                var lbl = h === 12 ? '12pm' : h < 12 ? h + 'am' : (h - 12) + 'pm';
+                var span = document.createElement('span');
+                span.style.cssText = 'position:absolute;left:' + pct + '%;transform:translateX(-50%);font-size:.68rem;color:rgba(255,255,255,.35)';
+                span.textContent = lbl;
+                labelRow.appendChild(span);
+            }
+            panel.appendChild(labelRow);
+
+            // Status
+            var status = document.createElement('div');
+            if (conflict) {
+                status.style.cssText = 'margin-top:.5rem;padding:.4rem .65rem;background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.35);border-radius:7px;font-size:.82rem;color:#e74c3c;font-weight:600';
+                status.textContent = '\u26A0\uFE0F Time conflict \u2014 ' + conflict.label + ' is already booked at this time';
+            } else if (booked.length === 0) {
+                status.style.cssText = 'margin-top:.4rem;font-size:.8rem;color:rgba(100,220,120,.7)';
+                status.textContent = '\u2705 No bookings on this day \u2014 all clear';
+            } else {
+                status.style.cssText = 'margin-top:.4rem;font-size:.8rem;color:rgba(100,220,120,.7)';
+                status.textContent = '\u2705 Selected time is available';
+            }
+            panel.appendChild(status);
+        }
+        // ── END SLOT AVAILABILITY ──────────────────────────────────────────────
     </script>
 </body>
 </html>
