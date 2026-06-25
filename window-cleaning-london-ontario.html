@@ -36,18 +36,53 @@
         content="Professional window cleaning in London, ON. Interior & exterior, screen and track cleaning. Fully insured. Free quotes!">
     <meta property="og:image" content="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/og-image.jpg">
 
-    <!-- Structured Data -->
+    <!-- Schema: Service + BreadcrumbList + FAQPage -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "serviceType": "Window Cleaning",
-        "provider": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Service",
+          "name": "Window Cleaning London Ontario",
+          "url": "https://corexteriors.ca/window-cleaning-london-ontario",
+          "description": "Professional window cleaning in London, Ontario. Interior and exterior window washing, screen cleaning, and track cleaning. Free estimates.",
+          "provider": {
             "@type": "LocalBusiness",
             "name": "Core Exteriors",
-            "telephone": "+1-519-712-1431"
+            "telephone": "+15197121431",
+            "url": "https://corexteriors.ca"
+          },
+          "areaServed": ["London", "St. Thomas", "Strathroy", "Dorchester"]
         },
-        "areaServed": ["London, Ontario", "St. Thomas, Ontario", "Strathroy, Ontario"]
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://corexteriors.ca"},
+            {"@type": "ListItem", "position": 2, "name": "Services", "item": "https://corexteriors.ca/#services"},
+            {"@type": "ListItem", "position": 3, "name": "Window Cleaning", "item": "https://corexteriors.ca/window-cleaning-london-ontario"}
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Do you clean both interior and exterior windows?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Yes. We clean both interior and exterior windows, including screens and tracks. We can do exterior-only if preferred."}
+            },
+            {
+              "@type": "Question",
+              "name": "How often should windows be professionally cleaned?",
+              "acceptedAnswer": {"@type": "Answer", "text": "We recommend professional window cleaning 2–4 times per year. Spring and fall cleanings are most popular in London, Ontario."}
+            },
+            {
+              "@type": "Question",
+              "name": "Do you clean hard-to-reach windows?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Yes. We have equipment and techniques for all heights including second-storey and above. Safety is our top priority on every job."}
+            }
+          ]
+        }
+      ]
     }
     </script>
 

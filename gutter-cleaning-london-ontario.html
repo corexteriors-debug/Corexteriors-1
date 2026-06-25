@@ -36,18 +36,64 @@
         content="Professional gutter cleaning in London, ON. Debris removal, downspout flushing. Fully insured. Free quotes!">
     <meta property="og:image" content="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/og-image.jpg">
 
-    <!-- Structured Data -->
+    <!-- Schema: Service + BreadcrumbList + FAQPage -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "serviceType": "Gutter Cleaning",
-        "provider": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Service",
+          "name": "Gutter Cleaning London Ontario",
+          "url": "https://corexteriors.ca/gutter-cleaning-london-ontario",
+          "description": "Professional gutter cleaning and eavestrough cleaning in London, Ontario. Debris removal, downspout flushing, and flow testing. Starting at $99.",
+          "provider": {
             "@type": "LocalBusiness",
             "name": "Core Exteriors",
-            "telephone": "+1-519-712-1431"
+            "telephone": "+15197121431",
+            "url": "https://corexteriors.ca"
+          },
+          "areaServed": ["London", "St. Thomas", "Strathroy", "Dorchester"],
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "CAD",
+            "price": "99",
+            "priceSpecification": {"@type": "PriceSpecification", "minPrice": "99", "priceCurrency": "CAD"}
+          }
         },
-        "areaServed": ["London, Ontario", "St. Thomas, Ontario", "Strathroy, Ontario"]
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://corexteriors.ca"},
+            {"@type": "ListItem", "position": 2, "name": "Services", "item": "https://corexteriors.ca/#services"},
+            {"@type": "ListItem", "position": 3, "name": "Gutter Cleaning", "item": "https://corexteriors.ca/gutter-cleaning-london-ontario"}
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How often should I clean my gutters in London, Ontario?",
+              "acceptedAnswer": {"@type": "Answer", "text": "We recommend cleaning your gutters twice a year — once in spring and once in fall after leaves have dropped. London's wet climate makes regular cleaning essential to prevent water damage."}
+            },
+            {
+              "@type": "Question",
+              "name": "How much does gutter cleaning cost?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Gutter cleaning starts at $99 for most London-area homes. Final price depends on home size, number of storeys, and gutter length."}
+            },
+            {
+              "@type": "Question",
+              "name": "Are you insured for gutter cleaning?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Yes. Core Exteriors carries $5M general liability insurance and is fully WSIB compliant. We provide documentation on request before arriving at your property."}
+            },
+            {
+              "@type": "Question",
+              "name": "What areas do you serve for gutter cleaning?",
+              "acceptedAnswer": {"@type": "Answer", "text": "We serve London, St. Thomas, Strathroy, and Dorchester, Ontario."}
+            }
+          ]
+        }
+      ]
     }
     </script>
 

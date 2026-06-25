@@ -36,18 +36,53 @@
         content="Professional siding cleaning in London, ON. Soft wash removes mold, mildew & algae. Fully insured. Free quotes!">
     <meta property="og:image" content="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/og-image.jpg">
 
-    <!-- Structured Data -->
+    <!-- Schema: Service + BreadcrumbList + FAQPage -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "serviceType": "Siding Cleaning",
-        "provider": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Service",
+          "name": "Siding Cleaning London Ontario",
+          "url": "https://corexteriors.ca/siding-cleaning-london-ontario",
+          "description": "Professional siding cleaning and house washing in London, Ontario. Soft wash removes mold, mildew and algae safely from vinyl, wood, and brick siding.",
+          "provider": {
             "@type": "LocalBusiness",
             "name": "Core Exteriors",
-            "telephone": "+1-519-712-1431"
+            "telephone": "+15197121431",
+            "url": "https://corexteriors.ca"
+          },
+          "areaServed": ["London", "St. Thomas", "Strathroy", "Dorchester"]
         },
-        "areaServed": ["London, Ontario", "St. Thomas, Ontario", "Strathroy, Ontario"]
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://corexteriors.ca"},
+            {"@type": "ListItem", "position": 2, "name": "Services", "item": "https://corexteriors.ca/#services"},
+            {"@type": "ListItem", "position": 3, "name": "Siding Cleaning", "item": "https://corexteriors.ca/siding-cleaning-london-ontario"}
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Do you use soft wash or pressure washing for siding?",
+              "acceptedAnswer": {"@type": "Answer", "text": "We use soft wash for vinyl, painted wood, and fiber cement siding — low pressure with a biodegradable cleaning solution. Soft wash is safer for siding and more effective at killing mold and algae at the root."}
+            },
+            {
+              "@type": "Question",
+              "name": "How often should siding be cleaned?",
+              "acceptedAnswer": {"@type": "Answer", "text": "We recommend cleaning your siding every 1–2 years. London's humid climate promotes mold and algae growth, especially on north-facing and shaded surfaces."}
+            },
+            {
+              "@type": "Question",
+              "name": "Do you clean all types of siding?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Yes. We clean vinyl, wood, brick, stucco, and fiber cement siding. We adjust pressure and cleaning method based on your siding material."}
+            }
+          ]
+        }
+      ]
     }
     </script>
 

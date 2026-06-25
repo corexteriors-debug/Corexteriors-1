@@ -36,25 +36,63 @@
         content="Professional deck restoration services in London, ON. Power washing, sanding, staining & sealing. Fully insured. Free quotes!">
     <meta property="og:image" content="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-restoration-og.jpg">
 
-    <!-- Structured Data -->
+    <!-- Schema: Service + BreadcrumbList + FAQPage -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "serviceType": "Deck Restoration",
-        "provider": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Service",
+          "name": "Deck Restoration London Ontario",
+          "url": "https://corexteriors.ca/deck-restoration-london-ontario",
+          "description": "Professional deck restoration, power washing, sanding, staining and sealing in London, Ontario. Free estimates.",
+          "provider": {
             "@type": "LocalBusiness",
             "name": "Core Exteriors",
-            "telephone": "+1-519-712-1431",
-            "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "London",
-                "addressRegion": "ON",
-                "addressCountry": "CA"
-            }
+            "telephone": "+15197121431",
+            "url": "https://corexteriors.ca"
+          },
+          "areaServed": ["London", "St. Thomas", "Strathroy", "Dorchester"],
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "CAD",
+            "priceSpecification": {"@type": "PriceSpecification", "minPrice": "1000", "maxPrice": "6000", "priceCurrency": "CAD"}
+          }
         },
-        "areaServed": ["London, Ontario", "St. Thomas, Ontario", "Strathroy, Ontario"],
-        "description": "Professional deck restoration including power washing, sanding, staining, and sealing services."
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://corexteriors.ca"},
+            {"@type": "ListItem", "position": 2, "name": "Services", "item": "https://corexteriors.ca/#services"},
+            {"@type": "ListItem", "position": 3, "name": "Deck Restoration", "item": "https://corexteriors.ca/deck-restoration-london-ontario"}
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How much does deck restoration cost in London, Ontario?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Deck restoration typically costs between $1,000 and $6,000 depending on deck size, condition, and the scope of work (washing, sanding, staining, sealing)."}
+            },
+            {
+              "@type": "Question",
+              "name": "How long does deck restoration take?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Most residential decks are completed in 1–2 days. Larger or more damaged decks may take longer depending on drying time between coats."}
+            },
+            {
+              "@type": "Question",
+              "name": "How often should I restore my deck?",
+              "acceptedAnswer": {"@type": "Answer", "text": "We recommend restoring and re-staining your deck every 2–3 years to prevent weathering, cracking, and mould buildup, especially in London's wet climate."}
+            },
+            {
+              "@type": "Question",
+              "name": "Do you guarantee your deck restoration work?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Yes. We do not leave the site until you are 100% satisfied. Our job-complete guarantee means we redo any unsatisfactory work at no additional cost."}
+            }
+          ]
+        }
+      ]
     }
     </script>
 

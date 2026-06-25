@@ -36,18 +36,58 @@
         content="Professional hardscape and patio services in London, ON. Interlock leveling, polymeric sand, cleaning. Fully insured. Free quotes!">
     <meta property="og:image" content="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/og-image.jpg">
 
-    <!-- Structured Data -->
+    <!-- Schema: Service + BreadcrumbList + FAQPage -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "serviceType": "Hardscape Optimization",
-        "provider": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Service",
+          "name": "Hardscape Optimization London Ontario",
+          "url": "https://corexteriors.ca/hardscape-optimization-london-ontario",
+          "description": "Professional hardscape optimization in London, Ontario. Interlock re-leveling, polymeric sand, patio repair and driveway cleaning.",
+          "provider": {
             "@type": "LocalBusiness",
             "name": "Core Exteriors",
-            "telephone": "+1-519-712-1431"
+            "telephone": "+15197121431",
+            "url": "https://corexteriors.ca"
+          },
+          "areaServed": ["London", "St. Thomas", "Strathroy", "Dorchester"],
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "CAD",
+            "priceSpecification": {"@type": "PriceSpecification", "minPrice": "1000", "maxPrice": "6000", "priceCurrency": "CAD"}
+          }
         },
-        "areaServed": ["London, Ontario", "St. Thomas, Ontario", "Strathroy, Ontario"]
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://corexteriors.ca"},
+            {"@type": "ListItem", "position": 2, "name": "Services", "item": "https://corexteriors.ca/#services"},
+            {"@type": "ListItem", "position": 3, "name": "Hardscape Optimization", "item": "https://corexteriors.ca/hardscape-optimization-london-ontario"}
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is hardscape optimization?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Hardscape optimization involves re-leveling sunken or uneven interlock pavers, replacing polymeric sand, cleaning surfaces, and restoring patios and driveways to their original condition — without full replacement."}
+            },
+            {
+              "@type": "Question",
+              "name": "Can sunken interlock be fixed without replacing everything?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Yes. In most cases we can lift, re-level, and re-set sunken pavers without full replacement. This is significantly less expensive and achieves excellent results."}
+            },
+            {
+              "@type": "Question",
+              "name": "How much does hardscape work cost?",
+              "acceptedAnswer": {"@type": "Answer", "text": "Hardscape projects typically range from $1,000 to $6,000 depending on the size of the area and scope of work. We provide free estimates after a site assessment."}
+            }
+          ]
+        }
+      ]
     }
     </script>
 
