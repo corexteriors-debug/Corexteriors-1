@@ -3331,10 +3331,9 @@ body.page-exit {
     }
 }
 
-/* Footer social links — two buttons under Get Your Free Quote */
+/* Footer social icons — icon-only pair under Get Your Free Quote */
 .footer-social {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     gap: 8px;
     margin-top: 8px;
     width: 100%;
@@ -3343,20 +3342,32 @@ body.page-exit {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 11px 8px;
+    flex: 1;
+    padding: 10px 0;
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.18);
     border-radius: 50px;
     color: rgba(255,255,255,0.85);
-    font-size: 12px;
-    font-weight: 600;
     text-decoration: none;
     transition: background 0.2s, color 0.2s;
 }
 .footer-social a:hover {
     background: rgba(255,255,255,0.18);
     color: #fff;
+}
+.footer-social svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    fill: currentColor;
+    stroke: none;
+}
+.footer-social a[aria-label*="Instagram"] svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /* Related blog posts on service pages */
