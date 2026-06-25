@@ -3329,3 +3329,31 @@ body.page-exit {
         padding: 18px 20px 24px;
     }
 }
+
+/* Footer social links */
+.footer-social {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+.footer-social a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.footer-social a:hover {
+    background: rgba(255,255,255,0.25);
+}
+.footer-social svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    stroke: none;
+}
