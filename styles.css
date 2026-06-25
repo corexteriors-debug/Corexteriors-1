@@ -1133,7 +1133,7 @@ img {
 
 .advantages-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 32px;
 }
 
@@ -3333,29 +3333,36 @@ body.page-exit {
 /* Footer social links */
 .footer-social {
     display: flex;
-    gap: 12px;
-    margin-top: 12px;
+    gap: 8px;
 }
 .footer-social a {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: rgba(255,255,255,0.1);
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.12);
     border-radius: 50%;
     color: #fff;
     text-decoration: none;
     transition: background 0.2s;
 }
 .footer-social a:hover {
-    background: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.28);
 }
 .footer-social svg {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     fill: currentColor;
     stroke: none;
+}
+/* Instagram uses strokes not fills */
+.footer-social a[aria-label*="Instagram"] svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /* Related blog posts on service pages */
