@@ -3334,6 +3334,8 @@ body.page-exit {
 /* Footer social icons — icon-only pair under Get Your Free Quote */
 .footer-social {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     gap: 8px;
     margin-top: 8px;
     width: 100%;
@@ -3343,7 +3345,8 @@ body.page-exit {
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: 10px 0;
+    min-width: 0;
+    padding: 13px 0;
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.18);
     border-radius: 50px;
@@ -3352,15 +3355,16 @@ body.page-exit {
     transition: background 0.2s, color 0.2s;
 }
 .footer-social a:hover {
-    background: rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.2);
     color: #fff;
 }
 .footer-social svg {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     display: block;
     fill: currentColor;
     stroke: none;
+    flex-shrink: 0;
 }
 .footer-social a[aria-label*="Instagram"] svg {
     fill: none;
