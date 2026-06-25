@@ -3333,34 +3333,21 @@ body.page-exit {
 /* Footer social links */
 .footer-social {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
 }
 .footer-social a {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
     color: rgba(255,255,255,0.7);
     text-decoration: none;
     transition: color 0.2s;
+    line-height: 1;
 }
 .footer-social a:hover {
     color: #fff;
 }
-.footer-social svg {
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
-    stroke: none;
-}
-/* Instagram uses strokes not fills */
-.footer-social a[aria-label*="Instagram"] svg {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
+/* Size locked via inline width/height attributes on each SVG — no CSS override needed */
 
 /* Related blog posts on service pages */
 .related-posts {
