@@ -1550,9 +1550,10 @@ img {
 }
 
 .footer-cta-button {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
     padding: 14px 28px;
     background: var(--gradient-gold);
     color: var(--black);
@@ -3330,24 +3331,33 @@ body.page-exit {
     }
 }
 
-/* Footer social links */
+/* Footer social links — two buttons under Get Your Free Quote */
 .footer-social {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
 }
 .footer-social a {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    color: rgba(255,255,255,0.7);
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 50px;
+    color: rgba(255,255,255,0.85);
+    font-size: 12px;
+    font-weight: 600;
     text-decoration: none;
-    transition: color 0.2s;
-    line-height: 1;
+    transition: background 0.2s, color 0.2s;
 }
 .footer-social a:hover {
+    background: rgba(255,255,255,0.18);
     color: #fff;
 }
-/* Size locked via inline width/height attributes on each SVG — no CSS override needed */
 
 /* Related blog posts on service pages */
 .related-posts {
