@@ -3333,26 +3333,23 @@ body.page-exit {
 /* Footer social links */
 .footer-social {
     display: flex;
-    gap: 8px;
+    gap: 12px;
+    align-items: center;
 }
 .footer-social a {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    background: rgba(255,255,255,0.12);
-    border-radius: 50%;
-    color: #fff;
+    color: rgba(255,255,255,0.7);
     text-decoration: none;
-    transition: background 0.2s;
+    transition: color 0.2s;
 }
 .footer-social a:hover {
-    background: rgba(255,255,255,0.28);
+    color: #fff;
 }
 .footer-social svg {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     fill: currentColor;
     stroke: none;
 }
