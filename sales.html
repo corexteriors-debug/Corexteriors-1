@@ -956,24 +956,18 @@
                     <div class="card-header">
                         <h3>🪵 Deck Restoration</h3><span class="card-price" id="price_deck">$0.00</span>
                     </div>
-                    <div class="form-grid">
-                        <div class="field full"><label>Square Footage <span class="req">*</span></label><input type="number" id="deck_sqft" min="0" oninput="calcAll()"></div>
-                    </div>
-                    <div style="margin-top:.75rem">
-                        <label style="font-size:.8rem;color:rgba(255,255,255,.7);display:block;margin-bottom:.5rem;font-weight:500">Services (select all that apply)</label>
-                        <div style="display:flex;flex-direction:column;gap:.5rem">
-                            <div class="toggle-row">
-                                <label class="toggle"><input type="checkbox" id="deck_powerwash" onchange="calcAll()"><span class="slider"></span></label>
-                                <span class="toggle-label">Power Washing — $1.20/sqft</span>
-                            </div>
-                            <div class="toggle-row">
-                                <label class="toggle"><input type="checkbox" id="deck_sanding" onchange="calcAll()"><span class="slider"></span></label>
-                                <span class="toggle-label">Sanding — $3.50/sqft</span>
-                            </div>
-                            <div class="toggle-row">
-                                <label class="toggle"><input type="checkbox" id="deck_staining" onchange="calcAll()"><span class="slider"></span></label>
-                                <span class="toggle-label">Staining — $2.30/sqft</span>
-                            </div>
+                    <div style="display:flex;flex-direction:column;gap:.6rem">
+                        <div style="display:grid;grid-template-columns:1fr 120px;gap:.5rem;align-items:end">
+                            <div><label style="font-size:.78rem;color:rgba(255,255,255,.55);display:block;margin-bottom:.3rem">Power Washing <span style="color:rgba(255,255,255,.3)">$1.00/sqft</span></label><input type="number" id="deck_pw_sqft" min="0" placeholder="sqft" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit"></div>
+                            <div style="text-align:right;padding-bottom:2px;font-size:.88rem;font-weight:700;color:#2ecc71" id="deck_pw_price"></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 120px;gap:.5rem;align-items:end">
+                            <div><label style="font-size:.78rem;color:rgba(255,255,255,.55);display:block;margin-bottom:.3rem">Sanding <span style="color:rgba(255,255,255,.3)">$3.50/sqft</span></label><input type="number" id="deck_sand_sqft" min="0" placeholder="sqft" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit"></div>
+                            <div style="text-align:right;padding-bottom:2px;font-size:.88rem;font-weight:700;color:#2ecc71" id="deck_sand_price"></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 120px;gap:.5rem;align-items:end">
+                            <div><label style="font-size:.78rem;color:rgba(255,255,255,.55);display:block;margin-bottom:.3rem">Staining <span style="color:rgba(255,255,255,.3)">$1.80/sqft</span></label><input type="number" id="deck_stain_sqft" min="0" placeholder="sqft" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit"></div>
+                            <div style="text-align:right;padding-bottom:2px;font-size:.88rem;font-weight:700;color:#2ecc71" id="deck_stain_price"></div>
                         </div>
                     </div>
                 </div>
@@ -985,28 +979,9 @@
                     <div class="card-header">
                         <h3>🏠 Gutter Cleaning</h3><span class="card-price" id="price_gutter">$0.00</span>
                     </div>
-                    <div class="form-grid">
-                        <div class="field">
-                            <label>Type <span class="req">*</span></label>
-                            <div class="radio-group">
-                                <div class="radio-pill"><input type="radio" name="gutter_type" id="gutter_int" value="interior" onchange="calcAll()" checked><label for="gutter_int">Interior</label></div>
-                                <div class="radio-pill"><input type="radio" name="gutter_type" id="gutter_ext" value="exterior" onchange="calcAll()"><label for="gutter_ext">Exterior</label></div>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Base Stories <span class="req">*</span></label>
-                            <div class="radio-group">
-                                <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_1" value="1" onchange="calcAll()" checked><label for="gutter_1">1 Story</label></div>
-                                <div class="radio-pill"><input type="radio" name="gutter_stories" id="gutter_2" value="2" onchange="calcAll()"><label for="gutter_2">2 Story</label></div>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Additional Stories</label>
-                            <input type="number" id="gutter_extra" min="0" value="0" oninput="calcAll()">
-                            <small style="color:rgba(255,255,255,.35);font-size:.74rem;margin-top:.2rem">Interior +$125/story · Exterior +$150/story</small>
-                        </div>
-                    </div>
-                    <p style="font-size:.76rem;color:rgba(255,255,255,.35);margin-top:.75rem">1 Story: Int $125 / Ext $160 &nbsp;·&nbsp; 2 Story: Int $200 / Ext $250</p>
+                    <div id="gutterEntriesList"></div>
+                    <button type="button" onclick="addGutterEntry()" style="margin-top:.75rem;background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit;font-weight:600">+ Add Gutter</button>
+                    <p style="font-size:.74rem;color:rgba(255,255,255,.3);margin-top:.6rem">1 Story: Int $125 / Ext $160 &nbsp;·&nbsp; 2 Story: Int $200 / Ext $250 &nbsp;·&nbsp; Extra story: Int +$125 / Ext +$150</p>
                 </div>
             </div>
 
@@ -1417,6 +1392,9 @@
             if (svc === 'other' && checked && document.querySelectorAll('.other-item-row').length === 0) {
                 addOtherItem();
             }
+            if (svc === 'gutter' && checked && document.querySelectorAll('[id^="gutterEntry_"]').length === 0) {
+                addGutterEntry();
+            }
             if (svc === 'interlock' && checked && document.querySelectorAll('[id^="interlockArea_"]').length === 0) {
                 addInterlockArea();
             }
@@ -1485,6 +1463,71 @@
         }
         function getDiscount() { return _discount; }
 
+        // GUTTER MULTI-ENTRY
+        let gutterEntryCounter = 0;
+
+        function addGutterEntry() {
+            gutterEntryCounter++;
+            const id = gutterEntryCounter;
+            const container = document.getElementById('gutterEntriesList');
+            const div = document.createElement('div');
+            div.id = 'gutterEntry_' + id;
+            div.style.cssText = 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem;margin-bottom:.75rem';
+            div.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+                    <input type="text" placeholder="Label (e.g. Back Garage)" class="gutter-label" oninput="calcAll()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 12px;font-size:.88rem;font-family:inherit;outline:none;flex:1;margin-right:.5rem">
+                    <button type="button" onclick="removeGutterEntry(${id})" style="background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:.85rem">✕</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+                    <div>
+                        <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Type</label>
+                        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gtype_${id}" value="interior" onchange="calcAll()" checked style="accent-color:#3498db"> Interior</label>
+                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gtype_${id}" value="exterior" onchange="calcAll()" style="accent-color:#3498db"> Exterior</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Base Stories</label>
+                        <div style="display:flex;gap:.4rem">
+                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gstories_${id}" value="1" onchange="calcAll()" checked style="accent-color:#3498db"> 1</label>
+                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gstories_${id}" value="2" onchange="calcAll()" style="accent-color:#3498db"> 2</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Extra Stories</label>
+                        <input type="number" class="gutter-extra" min="0" value="0" oninput="calcAll()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none">
+                    </div>
+                    <div style="display:flex;align-items:flex-end">
+                        <div class="gutter-entry-price" style="font-size:.88rem;font-weight:700;color:#2ecc71;padding-bottom:4px"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            calcAll();
+        }
+
+        function removeGutterEntry(id) {
+            const el = document.getElementById('gutterEntry_' + id);
+            if (el) el.remove();
+            calcAll();
+        }
+
+        function calcGutterTotal() {
+            const baseRates = { '1': { interior: 125, exterior: 160 }, '2': { interior: 200, exterior: 250 } };
+            let total = 0;
+            document.querySelectorAll('[id^="gutterEntry_"]').forEach(entry => {
+                const type = entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value || 'interior';
+                const stories = entry.querySelector('input[type="radio"][name^="gstories_"]:checked')?.value || '1';
+                const extra = parseInt(entry.querySelector('.gutter-extra').value) || 0;
+                let price = (baseRates[stories] || baseRates['1'])[type];
+                price += extra * (type === 'interior' ? 125 : 150);
+                const priceEl = entry.querySelector('.gutter-entry-price');
+                if (priceEl) priceEl.textContent = '$' + price.toFixed(2);
+                total += price;
+            });
+            return total;
+        }
+
         // INTERLOCK MULTI-AREA
         let interlockAreaCounter = 0;
 
@@ -1503,11 +1546,11 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
                     <div>
                         <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Stone Size (Poly/Powerwash)</label>
-                        <select class="interlock-stone" onchange="calcAll()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none">
-                            <option value="none">— None —</option>
-                            <option value="1.60">Large ($1.60/sqft)</option>
-                            <option value="1.80">Medium ($1.80/sqft)</option>
-                            <option value="2.00">Small ($2.00/sqft)</option>
+                        <select class="interlock-stone" onchange="calcAll()" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none">
+                            <option value="none" style="background:#1a2a4a;color:#fff">— None —</option>
+                            <option value="1.60" style="background:#1a2a4a;color:#fff">Large ($1.60/sqft)</option>
+                            <option value="1.80" style="background:#1a2a4a;color:#fff">Medium ($1.80/sqft)</option>
+                            <option value="2.00" style="background:#1a2a4a;color:#fff">Small ($2.00/sqft)</option>
                         </select>
                     </div>
                     <div>
@@ -1562,24 +1605,23 @@
             let subtotal = 0;
             // DECK
             if (document.getElementById('svc_deck').checked) {
-                const sqft = parseFloat(document.getElementById('deck_sqft').value) || 0;
-                let rate = 0;
-                if (document.getElementById('deck_powerwash').checked) rate += 1.20;
-                if (document.getElementById('deck_sanding').checked) rate += 3.50;
-                if (document.getElementById('deck_staining').checked) rate += 2.30;
-                const deckPrice = sqft * rate;
+                const pwSqft   = parseFloat(document.getElementById('deck_pw_sqft').value)   || 0;
+                const sandSqft = parseFloat(document.getElementById('deck_sand_sqft').value) || 0;
+                const stainSqft= parseFloat(document.getElementById('deck_stain_sqft').value)|| 0;
+                const pwAmt    = pwSqft * 1.00;
+                const sandAmt  = sandSqft * 3.50;
+                const stainAmt = stainSqft * 1.80;
+                document.getElementById('deck_pw_price').textContent    = pwAmt    > 0 ? '$' + pwAmt.toFixed(2)    : '';
+                document.getElementById('deck_sand_price').textContent  = sandAmt  > 0 ? '$' + sandAmt.toFixed(2)  : '';
+                document.getElementById('deck_stain_price').textContent = stainAmt > 0 ? '$' + stainAmt.toFixed(2) : '';
+                const deckPrice = pwAmt + sandAmt + stainAmt;
                 document.getElementById('price_deck').textContent = '$' + deckPrice.toFixed(2);
                 subtotal += deckPrice;
             } else { document.getElementById('price_deck').textContent = '$0.00' }
 
             // GUTTER
             if (document.getElementById('svc_gutter').checked) {
-                const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
-                const type = document.querySelector('input[name="gutter_type"]:checked').value;
-                const extra = parseInt(document.getElementById('gutter_extra').value) || 0;
-                const baseRates = { '1': { interior: 125, exterior: 160 }, '2': { interior: 200, exterior: 250 } };
-                let gutterPrice = (baseRates[stories] || baseRates['1'])[type];
-                gutterPrice += extra * (type === 'interior' ? 125 : 150);
+                const gutterPrice = calcGutterTotal();
                 document.getElementById('price_gutter').textContent = '$' + gutterPrice.toFixed(2);
                 subtotal += gutterPrice;
             } else { document.getElementById('price_gutter').textContent = '$0.00' }
@@ -1940,6 +1982,7 @@
             document.querySelectorAll('.legal-item input').forEach(c => c.checked = false);
             document.querySelectorAll('.hazard-item').forEach(h => { h.classList.remove('checked'); h.querySelector('input').checked = false });
             document.getElementById('photoPreviews').innerHTML = '';
+            document.getElementById('gutterEntriesList').innerHTML = '';
             document.getElementById('interlockAreasList').innerHTML = '';
             document.getElementById('otherItemsList').innerHTML = '';
             setDiscount(0);
@@ -2111,23 +2154,28 @@
 
             // DECK
             if (document.getElementById('svc_deck').checked) {
-                const sqft = document.getElementById('deck_sqft').value || '0';
-                const svcs = [];
-                if (document.getElementById('deck_powerwash').checked) svcs.push('Power Wash');
-                if (document.getElementById('deck_sanding').checked) svcs.push('Sanding');
-                if (document.getElementById('deck_staining').checked) svcs.push('Staining');
-                const detail = sqft + ' sqft' + (svcs.length ? ' (' + svcs.join(', ') + ')' : '');
-                services.push({ name: 'Deck Restoration – ' + detail, price: document.getElementById('price_deck').textContent });
+                const parts = [];
+                const pw = parseFloat(document.getElementById('deck_pw_sqft').value) || 0;
+                const sand = parseFloat(document.getElementById('deck_sand_sqft').value) || 0;
+                const stain = parseFloat(document.getElementById('deck_stain_sqft').value) || 0;
+                if (pw > 0)    parts.push('Power Wash ' + pw + ' sqft');
+                if (sand > 0)  parts.push('Sanding ' + sand + ' sqft');
+                if (stain > 0) parts.push('Staining ' + stain + ' sqft');
+                services.push({ name: 'Deck Restoration – ' + (parts.join(', ') || 'No details'), price: document.getElementById('price_deck').textContent });
             }
 
             // GUTTER
             if (document.getElementById('svc_gutter').checked) {
-                const stories = document.querySelector('input[name="gutter_stories"]:checked').value;
-                const type = document.querySelector('input[name="gutter_type"]:checked').value;
-                const extra = parseInt(document.getElementById('gutter_extra').value) || 0;
-                const storyLabel = stories + ' Story' + (extra > 0 ? ' + ' + extra + ' extra' : '');
-                const typeLabel = type === 'interior' ? 'Interior' : 'Exterior';
-                services.push({ name: 'Gutter Cleaning – ' + storyLabel + ' (' + typeLabel + ')', price: document.getElementById('price_gutter').textContent });
+                const gutterLines = [];
+                document.querySelectorAll('[id^="gutterEntry_"]').forEach(entry => {
+                    const label = entry.querySelector('.gutter-label').value.trim();
+                    const type = entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value || 'interior';
+                    const stories = entry.querySelector('input[type="radio"][name^="gstories_"]:checked')?.value || '1';
+                    const extra = parseInt(entry.querySelector('.gutter-extra').value) || 0;
+                    const desc = (label ? label + ': ' : '') + stories + ' Story' + (extra > 0 ? '+' + extra : '') + ' ' + (type === 'interior' ? 'Int' : 'Ext');
+                    gutterLines.push(desc);
+                });
+                services.push({ name: 'Gutter Cleaning – ' + (gutterLines.join(' | ') || 'No entries'), price: document.getElementById('price_gutter').textContent });
             }
 
             // INTERLOCK
@@ -2199,16 +2247,22 @@
                 paymentAmount: window._paymentInfo?.paymentAmount || 0,
                 jobDetails: {
                     deck: document.getElementById('svc_deck').checked ? {
-                        sqft: parseFloat(document.getElementById('deck_sqft').value) || null,
-                        powerwash: document.getElementById('deck_powerwash').checked,
-                        sanding: document.getElementById('deck_sanding').checked,
-                        staining: document.getElementById('deck_staining').checked
+                        powerwashSqft: parseFloat(document.getElementById('deck_pw_sqft').value) || null,
+                        sandingSqft: parseFloat(document.getElementById('deck_sand_sqft').value) || null,
+                        stainingSqft: parseFloat(document.getElementById('deck_stain_sqft').value) || null
                     } : null,
-                    gutter: document.getElementById('svc_gutter').checked ? {
-                        stories: document.querySelector('input[name="gutter_stories"]:checked')?.value,
-                        type: document.querySelector('input[name="gutter_type"]:checked')?.value,
-                        extraStories: parseInt(document.getElementById('gutter_extra').value) || 0
-                    } : null,
+                    gutter: document.getElementById('svc_gutter').checked ? (() => {
+                        const entries = [];
+                        document.querySelectorAll('[id^="gutterEntry_"]').forEach(entry => {
+                            entries.push({
+                                label: entry.querySelector('.gutter-label').value.trim(),
+                                type: entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value,
+                                stories: entry.querySelector('input[type="radio"][name^="gstories_"]:checked')?.value,
+                                extra: parseInt(entry.querySelector('.gutter-extra').value) || 0
+                            });
+                        });
+                        return entries;
+                    })() : null,
                     interlock: document.getElementById('svc_interlock').checked ? (() => {
                         const areas = [];
                         document.querySelectorAll('[id^="interlockArea_"]').forEach(area => {
