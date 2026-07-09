@@ -32,13 +32,25 @@ module.exports = async (req, res) => {
         });
 
         const serviceLabels = {
-            deck: 'Deck Restoration',
-            hardscape: 'Hardscape Optimization',
-            siding: 'Siding Cleaning',
-            gutter: 'Gutter Maintenance',
-            window: 'Window Cleaning',
-            multiple: 'Multiple Services',
-            other: 'Other'
+            'deck-building': 'Deck Building',
+            'fence': 'Fence Building',
+            'hardscaping': 'Hardscaping',
+            'interlock': 'Interlock Restoration',
+            'driveway-sealing': 'Driveway Sealing',
+            'deck-restoration': 'Deck Restoration',
+            'exterior-painting': 'Exterior Painting',
+            'graffiti': 'Graffiti Removal',
+            'roof-cleaning': 'Roof Cleaning',
+            'pressure-washing': 'Pressure Washing',
+            'siding': 'Siding Wash',
+            'window': 'Window Cleaning',
+            'gutters': 'Gutter Cleaning',
+            'gutter-guards': 'Gutter Guards',
+            'lawn': 'Lawn Care and Landscaping',
+            'leaf-removal': 'Leaf Removal and Fall Cleanup',
+            'spring-refresh': 'Spring Property Refresh',
+            'snow': 'Snow Clearing and Salting',
+            'other': 'Other'
         };
         const serviceLabel = serviceLabels[service] || service || 'Not specified';
         const now = new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' });

@@ -222,12 +222,32 @@
                         <label for="service">Service Interested In *</label>
                         <select id="service" name="service" required>
                             <option value="">Select a Service</option>
-                            <option value="deck">Deck Restoration</option>
-                            <option value="hardscape">Hardscape Optimization</option>
-                            <option value="siding">Siding Cleaning</option>
-                            <option value="gutter">Gutter Maintenance</option>
-                            <option value="window">Window Cleaning</option>
-                            <option value="multiple">Multiple Services</option>
+                            <optgroup label="Build and Install">
+                                <option value="deck-building">Deck Building</option>
+                                <option value="fence">Fence Building</option>
+                                <option value="hardscaping">Hardscaping</option>
+                                <option value="interlock">Interlock Restoration</option>
+                                <option value="driveway-sealing">Driveway Sealing</option>
+                            </optgroup>
+                            <optgroup label="Restore and Repair">
+                                <option value="deck-restoration">Deck Restoration</option>
+                                <option value="exterior-painting">Exterior Painting</option>
+                                <option value="graffiti">Graffiti Removal</option>
+                                <option value="roof-cleaning">Roof Cleaning</option>
+                            </optgroup>
+                            <optgroup label="Clean and Maintain">
+                                <option value="pressure-washing">Pressure Washing</option>
+                                <option value="siding">Siding Wash</option>
+                                <option value="window">Window Cleaning</option>
+                                <option value="gutters">Gutter Cleaning</option>
+                                <option value="gutter-guards">Gutter Guards</option>
+                                <option value="lawn">Lawn Care and Landscaping</option>
+                            </optgroup>
+                            <optgroup label="Fall and Winter">
+                                <option value="leaf-removal">Leaf Removal and Fall Cleanup</option>
+                                <option value="spring-refresh">Spring Property Refresh</option>
+                                <option value="snow">Snow Clearing and Salting</option>
+                            </optgroup>
                             <option value="other">Other</option>
                         </select>
                     </div>
@@ -411,6 +431,10 @@
                     const result = await response.json();
 
                     if (response.ok && result.success) {
+                        gtag('event', 'generate_lead', {
+                            'form_name': 'contact_page_form',
+                            'form_location': 'contact_page'
+                        });
                         alert('Thank you for your inquiry! We\'ll get back to you within 24 hours. Check your email for a confirmation.');
                         contactForm.reset();
                     } else {

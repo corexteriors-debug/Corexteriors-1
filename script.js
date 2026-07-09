@@ -281,7 +281,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: formData.get('name'),
                 phone: formData.get('phone'),
                 email: formData.get('email'),
+                address: formData.get('address'),
                 service: formData.get('service'),
+                message: formData.get('message'),
                 source: window.location.pathname.split('/').pop() || 'index.html'
             };
 
@@ -297,12 +299,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: leadData.name,
                         phone: leadData.phone,
                         email: leadData.email,
+                        address: leadData.address,
                         service: leadData.service,
-                        message: ''
+                        message: leadData.message || ''
                     })
                 });
                 const result = await response.json();
                 if (!response.ok || !result.success) throw new Error(result.error || 'Failed');
+                gtag('event', 'generate_lead', {
+                    'form_name': 'get_free_quote',
+                    'form_location': leadData.source === 'index.html' ? 'homepage_hero' : leadData.source
+                });
                 alert('Thank you! We\'ll be in touch within 24 hours.');
                 quoteForm.reset();
             } catch (error) {
@@ -313,6 +320,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Phone Number Click Tracking
+    document.querySelectorAll('a[href^="tel:"]').forEach(function (link) {
+        link.addEventListener('click', function () {
+            let linkLocation = 'other';
+            if (link.classList.contains('sticky-call')) linkLocation = 'sticky_bar';
+            else if (link.closest('header')) linkLocation = 'header';
+            else if (link.closest('footer')) linkLocation = 'footer';
+
+            gtag('event', 'phone_click', {
+                'phone_number': link.getAttribute('href').replace('tel:', ''),
+                'link_location': linkLocation
+            });
+        });
+    });
 
     // ==========================================
     // Scoped Lightbox & Zoom Functionality
