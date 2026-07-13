@@ -310,6 +310,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'form_name': 'get_free_quote',
                     'form_location': leadData.source === 'index.html' ? 'homepage_hero' : leadData.source
                 });
+                if (typeof fbq === 'function') {
+                    fbq('track', 'Lead', {
+                        content_name: 'get_free_quote',
+                        content_category: leadData.source === 'index.html' ? 'homepage_hero' : leadData.source
+                    });
+                }
                 alert('Thank you! We\'ll be in touch within 24 hours.');
                 quoteForm.reset();
             } catch (error) {

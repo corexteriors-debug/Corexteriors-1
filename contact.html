@@ -444,6 +444,12 @@
                             'form_name': 'contact_page_form',
                             'form_location': 'contact_page'
                         });
+                        if (typeof fbq === 'function') {
+                            fbq('track', 'Lead', {
+                                content_name: 'contact_page_form',
+                                content_category: 'contact_page'
+                            });
+                        }
                         alert('Thank you for your inquiry! We\'ll get back to you within 24 hours. Check your email for a confirmation.');
                         contactForm.reset();
                     } else {
