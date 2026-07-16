@@ -16,6 +16,24 @@ function s(text) {
         .replace(/[^\x00-\xFF]/g, '?');
 }
 
+// ── Pixel-accurate word wrap (unlike the char-count guess used for Notes below) ─
+function wrapText(text, font, size, maxWidth) {
+    const words = String(text).split(' ');
+    const lines = [];
+    let current = '';
+    for (const word of words) {
+        const candidate = current ? current + ' ' + word : word;
+        if (font.widthOfTextAtSize(candidate, size) <= maxWidth || !current) {
+            current = candidate;
+        } else {
+            lines.push(current);
+            current = word;
+        }
+    }
+    if (current) lines.push(current);
+    return lines;
+}
+
 function fmtDate(iso) {
     if (!iso) return '';
     const [yr, mo, dy] = iso.slice(0, 10).split('-').map(Number);
@@ -102,10 +120,16 @@ async function buildEstimate(est) {
     y -= 20;
 
     let altRow = false;
+    const priceColW = 90;
+    const nameMaxW = CW - 20 - priceColW;
+    const lineH = 11;
     services.forEach(svc => {
-        const rowH = 22;
+        const nameLines = wrapText(s(svc.name), font, 9, nameMaxW);
+        const rowH = 22 + (nameLines.length - 1) * lineH;
         if (altRow) page.drawRectangle({ x: ML, y: y - rowH, width: CW, height: rowH, color: lightGray });
-        page.drawText(s(svc.name), { x: ML + 10, y: y - 15, size: 9, font, color: black });
+        nameLines.forEach((line, i) => {
+            page.drawText(line, { x: ML + 10, y: y - 15 - i * lineH, size: 9, font, color: black });
+        });
         const priceStr = '$' + s(String(svc.price || '0').replace(/^\$/, ''));
         const pw = bold.widthOfTextAtSize(priceStr, 9);
         page.drawText(priceStr, { x: W - MR - pw - 8, y: y - 15, size: 9, font: bold, color: darkGray });
