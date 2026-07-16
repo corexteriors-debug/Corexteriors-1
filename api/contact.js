@@ -11,8 +11,8 @@ async function saveLeadToCrm({ name, email, phone, address, serviceLabel, messag
         serviceType: serviceLabel || '',
         notes: message || '',
         company: company || '',
-        leadSource: company ? 'website-commercial' : 'website-residential',
-        pageSource: source || '',
+        leadSource: company ? 'website-commercial' : 'website-residential', // residential vs. commercial tag
+        pageSource: source || '', // which page/form this came from (e.g. 'contact.html')
         estimatedValue: '',
         salesRep: '',
         estimateNumber: '',
