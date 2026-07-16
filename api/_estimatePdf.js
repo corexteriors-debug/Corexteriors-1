@@ -274,7 +274,7 @@ async function buildInvoice(est, signatureData = null) {
     metaRow('Payment Due:', 'Upon Completion of Services');
 
     // Payment badge
-    y -= 4;
+    y -= 14;
     const payStatus  = (est.paymentStatus || 'Unpaid').toLowerCase();
     const badgeColor = payStatus === 'paid' ? green : payStatus.includes('deposit') ? orange : rgb(0.75, 0.10, 0.10);
     const badgeLabel = payStatus === 'paid' ? 'PAID IN FULL' : payStatus.includes('deposit') ? 'DEPOSIT PAID' : 'UNPAID';
