@@ -1,4 +1,49 @@
 const nodemailer = require('nodemailer');
+const { kv } = require('@vercel/kv');
+
+async function saveLeadToCrm({ name, email, phone, address, serviceLabel, message, company, source }) {
+    const lead = {
+        id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        clientName: name || '',
+        phone: phone || '',
+        email: email || '',
+        address: address || '',
+        serviceType: serviceLabel || '',
+        notes: message || '',
+        company: company || '',
+        leadSource: company ? 'website-commercial' : 'website-residential',
+        pageSource: source || '',
+        estimatedValue: '',
+        salesRep: '',
+        estimateNumber: '',
+        services: [],
+        bundleDiscount: 0,
+        discount: 0,
+        subtotal: '',
+        hst: '',
+        total: '',
+        saleDate: '',
+        saleTime: '',
+        paymentStatus: 'Unpaid',
+        paymentMethod: '',
+        paymentAmount: 0,
+        jobDetails: null,
+        survey: {},
+        legal: {},
+        hasSignature: false,
+        createdByAdmin: false,
+        status: 'New',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    await kv.set(`lead:${lead.id}`, lead);
+    const leadIds = (await kv.get('lead_ids')) || [];
+    leadIds.unshift(lead.id);
+    await kv.set('lead_ids', leadIds);
+
+    return lead;
+}
 
 module.exports = async (req, res) => {
     // CORS
@@ -12,24 +57,11 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { name, email, phone, address, service, message } = req.body;
+        const { name, email, phone, address, service, message, company, source } = req.body;
 
         if (!name || !email || !phone) {
             return res.status(400).json({ error: 'Name, email, and phone are required' });
         }
-
-        const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
-        const gmailPass = process.env.GMAIL_APP_PASSWORD;
-
-        if (!gmailPass) {
-            console.error('GMAIL_APP_PASSWORD not configured');
-            return res.status(500).json({ error: 'Email service not configured' });
-        }
-
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: gmailUser, pass: gmailPass }
-        });
 
         const serviceLabels = {
             'deck-building': 'Deck Building',
@@ -54,6 +86,26 @@ module.exports = async (req, res) => {
         };
         const serviceLabel = serviceLabels[service] || service || 'Not specified';
         const now = new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' });
+
+        // Save to CRM first so the inquiry isn't lost even if email fails
+        try {
+            await saveLeadToCrm({ name, email, phone, address, serviceLabel, message, company, source });
+        } catch (crmError) {
+            console.error('Failed to save lead to CRM:', crmError);
+        }
+
+        const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
+        const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
+        if (!gmailPass) {
+            console.error('GMAIL_APP_PASSWORD not configured');
+            return res.status(500).json({ error: 'Email service not configured' });
+        }
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { user: gmailUser, pass: gmailPass }
+        });
 
         // 1. Email to Core Exteriors team — new lead notification
         await transporter.sendMail({
