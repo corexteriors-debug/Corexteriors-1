@@ -284,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 address: formData.get('address'),
                 service: formData.get('service'),
                 message: formData.get('message'),
+                company: formData.get('company'),
                 source: window.location.pathname.split('/').pop() || 'index.html'
             };
 
@@ -301,7 +302,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         email: leadData.email,
                         address: leadData.address,
                         service: leadData.service,
-                        message: leadData.message || ''
+                        message: leadData.message || '',
+                        company: leadData.company || '',
+                        source: leadData.source
                     })
                 });
                 const result = await response.json();
