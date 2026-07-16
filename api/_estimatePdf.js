@@ -321,10 +321,16 @@ async function buildInvoice(est, signatureData = null) {
     y -= 24;
 
     let altRow = false;
+    const priceColW = 100;
+    const nameMaxW = CW - 24 - priceColW;
+    const lineH = 12;
     services.forEach(svc => {
-        const rowH = 26;
+        const nameLines = wrapText(s(svc.name), font, 10, nameMaxW);
+        const rowH = 26 + (nameLines.length - 1) * lineH;
         if (altRow) page.drawRectangle({ x: ML, y: y - rowH, width: CW, height: rowH, color: lightGray });
-        page.drawText(s(svc.name), { x: ML + 12, y: y - 17, size: 10, font, color: black });
+        nameLines.forEach((line, i) => {
+            page.drawText(line, { x: ML + 12, y: y - 17 - i * lineH, size: 10, font, color: black });
+        });
         const priceStr = '$' + s(String(svc.price || '0').replace(/^\$/, ''));
         const pw = bold.widthOfTextAtSize(priceStr, 10);
         page.drawText(priceStr, { x: W - MR - pw - 12, y: y - 17, size: 10, font: bold, color: darkGray });
