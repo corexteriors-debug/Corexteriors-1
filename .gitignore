@@ -41,6 +41,9 @@ desktop.ini
 *.temp
 ~*
 
+# Git worktrees
+.worktrees/
+
 # Build outputs
 dist/
 build/
