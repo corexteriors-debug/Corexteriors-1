@@ -1870,7 +1870,7 @@ Tasks:
                 if (payF !== 'all' && (l.paymentStatus || 'Unpaid') !== payF) return false;
                 if (repF !== 'all' && l.salesRep !== repF) return false;
                 if (search) {
-                    const s = (l.clientName + ' ' + l.phone + ' ' + l.address + ' ' + l.email + ' ' + l.serviceType).toLowerCase();
+                    const s = (l.clientName + ' ' + l.phone + ' ' + l.address + ' ' + l.email + ' ' + l.serviceType + ' ' + (l.company || '')).toLowerCase();
                     if (!s.includes(search)) return false;
                 }
                 if (dateF !== 'all') {
@@ -1912,8 +1912,8 @@ Tasks:
                 return `<div class="lead-card">
                     <div class="lead-card-header">
                         <div>
-                            <div class="lead-card-name">${esc(lead.clientName)}</div>
-                            <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address || '')}</div>
+                            <div class="lead-card-name">${esc(lead.clientName)}${lead.leadSource === 'website-commercial' ? ' <span style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;border-radius:20px;padding:1px 8px;font-size:.65rem">🏢 Commercial</span>' : ''}</div>
+                            <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.company ? lead.company + ' · ' : '') + esc(lead.address || '')}</div>
                         </div>
                         <div class="lead-card-date">${dateDisplay}</div>
                     </div>
