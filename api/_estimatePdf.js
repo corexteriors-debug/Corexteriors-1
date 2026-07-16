@@ -30,7 +30,7 @@ function wrapText(text, font, size, maxWidth) {
             current = word;
         }
     }
-    if (current) lines.push(current);
+    lines.push(current);
     return lines;
 }
 
