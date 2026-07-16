@@ -1715,7 +1715,7 @@ Tasks:
                 if (payF !== 'all' && (l.paymentStatus || 'Unpaid') !== payF) return false;
                 if (repF !== 'all' && l.salesRep !== repF) return false;
                 if (search) {
-                    const s = (l.clientName + ' ' + l.phone + ' ' + l.address + ' ' + l.email + ' ' + l.serviceType + ' ' + l.estimateNumber).toLowerCase();
+                    const s = (l.clientName + ' ' + l.phone + ' ' + l.address + ' ' + l.email + ' ' + l.serviceType + ' ' + l.estimateNumber + ' ' + (l.company || '')).toLowerCase();
                     if (!s.includes(search)) return false;
                 }
                 if (dateF !== 'all') {
@@ -1763,6 +1763,7 @@ Tasks:
                         <td>${date}</td>
                         <td>
                             <strong>${esc(lead.clientName)}</strong>
+                            ${lead.leadSource === 'website-commercial' ? '<br><span style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;border-radius:20px;padding:1px 8px;font-size:.68rem;display:inline-block;margin-top:2px">🏢 Commercial' + (lead.company ? ' · ' + esc(lead.company) : '') + '</span>' : ''}
                             ${lead.email ? '<br><span style="color:rgba(255,255,255,.4);font-size:.75rem">' + esc(lead.email) + '</span>' : ''}
                             ${lead.address ? '<br><span style="color:rgba(255,255,255,.35);font-size:.75rem">' + esc(lead.address) + '</span>' : ''}
                         </td>
