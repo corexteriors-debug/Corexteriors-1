@@ -52,7 +52,7 @@ async function generateEstimatePDF(est, opts = {}) {
 // ═════════════════════════════════════════════════════════════════════════════
 async function buildEstimate(est) {
     const doc  = await PDFDocument.create();
-    const page = doc.addPage([612, 792]);
+    let page = doc.addPage([612, 792]);
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
@@ -73,6 +73,30 @@ async function buildEstimate(est) {
     const issueDate = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
     const docNum    = s(est.estimateNumber || '—');
     const services  = (Array.isArray(est.services) ? est.services : []).filter(sv => sv.name && sv.price);
+
+    function drawFooter(pg) {
+        pg.drawRectangle({ x: 0, y: 0, width: W, height: 38, color: navy });
+        const footerTxt = 'Core Exteriors  |  203 Cambridge St, London, ON, N6H 1N6  |  606 616 2026  |  corexteriors.ca';
+        const ftw = font.widthOfTextAtSize(footerTxt, 8);
+        pg.drawText(footerTxt, { x: (W - ftw) / 2, y: 14, size: 8, font, color: rgb(0.55, 0.63, 0.74) });
+    }
+
+    function newPageIfNeeded(needed, redrawTableHeader) {
+        const BOTTOM_MARGIN = 130;
+        if (y - needed >= BOTTOM_MARGIN) return;
+        drawFooter(page);
+        page = doc.addPage([612, 792]);
+        page.drawRectangle({ x: 0, y: H - 40, width: W, height: 40, color: navy });
+        page.drawText('CORE EXTERIORS  —  ESTIMATE (continued)', { x: ML, y: H - 25, size: 11, font: bold, color: white });
+        y = H - 60;
+        altRow = false;
+        if (redrawTableHeader) {
+            page.drawRectangle({ x: ML, y: y - 20, width: CW, height: 20, color: navy });
+            page.drawText('SERVICE', { x: ML + 10, y: y - 14, size: 8.5, font: bold, color: white });
+            page.drawText('AMOUNT',  { x: W - MR - 55, y: y - 14, size: 8.5, font: bold, color: white });
+            y -= 20;
+        }
+    }
 
     // ── HEADER BAR (navy, full width) ────────────────────────────────────────
     const HDR = 70;
@@ -126,6 +150,7 @@ async function buildEstimate(est) {
     services.forEach(svc => {
         const nameLines = wrapText(s(svc.name), font, 9, nameMaxW);
         const rowH = 22 + (nameLines.length - 1) * lineH;
+        newPageIfNeeded(rowH, true);
         if (altRow) page.drawRectangle({ x: ML, y: y - rowH, width: CW, height: rowH, color: lightGray });
         nameLines.forEach((line, i) => {
             page.drawText(line, { x: ML + 10, y: y - 15 - i * lineH, size: 9, font, color: black });
@@ -144,6 +169,7 @@ async function buildEstimate(est) {
     }
 
     y -= 12;
+    newPageIfNeeded(110, false);
 
     // ── TOTALS (right-aligned block) ─────────────────────────────────────────
     const totW = 220, totX = W - MR - totW;
@@ -207,10 +233,7 @@ async function buildEstimate(est) {
     }
 
     // ── FOOTER ───────────────────────────────────────────────────────────────
-    page.drawRectangle({ x: 0, y: 0, width: W, height: 38, color: navy });
-    const footerTxt = 'Core Exteriors  |  203 Cambridge St, London, ON, N6H 1N6  |  606 616 2026  |  corexteriors.ca';
-    const ftw = font.widthOfTextAtSize(footerTxt, 8);
-    page.drawText(footerTxt, { x: (W - ftw) / 2, y: 14, size: 8, font, color: rgb(0.55, 0.63, 0.74) });
+    drawFooter(page);
 
     return await doc.save();
 }
