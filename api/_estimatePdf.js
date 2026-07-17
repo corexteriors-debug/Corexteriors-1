@@ -245,7 +245,7 @@ async function buildEstimate(est) {
 // ═════════════════════════════════════════════════════════════════════════════
 async function buildInvoice(est, signatureData = null) {
     const doc  = await PDFDocument.create();
-    const page = doc.addPage([612, 792]);
+    let page = doc.addPage([612, 792]);
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
@@ -268,6 +268,36 @@ async function buildInvoice(est, signatureData = null) {
     const services  = (Array.isArray(est.services) ? est.services : []).filter(sv => sv.name && sv.price);
     const visitRaw  = est.survey?.visitDate || est.saleDate || '';
     const dateSvc   = visitRaw ? fmtDate(visitRaw) : 'To Be Confirmed';
+
+    function drawFooter(pg) {
+        pg.drawRectangle({ x: 0, y: 0,  width: W, height: 44, color: navy });
+        pg.drawRectangle({ x: 0, y: 44, width: W, height: 4,  color: orange });
+        const footerTxt = 'Core Exteriors  •  HST# 745847632 RT0001  •  203 Cambridge St, London, ON N6H 1N6  •  519-712-1431  •  corexteriors.ca';
+        const ftw = font.widthOfTextAtSize(footerTxt, 7.5);
+        pg.drawText(footerTxt, { x: (W - ftw) / 2, y: 16, size: 7.5, font, color: rgb(0.55, 0.63, 0.74) });
+    }
+
+    function newPageIfNeeded(needed, redrawTableHeader) {
+        // NOTE: buildInvoice's header/meta block + 100pt BILL TO/FROM boxes leave far less
+        // vertical budget than buildEstimate's more compact layout, so this margin is tuned
+        // separately (70, not buildEstimate's 130). The footer is only 48pt tall, so 70pt of
+        // clearance above it is still a safe buffer — just not so large that an ordinary small
+        // invoice's totals+Payment Info+Notes get needlessly pushed onto a second page.
+        const BOTTOM_MARGIN = 70;
+        if (y - needed >= BOTTOM_MARGIN) return;
+        drawFooter(page);
+        page = doc.addPage([612, 792]);
+        page.drawRectangle({ x: 0, y: H - 40, width: W, height: 40, color: navy });
+        page.drawText('CORE EXTERIORS  —  INVOICE (continued)', { x: ML, y: H - 25, size: 11, font: bold, color: white });
+        y = H - 60;
+        altRow = false;
+        if (redrawTableHeader) {
+            page.drawRectangle({ x: ML, y: y - 24, width: CW, height: 24, color: navy });
+            page.drawText('SERVICE', { x: ML + 12, y: y - 16, size: 8.5, font: bold, color: white });
+            page.drawText('AMOUNT', { x: W - MR - bold.widthOfTextAtSize('AMOUNT', 8.5) - 12, y: y - 16, size: 8.5, font: bold, color: white });
+            y -= 24;
+        }
+    }
 
     // ── HEADER: orange stripe + navy bar ─────────────────────────────────────
     page.drawRectangle({ x: 0, y: H - 8,        width: W,  height: 8,  color: orange });
@@ -352,6 +382,7 @@ async function buildInvoice(est, signatureData = null) {
     services.forEach(svc => {
         const nameLines = wrapText(s(svc.name), font, 10, nameMaxW);
         const rowH = 26 + (nameLines.length - 1) * lineH;
+        newPageIfNeeded(rowH, true);
         if (altRow) page.drawRectangle({ x: ML, y: y - rowH, width: CW, height: rowH, color: lightGray });
         nameLines.forEach((line, i) => {
             page.drawText(line, { x: ML + 12, y: y - 17 - i * lineH, size: 10, font, color: black });
@@ -370,13 +401,16 @@ async function buildInvoice(est, signatureData = null) {
     }
 
     y -= 12;
+    const discAmt    = parseFloat(est.discount) || 0;
+    const depositAmt = parseFloat(est.paymentAmount) || 0;
+    const totalsRows = 3 + (discAmt > 0 ? 1 : 0) + (depositAmt > 0 ? 2 : 1); // Subtotal+HST+TOTAL, +Discount if present, +(Deposit Paid & Balance Owing) or just Balance Owing
+    newPageIfNeeded(totalsRows * 24 + 20 + 56 + 14, false); // exact space the totals rows (24pt each) + 20pt gap + Payment Info box (56pt + 14pt trailing gap) will consume; BOTTOM_MARGIN below already provides the safety buffer
 
     // ── TOTALS ───────────────────────────────────────────────────────────────
     const totW = 230, totX = W - MR - totW;
     const subtotalVal = s(String(est.subtotal || '0.00').replace(/^\$/, ''));
     const hstVal      = s(String(est.hst      || '0.00').replace(/^\$/, ''));
     const totalVal    = s(String(est.total    || '0.00').replace(/^\$/, ''));
-    const depositAmt  = parseFloat(est.paymentAmount) || 0;
     const totalNum    = parseFloat(String(est.total || '0').replace(/[$,]/g, '')) || 0;
     const balanceNum  = Math.max(0, totalNum - depositAmt);
 
@@ -394,7 +428,6 @@ async function buildInvoice(est, signatureData = null) {
     }
 
     totRow('Subtotal',  '$' + subtotalVal, null,   null);
-    const discAmt = parseFloat(est.discount) || 0;
     if (discAmt > 0) totRow('Discount', '-$' + discAmt.toFixed(2), null, green);
     totRow('HST (13%)', '$' + hstVal,      null,   null);
     totRow('TOTAL',     '$' + totalVal,    navy,   null);
@@ -422,9 +455,11 @@ async function buildInvoice(est, signatureData = null) {
     // Notes
     const notes = s(est.survey?.notes || est.notes || '');
     if (notes) {
+        const noteLinesToShow = (notes.match(/.{1,110}(\s|$)/g) || [notes]).slice(0, 3);
+        newPageIfNeeded(13 + noteLinesToShow.length * 12 + 6, false); // 13 = "Notes:" label row; 12pt per line; 6 = trailing gap after
         page.drawText('Notes:', { x: ML, y, size: 8, font: bold, color: gray });
         y -= 13;
-        (notes.match(/.{1,110}(\s|$)/g) || [notes]).slice(0, 3).forEach(line => {
+        noteLinesToShow.forEach(line => {
             page.drawText(s(line.trim()), { x: ML, y, size: 8, font, color: gray });
             y -= 12;
         });
@@ -449,11 +484,7 @@ async function buildInvoice(est, signatureData = null) {
     }
 
     // ── FOOTER ───────────────────────────────────────────────────────────────
-    page.drawRectangle({ x: 0, y: 0,  width: W, height: 44, color: navy });
-    page.drawRectangle({ x: 0, y: 44, width: W, height: 4,  color: orange });
-    const footerTxt = 'Core Exteriors  \u2022  HST# 745847632 RT0001  \u2022  203 Cambridge St, London, ON N6H 1N6  \u2022  519-712-1431  \u2022  corexteriors.ca';
-    const ftw = font.widthOfTextAtSize(footerTxt, 7.5);
-    page.drawText(footerTxt, { x: (W - ftw) / 2, y: 16, size: 7.5, font, color: rgb(0.55, 0.63, 0.74) });
+    drawFooter(page);
 
     return await doc.save();
 }
