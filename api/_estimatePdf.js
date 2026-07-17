@@ -169,7 +169,7 @@ async function buildEstimate(est) {
     }
 
     y -= 12;
-    newPageIfNeeded(110, false);
+    newPageIfNeeded(160, false); // covers Subtotal+HST+TOTAL (~70pt) + Terms & Conditions (~88pt), always drawn together
 
     // ── TOTALS (right-aligned block) ─────────────────────────────────────────
     const totW = 220, totX = W - MR - totW;
@@ -221,12 +221,14 @@ async function buildEstimate(est) {
     // Notes
     const notes = s(est.survey?.notes || est.notes || '');
     if (notes) {
+        const maxChars = 110;
+        const noteLines = notes.match(/.{1,110}(\s|$)/g) || [notes];
+        const noteLinesToShow = noteLines.slice(0, 3);
+        newPageIfNeeded(17 + noteLinesToShow.length * 13, false); // 17 = 4pt gap + "Notes:" label row; 13pt per wrapped line
         y -= 4;
         page.drawText('Notes:', { x: ML + 6, y, size: 8, font: bold, color: gray });
         y -= 13;
-        const maxChars = 110;
-        const noteLines = notes.match(/.{1,110}(\s|$)/g) || [notes];
-        noteLines.slice(0, 3).forEach(line => {
+        noteLinesToShow.forEach(line => {
             page.drawText(s(line.trim()), { x: ML + 6, y, size: 8, font, color: gray });
             y -= 13;
         });
