@@ -956,20 +956,9 @@
                     <div class="card-header">
                         <h3>🪵 Deck Restoration</h3><span class="card-price" id="price_deck">$0.00</span>
                     </div>
-                    <div style="display:flex;flex-direction:column;gap:.6rem">
-                        <div style="display:grid;grid-template-columns:1fr 120px;gap:.5rem;align-items:end">
-                            <div><label style="font-size:.78rem;color:rgba(255,255,255,.55);display:block;margin-bottom:.3rem">Power Washing <span style="color:rgba(255,255,255,.3)">$1.00/sqft</span></label><input type="number" id="deck_pw_sqft" min="0" placeholder="sqft" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit"></div>
-                            <div style="text-align:right;padding-bottom:2px;font-size:.88rem;font-weight:700;color:#2ecc71" id="deck_pw_price"></div>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 120px;gap:.5rem;align-items:end">
-                            <div><label style="font-size:.78rem;color:rgba(255,255,255,.55);display:block;margin-bottom:.3rem">Sanding <span style="color:rgba(255,255,255,.3)">$3.50/sqft</span></label><input type="number" id="deck_sand_sqft" min="0" placeholder="sqft" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit"></div>
-                            <div style="text-align:right;padding-bottom:2px;font-size:.88rem;font-weight:700;color:#2ecc71" id="deck_sand_price"></div>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 120px;gap:.5rem;align-items:end">
-                            <div><label style="font-size:.78rem;color:rgba(255,255,255,.55);display:block;margin-bottom:.3rem">Staining <span style="color:rgba(255,255,255,.3)">$1.80/sqft</span></label><input type="number" id="deck_stain_sqft" min="0" placeholder="sqft" oninput="calcAll()" style="width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;outline:none;font-family:inherit"></div>
-                            <div style="text-align:right;padding-bottom:2px;font-size:.88rem;font-weight:700;color:#2ecc71" id="deck_stain_price"></div>
-                        </div>
-                    </div>
+                    <div id="deckAreasList"></div>
+                    <button type="button" onclick="addDeckArea()" style="margin-top:.75rem;background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit;font-weight:600">+ Add Area</button>
+                    <p style="font-size:.74rem;color:rgba(255,255,255,.3);margin-top:.6rem">Power Washing $1.00/sqft &nbsp;·&nbsp; Sanding $3.50/sqft &nbsp;·&nbsp; Staining $1.80/sqft</p>
                 </div>
             </div>
 
@@ -1392,6 +1381,9 @@
             if (svc === 'other' && checked && document.querySelectorAll('.other-item-row').length === 0) {
                 addOtherItem();
             }
+            if (svc === 'deck' && checked && document.querySelectorAll('[id^="deckArea_"]').length === 0) {
+                addDeckArea();
+            }
             if (svc === 'gutter' && checked && document.querySelectorAll('[id^="gutterEntry_"]').length === 0) {
                 addGutterEntry();
             }
@@ -1528,6 +1520,91 @@
             return total;
         }
 
+        // DECK MULTI-AREA
+        let deckAreaCounter = 0;
+
+        function addDeckArea() {
+            deckAreaCounter++;
+            const id = deckAreaCounter;
+            const container = document.getElementById('deckAreasList');
+            const div = document.createElement('div');
+            div.id = 'deckArea_' + id;
+            div.style.cssText = 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem;margin-bottom:.75rem';
+
+            const header = document.createElement('div');
+            header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem';
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.placeholder = 'Area name (e.g. Front Deck)';
+            nameInput.className = 'deck-area-name';
+            nameInput.setAttribute('oninput', 'calcAll()');
+            nameInput.style.cssText = 'background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 12px;font-size:.88rem;font-family:inherit;outline:none;flex:1;margin-right:.5rem';
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.textContent = '✕';
+            removeBtn.style.cssText = 'background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:.85rem';
+            removeBtn.addEventListener('click', () => removeDeckArea(id));
+            header.appendChild(nameInput);
+            header.appendChild(removeBtn);
+
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem';
+            [
+                { label: 'Power Wash (sqft)', cls: 'deck-pw-sqft' },
+                { label: 'Sanding (sqft)', cls: 'deck-sand-sqft' },
+                { label: 'Staining (sqft)', cls: 'deck-stain-sqft' }
+            ].forEach(field => {
+                const wrap = document.createElement('div');
+                const label = document.createElement('label');
+                label.style.cssText = 'font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem';
+                label.textContent = field.label;
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.placeholder = 'sqft';
+                input.className = field.cls;
+                input.setAttribute('oninput', 'calcAll()');
+                input.style.cssText = 'width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none';
+                wrap.appendChild(label);
+                wrap.appendChild(input);
+                grid.appendChild(wrap);
+            });
+
+            const priceEl = document.createElement('div');
+            priceEl.className = 'deck-area-price';
+            priceEl.style.cssText = 'text-align:right;font-size:.85rem;color:#2ecc71;margin-top:.5rem;font-weight:600';
+
+            div.appendChild(header);
+            div.appendChild(grid);
+            div.appendChild(priceEl);
+            container.appendChild(div);
+            calcAll();
+        }
+
+        function removeDeckArea(id) {
+            const el = document.getElementById('deckArea_' + id);
+            if (el) el.remove();
+            calcAll();
+        }
+
+        function calcDeckAreaTotal(area) {
+            const pwSqft = parseFloat(area.querySelector('.deck-pw-sqft').value) || 0;
+            const sandSqft = parseFloat(area.querySelector('.deck-sand-sqft').value) || 0;
+            const stainSqft = parseFloat(area.querySelector('.deck-stain-sqft').value) || 0;
+            return pwSqft * 1.00 + sandSqft * 3.50 + stainSqft * 1.80;
+        }
+
+        function calcDeckTotal() {
+            let total = 0;
+            document.querySelectorAll('[id^="deckArea_"]').forEach(area => {
+                const areaTotal = calcDeckAreaTotal(area);
+                const priceEl = area.querySelector('.deck-area-price');
+                if (priceEl) priceEl.textContent = areaTotal > 0 ? 'Area total: $' + areaTotal.toFixed(2) : '';
+                total += areaTotal;
+            });
+            return total;
+        }
+
         // INTERLOCK MULTI-AREA
         let interlockAreaCounter = 0;
 
@@ -1582,17 +1659,22 @@
             calcAll();
         }
 
+        function calcInterlockAreaTotal(area) {
+            const stone = area.querySelector('.interlock-stone').value;
+            const polySqft = parseFloat(area.querySelector('.interlock-poly-sqft').value) || 0;
+            const hasSealer = area.querySelector('.interlock-sealer').checked;
+            const relevelSqft = parseFloat(area.querySelector('.interlock-relevel-sqft').value) || 0;
+            let areaTotal = 0;
+            if (stone !== 'none') areaTotal += polySqft * parseFloat(stone);
+            if (hasSealer) areaTotal += polySqft * 0.40;
+            areaTotal += relevelSqft * 8.60;
+            return areaTotal;
+        }
+
         function calcInterlockTotal() {
             let total = 0;
             document.querySelectorAll('[id^="interlockArea_"]').forEach(area => {
-                const stone = area.querySelector('.interlock-stone').value;
-                const polySqft = parseFloat(area.querySelector('.interlock-poly-sqft').value) || 0;
-                const hasSealer = area.querySelector('.interlock-sealer').checked;
-                const relevelSqft = parseFloat(area.querySelector('.interlock-relevel-sqft').value) || 0;
-                let areaTotal = 0;
-                if (stone !== 'none') areaTotal += polySqft * parseFloat(stone);
-                if (hasSealer) areaTotal += polySqft * 0.40;
-                areaTotal += relevelSqft * 8.60;
+                const areaTotal = calcInterlockAreaTotal(area);
                 const priceEl = area.querySelector('.interlock-area-price');
                 if (priceEl) priceEl.textContent = areaTotal > 0 ? 'Area total: $' + areaTotal.toFixed(2) : '';
                 total += areaTotal;
@@ -1605,16 +1687,7 @@
             let subtotal = 0;
             // DECK
             if (document.getElementById('svc_deck').checked) {
-                const pwSqft   = parseFloat(document.getElementById('deck_pw_sqft').value)   || 0;
-                const sandSqft = parseFloat(document.getElementById('deck_sand_sqft').value) || 0;
-                const stainSqft= parseFloat(document.getElementById('deck_stain_sqft').value)|| 0;
-                const pwAmt    = pwSqft * 1.00;
-                const sandAmt  = sandSqft * 3.50;
-                const stainAmt = stainSqft * 1.80;
-                document.getElementById('deck_pw_price').textContent    = pwAmt    > 0 ? '$' + pwAmt.toFixed(2)    : '';
-                document.getElementById('deck_sand_price').textContent  = sandAmt  > 0 ? '$' + sandAmt.toFixed(2)  : '';
-                document.getElementById('deck_stain_price').textContent = stainAmt > 0 ? '$' + stainAmt.toFixed(2) : '';
-                const deckPrice = pwAmt + sandAmt + stainAmt;
+                const deckPrice = calcDeckTotal();
                 document.getElementById('price_deck').textContent = '$' + deckPrice.toFixed(2);
                 subtotal += deckPrice;
             } else { document.getElementById('price_deck').textContent = '$0.00' }
@@ -1982,6 +2055,7 @@
             document.querySelectorAll('.legal-item input').forEach(c => c.checked = false);
             document.querySelectorAll('.hazard-item').forEach(h => { h.classList.remove('checked'); h.querySelector('input').checked = false });
             document.getElementById('photoPreviews').innerHTML = '';
+            document.getElementById('deckAreasList').innerHTML = '';
             document.getElementById('gutterEntriesList').innerHTML = '';
             document.getElementById('interlockAreasList').innerHTML = '';
             document.getElementById('otherItemsList').innerHTML = '';
@@ -2152,16 +2226,25 @@
         function buildEstimateObject() {
             const services = [];
 
-            // DECK
+            // DECK — one line item per area, so the estimate/invoice breaks
+            // the work down instead of squashing every area into one row
             if (document.getElementById('svc_deck').checked) {
-                const parts = [];
-                const pw = parseFloat(document.getElementById('deck_pw_sqft').value) || 0;
-                const sand = parseFloat(document.getElementById('deck_sand_sqft').value) || 0;
-                const stain = parseFloat(document.getElementById('deck_stain_sqft').value) || 0;
-                if (pw > 0)    parts.push('Power Wash ' + pw + ' sqft');
-                if (sand > 0)  parts.push('Sanding ' + sand + ' sqft');
-                if (stain > 0) parts.push('Staining ' + stain + ' sqft');
-                services.push({ name: 'Deck Restoration – ' + (parts.join(', ') || 'No details'), price: document.getElementById('price_deck').textContent });
+                let anyDeckArea = false;
+                document.querySelectorAll('[id^="deckArea_"]').forEach(area => {
+                    const name = area.querySelector('.deck-area-name').value.trim() || 'Area';
+                    const pw = parseFloat(area.querySelector('.deck-pw-sqft').value) || 0;
+                    const sand = parseFloat(area.querySelector('.deck-sand-sqft').value) || 0;
+                    const stain = parseFloat(area.querySelector('.deck-stain-sqft').value) || 0;
+                    const parts = [];
+                    if (pw > 0)    parts.push('Power Wash ' + pw + ' sqft');
+                    if (sand > 0)  parts.push('Sanding ' + sand + ' sqft');
+                    if (stain > 0) parts.push('Staining ' + stain + ' sqft');
+                    if (parts.length) {
+                        anyDeckArea = true;
+                        services.push({ name: 'Deck Restoration – ' + name + ': ' + parts.join(', '), price: '$' + calcDeckAreaTotal(area).toFixed(2) });
+                    }
+                });
+                if (!anyDeckArea) services.push({ name: 'Deck Restoration – No details', price: '$0.00' });
             }
 
             // GUTTER
@@ -2179,8 +2262,9 @@
             }
 
             // INTERLOCK
+            // INTERLOCK — one line item per area, same reasoning as Deck above
             if (document.getElementById('svc_interlock').checked) {
-                const areas = [];
+                let anyInterlockArea = false;
                 document.querySelectorAll('[id^="interlockArea_"]').forEach(area => {
                     const name = area.querySelector('.interlock-area-name').value.trim() || 'Area';
                     const stone = area.querySelector('.interlock-stone').value;
@@ -2192,9 +2276,12 @@
                     if (stone !== 'none' && polySqft > 0) parts.push(polySqft + 'sqft Poly (' + stoneName + ')');
                     if (hasSealer) parts.push('Sealer');
                     if (relevelSqft > 0) parts.push(relevelSqft + 'sqft Relevel');
-                    if (parts.length) areas.push(name + ': ' + parts.join(', '));
+                    if (parts.length) {
+                        anyInterlockArea = true;
+                        services.push({ name: 'Interlock – ' + name + ': ' + parts.join(', '), price: '$' + calcInterlockAreaTotal(area).toFixed(2) });
+                    }
                 });
-                services.push({ name: 'Interlock – ' + (areas.join(' | ') || 'No areas'), price: document.getElementById('price_interlock').textContent });
+                if (!anyInterlockArea) services.push({ name: 'Interlock – No areas', price: '$0.00' });
             }
 
             // WINDOW
@@ -2246,11 +2333,18 @@
                 paymentMethod: window._paymentInfo?.paymentMethod || (window._cardPaymentSent ? 'Credit Card' : ''),
                 paymentAmount: window._paymentInfo?.paymentAmount || 0,
                 jobDetails: {
-                    deck: document.getElementById('svc_deck').checked ? {
-                        powerwashSqft: parseFloat(document.getElementById('deck_pw_sqft').value) || null,
-                        sandingSqft: parseFloat(document.getElementById('deck_sand_sqft').value) || null,
-                        stainingSqft: parseFloat(document.getElementById('deck_stain_sqft').value) || null
-                    } : null,
+                    deck: document.getElementById('svc_deck').checked ? (() => {
+                        const areas = [];
+                        document.querySelectorAll('[id^="deckArea_"]').forEach(area => {
+                            areas.push({
+                                name: area.querySelector('.deck-area-name').value.trim(),
+                                powerwashSqft: parseFloat(area.querySelector('.deck-pw-sqft').value) || null,
+                                sandingSqft: parseFloat(area.querySelector('.deck-sand-sqft').value) || null,
+                                stainingSqft: parseFloat(area.querySelector('.deck-stain-sqft').value) || null
+                            });
+                        });
+                        return areas;
+                    })() : null,
                     gutter: document.getElementById('svc_gutter').checked ? (() => {
                         const entries = [];
                         document.querySelectorAll('[id^="gutterEntry_"]').forEach(entry => {
