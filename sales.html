@@ -1267,32 +1267,36 @@
                 <button class="invoice-btn" id="submitInvBtn" onclick="submitInvoice()">📄 Send Invoice</button>
             </div>
             <div style="text-align:right;padding:.5rem 1rem .25rem;display:flex;gap:.5rem;justify-content:flex-end">
-                <button onclick="openAvailModal()" style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:#2ecc71;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">📅 Set My Availability</button>
+                <button onclick="openBrochureModal()" style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.25);color:#3498db;font-size:.8rem;cursor:pointer;padding:6px 14px;border-radius:8px">Send Brochures</button>
             </div>
         </div>
     </div>
 
 
-    <!-- AVAILABILITY MODAL -->
-    <div id="availModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1.5rem 1rem">
-        <div style="background:#0f1f38;border:1px solid rgba(46,204,113,.25);border-radius:16px;padding:1.75rem;width:100%;max-width:480px;margin:auto">
+    <!-- SEND BROCHURES MODAL -->
+    <div id="brochureModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:1.5rem 1rem">
+        <div style="background:#0f1f38;border:1px solid rgba(52,152,219,.25);border-radius:16px;padding:1.75rem;width:100%;max-width:480px;margin:auto">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
-                <h3 style="margin:0;color:#fff">📅 Set My Availability</h3>
-                <button onclick="document.getElementById('availModal').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:1.2rem;cursor:pointer">✕</button>
+                <h3 style="margin:0;color:#fff">Send Brochures</h3>
+                <button onclick="document.getElementById('brochureModal').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:1.2rem;cursor:pointer">✕</button>
             </div>
-            <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:1.25rem">Add the dates and times you're available to work. Admin will see these on the calendar.</p>
+            <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:1rem">Pick any combination of brochures to email to the client for more detail on a service.</p>
 
-            <!-- Slots list -->
-            <div id="availSlots" style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:.75rem"></div>
+            <div id="brochureRecipient" style="font-size:.8rem;color:rgba(255,255,255,.5);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.6rem .8rem;margin-bottom:1rem"></div>
 
-            <!-- Add slot button -->
-            <button onclick="addAvailSlot()" style="width:100%;background:rgba(46,204,113,.08);border:1px dashed rgba(46,204,113,.3);color:#2ecc71;padding:.6rem;border-radius:8px;cursor:pointer;font-size:.85rem;margin-bottom:1rem">+ Add Another Date</button>
+            <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem">
+                <label style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border:1px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer"><input type="checkbox" class="brochure-check" value="deck"> <span style="color:rgba(255,255,255,.85);font-size:.9rem">Deck Restoration</span></label>
+                <label style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border:1px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer"><input type="checkbox" class="brochure-check" value="gutter"> <span style="color:rgba(255,255,255,.85);font-size:.9rem">Gutter Cleaning & Guards</span></label>
+                <label style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border:1px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer"><input type="checkbox" class="brochure-check" value="interlock"> <span style="color:rgba(255,255,255,.85);font-size:.9rem">Interlock (Relevel/Polysand/Seal)</span></label>
+                <label style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border:1px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer"><input type="checkbox" class="brochure-check" value="window"> <span style="color:rgba(255,255,255,.85);font-size:.9rem">Window Cleaning</span></label>
+                <label style="display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border:1px solid rgba(255,255,255,.1);border-radius:8px;cursor:pointer"><input type="checkbox" class="brochure-check" value="powerwash"> <span style="color:rgba(255,255,255,.85);font-size:.9rem">Power Washing</span></label>
+            </div>
 
             <div style="display:flex;gap:.75rem">
-                <button id="availSubmitBtn" onclick="submitAvailability()" style="flex:1;background:#2ecc71;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Save Availability</button>
-                <button onclick="document.getElementById('availModal').style.display='none'" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:.75rem 1.25rem;border-radius:10px;cursor:pointer">Cancel</button>
+                <button id="brochureSendBtn" onclick="submitBrochures()" style="flex:1;background:#3498db;border:none;color:#fff;font-weight:700;padding:.75rem;border-radius:10px;cursor:pointer;font-size:.95rem">Send</button>
+                <button onclick="document.getElementById('brochureModal').style.display='none'" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:.75rem 1.25rem;border-radius:10px;cursor:pointer">Cancel</button>
             </div>
-            <div id="availMsg" style="display:none;margin-top:.75rem;padding:.6rem .9rem;border-radius:8px;font-size:.85rem"></div>
+            <div id="brochureMsg" style="display:none;margin-top:.75rem;padding:.6rem .9rem;border-radius:8px;font-size:.85rem"></div>
         </div>
     </div>
 
@@ -2457,74 +2461,57 @@ corexteriors.ca
             el.addEventListener('change', saveDraft);
         });
 
-        // ── AVAILABILITY ───────────────────────────────────────────────────
         // ── LEAD LIST ──────────────────────────────────────────────
 
-        function openAvailModal() {
-            document.getElementById('availSlots').innerHTML = '';
-            document.getElementById('availMsg').style.display = 'none';
-            addAvailSlot();
-            document.getElementById('availModal').style.display = 'flex';
+        // ── SEND BROCHURES ─────────────────────────────────────────────────
+
+        function openBrochureModal() {
+            document.querySelectorAll('.brochure-check').forEach(cb => cb.checked = false);
+            document.getElementById('brochureMsg').style.display = 'none';
+            const name    = document.getElementById('clientName').value.trim() || '(no name)';
+            const email   = document.getElementById('clientEmail').value.trim() || '(no email)';
+            const phone   = document.getElementById('clientPhone').value.trim();
+            const address = document.getElementById('clientAddress').value.trim();
+            document.getElementById('brochureRecipient').textContent = 'Sending to: ' + [name, email, phone, address].filter(Boolean).join(' · ');
+            document.getElementById('brochureModal').style.display = 'flex';
         }
 
-        function addAvailSlot() {
-            const today = new Date().toISOString().split('T')[0];
-            const id = 'slot_' + Date.now();
-            const div = document.createElement('div');
-            div.id = id;
-            div.style.cssText = 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.75rem;position:relative';
-            div.innerHTML = `
-                <div style="display:flex;align-items:center;gap:.6rem">
-                    <input type="date" class="avail-date" value="${today}" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.55rem .75rem;font-size:.9rem">
-                    <input type="time" class="avail-start" value="08:00" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.55rem .6rem;font-size:.9rem">
-                    <span style="color:rgba(255,255,255,.3);font-size:.8rem">to</span>
-                    <input type="time" class="avail-end" value="20:00" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;padding:.55rem .6rem;font-size:.9rem">
-                    <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:1rem;padding:4px">✕</button>
-                </div>`;
-            document.getElementById('availSlots').appendChild(div);
-        }
+        async function submitBrochures() {
+            const clientName = document.getElementById('clientName').value.trim();
+            const email      = document.getElementById('clientEmail').value.trim();
+            const address    = document.getElementById('clientAddress').value.trim();
+            const phone      = document.getElementById('clientPhone').value.trim();
+            const rep        = document.getElementById('salesRep').value.trim();
+            const selected   = [...document.querySelectorAll('.brochure-check:checked')].map(cb => cb.value);
 
-        async function submitAvailability() {
-            const rep = repName || document.getElementById('salesRep')?.value?.trim() || 'Rep';
-            const slots = document.querySelectorAll('#availSlots > div');
-            if (slots.length === 0) { showAvailMsg('Add at least one date', 'error'); return; }
-            const entries = [];
-            for (const slot of slots) {
-                const date = slot.querySelector('.avail-date').value;
-                const start = slot.querySelector('.avail-start').value;
-                const end = slot.querySelector('.avail-end').value;
-                if (!date) { showAvailMsg('Fill in all dates', 'error'); return; }
-                entries.push({ date, start, end });
-            }
-            const btn = document.getElementById('availSubmitBtn');
-            btn.disabled = true; btn.textContent = 'Saving...';
-            let saved = 0;
+            if (!email || !email.includes('@')) { showBrochureMsg('A valid client email is required', 'error'); return; }
+            if (!selected.length) { showBrochureMsg('Select at least one brochure', 'error'); return; }
+
+            const btn = document.getElementById('brochureSendBtn');
+            btn.disabled = true; btn.textContent = 'Sending...';
             try {
-                for (const e of entries) {
-                    const r = await fetch(API_BASE + '/calendar', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({
-                            title: '✅ AVAILABLE — ' + rep,
-                            description: rep + ' available ' + e.start + '–' + e.end,
-                            date: e.date, startTime: e.start, endTime: e.end,
-                            allDay: false, repName: rep, eventType: 'available',
-                        }),
-                    });
-                    const d = await r.json();
-                    if (d.success) saved++;
+                const r = await fetch(API_BASE + '/brochures', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    body: JSON.stringify({ clientName, address, phone, email, salesRep: rep, selected }),
+                });
+                const d = await r.json();
+                if (r.ok && d.emailSent) {
+                    showBrochureMsg('Brochures sent to ' + email, 'success');
+                } else if (r.ok) {
+                    showBrochureMsg('Saved but email failed to send (check email config)', 'error');
+                } else {
+                    showBrochureMsg(d.error || 'Failed to send brochures', 'error');
                 }
-                showAvailMsg('✅ ' + saved + ' slot' + (saved !== 1 ? 's' : '') + ' added to the calendar!', 'success');
-                setTimeout(() => { document.getElementById('availModal').style.display = 'none'; }, 2000);
             } catch (e) {
-                showAvailMsg('Connection error. Try again.', 'error');
+                showBrochureMsg('Connection error. Try again.', 'error');
             } finally {
-                btn.disabled = false; btn.textContent = 'Save Availability';
+                btn.disabled = false; btn.textContent = 'Send';
             }
         }
 
-        function showAvailMsg(text, type) {
-            const el = document.getElementById('availMsg');
+        function showBrochureMsg(text, type) {
+            const el = document.getElementById('brochureMsg');
             el.style.display = 'block';
             el.style.background = type === 'success' ? 'rgba(46,204,113,.15)' : 'rgba(231,76,60,.15)';
             el.style.color = type === 'success' ? '#2ecc71' : '#e74c3c';
