@@ -2490,10 +2490,10 @@ corexteriors.ca
             const btn = document.getElementById('brochureSendBtn');
             btn.disabled = true; btn.textContent = 'Sending...';
             try {
-                const r = await fetch(API_BASE + '/brochures', {
+                const r = await fetch(API_BASE + '/invoice', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ clientName, address, phone, email, salesRep: rep, selected }),
+                    body: JSON.stringify({ action: 'brochures', clientName, address, phone, email, salesRep: rep, selected }),
                 });
                 const d = await r.json();
                 if (r.ok && d.emailSent) {

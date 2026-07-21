@@ -2,6 +2,7 @@ const { kv } = require('@vercel/kv');
 const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
 const { generateEstimatePDF } = require('./_estimatePdf');
+const { handleBrochuresRequest } = require('./_brochures');
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,6 +20,12 @@ module.exports = async function handler(req, res) {
     const token = authHeader.split(' ')[1];
     const tokenData = await kv.get(`token:${token}`);
     if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
+
+    // Send Brochures shares this endpoint's auth/CORS boilerplate rather than
+    // being its own api/*.js file — see api/_brochures.js for why.
+    if (req.body && req.body.action === 'brochures') {
+        return handleBrochuresRequest(req, res);
+    }
 
     try {
         const { estimate, documentType, signatureData, paymentRequest } = req.body;

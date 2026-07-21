@@ -1,4 +1,3 @@
-const { kv } = require('@vercel/kv');
 const nodemailer = require('nodemailer');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 
@@ -22,22 +21,11 @@ function s(text) {
         .replace(/[^\x00-\xFF]/g, '?');
 }
 
-module.exports = async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const token = authHeader.split(' ')[1];
-    const tokenData = await kv.get(`token:${token}`);
-    if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
-
+// Called from api/invoice.js when req.body.action === 'brochures' — kept as a
+// non-routable "_"-prefixed module (like _mailer.js/_estimatePdf.js) rather than
+// its own api/*.js file, since this project's Hobby plan caps out at 12
+// serverless functions and every routable api/*.js file counts against that.
+module.exports.handleBrochuresRequest = async function handleBrochuresRequest(req, res) {
     try {
         const { clientName, address, phone, email, salesRep, selected } = req.body || {};
         if (!email) return res.status(400).json({ error: 'Client email is required' });
