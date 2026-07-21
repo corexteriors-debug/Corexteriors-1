@@ -2,7 +2,7 @@ const { kv } = require('@vercel/kv');
 const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
 const { generateEstimatePDF } = require('./_estimatePdf');
-const { handleBrochuresRequest } = require('./_brochures');
+const { buildBrochureAttachments } = require('./_brochures');
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,14 +21,8 @@ module.exports = async function handler(req, res) {
     const tokenData = await kv.get(`token:${token}`);
     if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
 
-    // Send Brochures shares this endpoint's auth/CORS boilerplate rather than
-    // being its own api/*.js file — see api/_brochures.js for why.
-    if (req.body && req.body.action === 'brochures') {
-        return handleBrochuresRequest(req, res);
-    }
-
     try {
-        const { estimate, documentType, signatureData, paymentRequest } = req.body;
+        const { estimate, documentType, signatureData, paymentRequest, selectedBrochures } = req.body;
         if (!estimate || !estimate.clientName || !estimate.email) {
             return res.status(400).json({ error: 'Estimate data with client email is required' });
         }
@@ -76,7 +70,25 @@ module.exports = async function handler(req, res) {
             }
         }
 
-        const emailSent = await sendDocEmail(estimate, pdfBytes, docType, checkoutUrl, paymentRequest);
+        // Personalize any selected brochures (client info drawn onto their own
+        // existing page 1) and attach them to this same email, rather than a
+        // separate send.
+        let brochures = { attachments: [], labels: [] };
+        if (Array.isArray(selectedBrochures) && selectedBrochures.length) {
+            try {
+                brochures = await buildBrochureAttachments({
+                    clientName: estimate.clientName,
+                    address: estimate.address,
+                    phone: estimate.phone,
+                    email: estimate.email,
+                    selected: selectedBrochures,
+                });
+            } catch (brochureErr) {
+                console.error('Brochure attachment error:', brochureErr.message);
+            }
+        }
+
+        const emailSent = await sendDocEmail(estimate, pdfBytes, docType, checkoutUrl, paymentRequest, brochures);
 
         return res.status(200).json({ success: true, emailSent, paymentLinkSent: !!checkoutUrl });
     } catch (error) {
@@ -85,7 +97,7 @@ module.exports = async function handler(req, res) {
     }
 };
 
-async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest) {
+async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest, brochures) {
     const gmailUser  = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass  = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -131,6 +143,11 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest)
              <strong>To confirm your booking:</strong> A 25% deposit is required. E-transfer to <strong>corexteriors@gmail.com</strong> or call us.
            </div>`}`;
 
+    const brochureLabels = (brochures && brochures.labels) || [];
+    const brochureNote = brochureLabels.length
+        ? `<p>We've also attached a brochure with more info on: <strong>${brochureLabels.join(', ')}</strong>.</p>`
+        : '';
+
     await transporter.sendMail({
         from: '"Core Exteriors" <' + gmailUser + '>',
         to: est.email,
@@ -155,6 +172,7 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest)
       <tr><td style="padding:10px 16px;border-bottom:1px solid #e9ecef">HST (13%)</td><td style="padding:10px 16px;text-align:right;border-bottom:1px solid #e9ecef">${est.hst || '$0.00'}</td></tr>
       <tr style="background:#0a1628;color:#fff"><td style="padding:10px 16px;font-weight:bold">Total</td><td style="padding:10px 16px;text-align:right;font-weight:bold;font-size:16px">${est.total || '$0.00'}</td></tr>
     </table>
+    ${brochureNote}
     <p>Questions? Reply to this email or call <strong>519-712-1431</strong>.</p>
     <p style="margin-top:16px">Best regards,<br><strong>${repName}</strong><br>Core Exteriors</p>
   </div>
@@ -162,11 +180,14 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest)
     <p style="color:#8899aa;font-size:11px;margin:0">203 Cambridge St, London, ON &nbsp;|&nbsp; 519-712-1431 &nbsp;|&nbsp; corexteriors.ca</p>
   </div>
 </div>`,
-        attachments: [{
-            filename,
-            content: Buffer.from(pdfBytes),
-            contentType: 'application/pdf',
-        }],
+        attachments: [
+            {
+                filename,
+                content: Buffer.from(pdfBytes),
+                contentType: 'application/pdf',
+            },
+            ...((brochures && brochures.attachments) || []),
+        ],
     });
     return true;
 }
