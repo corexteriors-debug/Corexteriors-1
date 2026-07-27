@@ -1,4 +1,5 @@
 const { kv } = require('@vercel/kv');
+const { put } = require('@vercel/blob');
 const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
 const { generateEstimatePDF } = require('./_estimatePdf');
@@ -88,7 +89,16 @@ module.exports = async function handler(req, res) {
             }
         }
 
-        const emailSent = await sendDocEmail(estimate, pdfBytes, docType, checkoutUrl, paymentRequest, brochures);
+        let photoUrls = [];
+        if (Array.isArray(estimate.photos) && estimate.photos.length) {
+            try {
+                photoUrls = await uploadSitePhotos(estimate.photos, estimate.estimateNumber || estimate.invoiceNumber);
+            } catch (photoErr) {
+                console.error('Site photo upload error:', photoErr.message);
+            }
+        }
+
+        const emailSent = await sendDocEmail(estimate, pdfBytes, docType, checkoutUrl, paymentRequest, brochures, photoUrls);
 
         return res.status(200).json({ success: true, emailSent, paymentLinkSent: !!checkoutUrl });
     } catch (error) {
@@ -97,26 +107,25 @@ module.exports = async function handler(req, res) {
     }
 };
 
-// Site photos arrive as compressed JPEG dataURLs from sales.html. Turn them into
-// cid-embedded attachments so they render inline in the email body (capped so a
-// rep attaching a huge batch can't blow past Gmail's ~25MB message limit).
-function buildPhotoAttachments(photos) {
+// Site photos arrive as compressed JPEG dataURLs from sales.html. Upload each to
+// Vercel Blob and link to the real HTTPS URL — cid-embedded images display fine
+// in Gmail but aren't followable as <a href> click targets, so a plain https
+// link is what actually lets the client open the full-size photo.
+async function uploadSitePhotos(photos, ref) {
     const MAX_PHOTOS = 10;
-    const attachments = [];
-    (Array.isArray(photos) ? photos : []).slice(0, MAX_PHOTOS).forEach((dataUrl, i) => {
+    const list = (Array.isArray(photos) ? photos : []).slice(0, MAX_PHOTOS);
+    const results = await Promise.allSettled(list.map((dataUrl, i) => {
         const match = (dataUrl || '').match(/^data:(image\/\w+);base64,(.+)$/);
-        if (!match) return;
-        attachments.push({
-            filename: `site-photo-${i + 1}.jpg`,
-            content: Buffer.from(match[2], 'base64'),
-            contentType: match[1],
-            cid: `sitephoto${i}`,
-        });
-    });
-    return attachments;
+        if (!match) return Promise.reject(new Error('Invalid photo format'));
+        const ext = (match[1].split('/')[1] || 'jpg').replace(/[^a-z0-9]/gi, '') || 'jpg';
+        const safeRef = (ref || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const path = `estimate-photos/${safeRef}/${Date.now()}-${i}.${ext}`;
+        return put(path, Buffer.from(match[2], 'base64'), { access: 'public', contentType: match[1], addRandomSuffix: true });
+    }));
+    return results.filter(r => r.status === 'fulfilled').map(r => r.value.url);
 }
 
-async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest, brochures) {
+async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest, brochures, photoUrls) {
     const gmailUser  = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass  = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -167,11 +176,10 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
         ? `<p>We've also attached a brochure with more info on: <strong>${brochureLabels.join(', ')}</strong>.</p>`
         : '';
 
-    const photoAttachments = buildPhotoAttachments(est.photos);
-    const photoGallery = photoAttachments.length
-        ? `<p style="margin-bottom:8px">Site photos:</p>
+    const photoGallery = (photoUrls && photoUrls.length)
+        ? `<p style="margin-bottom:8px">Site photos (click a photo to view full size):</p>
            <div style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px">
-             ${photoAttachments.map(p => `<img src="cid:${p.cid}" width="140" height="140" style="width:140px;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e9ecef">`).join('')}
+             ${photoUrls.map(url => `<a href="${url}" target="_blank"><img src="${url}" width="140" height="140" style="width:140px;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e9ecef"></a>`).join('')}
            </div>`
         : '';
 
@@ -215,7 +223,6 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
                 contentType: 'application/pdf',
             },
             ...((brochures && brochures.attachments) || []),
-            ...photoAttachments,
         ],
     });
     return true;
