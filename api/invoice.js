@@ -97,6 +97,25 @@ module.exports = async function handler(req, res) {
     }
 };
 
+// Site photos arrive as compressed JPEG dataURLs from sales.html. Turn them into
+// cid-embedded attachments so they render inline in the email body (capped so a
+// rep attaching a huge batch can't blow past Gmail's ~25MB message limit).
+function buildPhotoAttachments(photos) {
+    const MAX_PHOTOS = 10;
+    const attachments = [];
+    (Array.isArray(photos) ? photos : []).slice(0, MAX_PHOTOS).forEach((dataUrl, i) => {
+        const match = (dataUrl || '').match(/^data:(image\/\w+);base64,(.+)$/);
+        if (!match) return;
+        attachments.push({
+            filename: `site-photo-${i + 1}.jpg`,
+            content: Buffer.from(match[2], 'base64'),
+            contentType: match[1],
+            cid: `sitephoto${i}`,
+        });
+    });
+    return attachments;
+}
+
 async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest, brochures) {
     const gmailUser  = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass  = process.env.GMAIL_APP_PASSWORD;
@@ -148,6 +167,14 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
         ? `<p>We've also attached a brochure with more info on: <strong>${brochureLabels.join(', ')}</strong>.</p>`
         : '';
 
+    const photoAttachments = buildPhotoAttachments(est.photos);
+    const photoGallery = photoAttachments.length
+        ? `<p style="margin-bottom:8px">Site photos:</p>
+           <div style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px">
+             ${photoAttachments.map(p => `<img src="cid:${p.cid}" width="140" height="140" style="width:140px;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e9ecef">`).join('')}
+           </div>`
+        : '';
+
     await transporter.sendMail({
         from: '"Core Exteriors" <' + gmailUser + '>',
         to: est.email,
@@ -173,6 +200,7 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
       <tr style="background:#0a1628;color:#fff"><td style="padding:10px 16px;font-weight:bold">Total</td><td style="padding:10px 16px;text-align:right;font-weight:bold;font-size:16px">${est.total || '$0.00'}</td></tr>
     </table>
     ${brochureNote}
+    ${photoGallery}
     <p>Questions? Reply to this email or call <strong>519-712-1431</strong>.</p>
     <p style="margin-top:16px">Best regards,<br><strong>${repName}</strong><br>Core Exteriors</p>
   </div>
@@ -187,6 +215,7 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
                 contentType: 'application/pdf',
             },
             ...((brochures && brochures.attachments) || []),
+            ...photoAttachments,
         ],
     });
     return true;

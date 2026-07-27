@@ -596,6 +596,30 @@
             border: 1px solid rgba(255, 255, 255, .15)
         }
 
+        .photo-thumb {
+            position: relative;
+            display: inline-block;
+            line-height: 0
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            background: #e74c3c;
+            color: #fff;
+            font-size: 13px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* LEGAL */
         .legal-item {
             display: flex;
@@ -1768,14 +1792,62 @@
         uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files) });
         photoInput.addEventListener('change', e => handleFiles(e.target.files));
 
-        function handleFiles(files) {
-            const prev = document.getElementById('photoPreviews');
-            Array.from(files).forEach(f => {
-                if (!f.type.startsWith('image/')) return;
+        let uploadedPhotos = []; // compressed dataURLs — sent to server so they reach the client email
+
+        // Downscale + re-encode as JPEG so a phone's 4-8MB photos don't blow past
+        // the API's request body limit or bloat the outgoing email.
+        function compressImage(file, maxDim = 1400, quality = 0.72) {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = e => { const img = document.createElement('img'); img.src = e.target.result; prev.appendChild(img) };
-                reader.readAsDataURL(f);
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) { height = Math.round(height * maxDim / width); width = maxDim }
+                            else { width = Math.round(width * maxDim / height); height = maxDim }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = () => reject(new Error('Could not read image'));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error('Could not read file'));
+                reader.readAsDataURL(file);
             });
+        }
+
+        async function handleFiles(files) {
+            const prev = document.getElementById('photoPreviews');
+            for (const f of Array.from(files)) {
+                if (!f.type.startsWith('image/')) continue;
+                try {
+                    const dataUrl = await compressImage(f);
+                    uploadedPhotos.push(dataUrl);
+                    const wrap = document.createElement('div');
+                    wrap.className = 'photo-thumb';
+                    const img = document.createElement('img');
+                    img.src = dataUrl;
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'photo-remove';
+                    removeBtn.title = 'Remove photo';
+                    removeBtn.textContent = '×';
+                    removeBtn.addEventListener('click', () => {
+                        const i = uploadedPhotos.indexOf(dataUrl);
+                        if (i > -1) uploadedPhotos.splice(i, 1);
+                        wrap.remove();
+                    });
+                    wrap.appendChild(img);
+                    wrap.appendChild(removeBtn);
+                    prev.appendChild(wrap);
+                } catch (e) {
+                    console.error('Photo processing failed', e);
+                }
+            }
         }
 
         // SIGNATURE PAD (enhanced)
@@ -2057,6 +2129,7 @@
             document.getElementById('gutterEntriesList').innerHTML = '';
             document.getElementById('interlockAreasList').innerHTML = '';
             document.getElementById('otherItemsList').innerHTML = '';
+            uploadedPhotos = [];
             setDiscount(0);
             document.getElementById('submitMsg').className = 'msg'; document.getElementById('submitMsg').style.display = 'none';
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2396,6 +2469,7 @@
                     powerAccess: document.querySelector('input[name="power"]:checked')?.value,
                     hazards
                 },
+                photos: uploadedPhotos,
             };
         }
 
