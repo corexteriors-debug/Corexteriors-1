@@ -463,6 +463,49 @@
             color: #e74c3c
         }
 
+        /* CALL STATUS BADGE (Sales Leads tab) */
+        .callbadge-New {
+            background: rgba(52, 152, 219, .2);
+            color: #3498db
+        }
+
+        .callbadge-Called {
+            background: rgba(243, 156, 18, .2);
+            color: #f39c12
+        }
+
+        .callbadge-NoAnswer {
+            background: rgba(149, 165, 166, .2);
+            color: #95a5a6
+        }
+
+        .callbadge-Interested {
+            background: rgba(46, 204, 113, .2);
+            color: #2ecc71
+        }
+
+        .callbadge-NotInterested {
+            background: rgba(231, 76, 60, .2);
+            color: #e74c3c
+        }
+
+        .callbadge-Booked {
+            background: rgba(155, 89, 182, .2);
+            color: #9b59b6
+        }
+
+        /* FB LEAD SOURCE BADGE */
+        .fb-source-badge {
+            background: rgba(24, 119, 242, .15);
+            border: 1px solid rgba(24, 119, 242, .3);
+            color: #1877f2;
+            border-radius: 20px;
+            padding: 1px 8px;
+            font-size: .68rem;
+            display: inline-block;
+            margin-top: 2px
+        }
+
         /* PAYMENT BADGE */
         .pay-badge {
             padding: 3px 10px;
@@ -1074,6 +1117,15 @@
                             <input type="text" id="qlSearch" placeholder="🔍 Search name, address..." oninput="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .85rem;color:#fff;font-size:.85rem;outline:none;min-width:200px">
                             <select id="qlRepFilter" onchange="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .75rem;color:#fff;font-size:.85rem;outline:none">
                                 <option value="all">All Reps</option>
+                            </select>
+                            <select id="qlCallStatusFilter" onchange="filterQLLeads()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.45rem .75rem;color:#fff;font-size:.85rem;outline:none">
+                                <option value="all">All Call Statuses</option>
+                                <option value="New">New</option>
+                                <option value="Called">Called</option>
+                                <option value="No Answer">No Answer</option>
+                                <option value="Interested">Interested</option>
+                                <option value="Not Interested">Not Interested</option>
+                                <option value="Booked">Booked</option>
                             </select>
                             <button onclick="exportQLLeadsExcel()" style="background:#1a6b3a;border:none;color:#fff;font-weight:600;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">⬇ Excel</button>
                             <button onclick="loadQLLeads()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
@@ -2203,10 +2255,12 @@ Tasks:
         function filterQLLeads() {
             const q = (document.getElementById('qlSearch').value || '').toLowerCase();
             const rep = document.getElementById('qlRepFilter').value;
+            const callStatus = document.getElementById('qlCallStatusFilter').value;
             const filtered = allQLLeads.filter(l => {
                 const matchRep = rep === 'all' || l.salesRep === rep;
+                const matchCallStatus = callStatus === 'all' || (l.callStatus || 'New') === callStatus;
                 const matchQ = !q || (l.name || '').toLowerCase().includes(q) || (l.address || '').toLowerCase().includes(q) || (l.notes || '').toLowerCase().includes(q);
-                return matchRep && matchQ;
+                return matchRep && matchCallStatus && matchQ;
             });
             renderQLLeads(filtered);
         }
@@ -2223,12 +2277,15 @@ Tasks:
                     const dateStr = new Date(lead.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
                     const svcList = (lead.services || []).map(s => s.name).filter(Boolean).join(', ');
                     const visitStr = lead.visitDate ? new Date(lead.visitDate + 'T12:00:00').toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                    const callStatus = lead.callStatus || 'New';
+                    const callStatusKey = callStatus.replace(/\s+/g, '');
                     return `<div id="qlrow-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.9rem 1rem">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:.5rem">
                             <div>
-                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}</div>
+                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}${lead.source === 'Facebook Ads' ? '<span class="fb-source-badge">📘 Facebook Ads</span>' : ''}</div>
                                 <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address)}</div>
                                 ${lead.phone || lead.email ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(lead.phone||'') + (lead.phone&&lead.email?' &middot; ':'') + esc(lead.email||'') + '</div>' : ''}
+                                ${lead.campaign ? '<div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:2px">Campaign: ' + esc(lead.campaign) + '</div>' : ''}
                             </div>
                             <div style="font-size:.72rem;color:rgba(255,255,255,.3);white-space:nowrap;text-align:right">
                                 ${dateStr}<br>
@@ -2239,6 +2296,17 @@ Tasks:
                         ${svcList ? '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.4rem">' + esc(svcList) + '</div>' : ''}
                         ${visitStr ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:.4rem">Service date: ' + visitStr + '</div>' : ''}
                         ${lead.notes ? '<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.6rem">' + esc(lead.notes) + '</div>' : ''}
+                        <div class="dropdown" style="margin-bottom:.6rem">
+                            <button class="badge callbadge-${callStatusKey}" onclick="toggleDrop('callstatus-${lead.id}')">📞 ${esc(callStatus)}</button>
+                            <div class="dropdown-menu" id="callstatus-${lead.id}">
+                                <button onclick="setCallStatus('${lead.id}','New')">🔵 New</button>
+                                <button onclick="setCallStatus('${lead.id}','Called')">🟠 Called</button>
+                                <button onclick="setCallStatus('${lead.id}','No Answer')">⚪ No Answer</button>
+                                <button onclick="setCallStatus('${lead.id}','Interested')">🟢 Interested</button>
+                                <button onclick="setCallStatus('${lead.id}','Not Interested')">🔴 Not Interested</button>
+                                <button onclick="setCallStatus('${lead.id}','Booked')">🟣 Booked</button>
+                            </div>
+                        </div>
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">
                             <button onclick="openEditQL('${lead.id}')" style="background:rgba(230,126,34,.15);border:1px solid rgba(230,126,34,.3);color:#e67e22;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">Edit</button>
                             <button onclick="openPromoteToSaleModal('${lead.id}')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:9px 6px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;font-family:inherit">To Sale</button>
@@ -2246,6 +2314,19 @@ Tasks:
                         </div>
                     </div>`;
                 }).join('') + `</div>`;
+        }
+
+        async function setCallStatus(id, callStatus) {
+            try {
+                const r = await fetch(`${API_BASE}/quick-leads`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, callStatus }) });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    const l = allQLLeads.find(x => x.id === id);
+                    if (l) l.callStatus = callStatus;
+                    filterQLLeads();
+                    toast('Call status updated', 'success');
+                } else { throw new Error(d.error || 'Failed'); }
+            } catch (e) { toast('Failed to update call status', 'error') }
         }
 
         function openEditQL(id) {
@@ -3585,6 +3666,8 @@ function exportQLLeadsExcel() {
             'Phone':         l.phone || '',
             'Email':         l.email || '',
             'Address':       l.address || '',
+            'Source':        l.source || 'Manual',
+            'Call Status':   l.callStatus || 'New',
             'Services':      (l.services || []).map(s => s.name).filter(Boolean).join(', '),
             'Visit Date':    visitStr,
             'Total':         l.total || '',
@@ -3597,8 +3680,8 @@ function exportQLLeadsExcel() {
     const ws = XLSX.utils.json_to_sheet(rows);
     ws['!cols'] = [
         { wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 26 },
-        { wch: 28 }, { wch: 28 }, { wch: 14 }, { wch: 12 },
-        { wch: 14 }, { wch: 14 }, { wch: 35 },
+        { wch: 28 }, { wch: 14 }, { wch: 14 }, { wch: 28 },
+        { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 35 },
     ];
 
     const wb = XLSX.utils.book_new();

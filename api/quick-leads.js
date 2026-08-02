@@ -1,5 +1,7 @@
 const { kv } = require('@vercel/kv');
 
+const CALL_STATUSES = ['New', 'Called', 'No Answer', 'Interested', 'Not Interested', 'Booked'];
+
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
@@ -22,17 +24,25 @@ module.exports = async function handler(req, res) {
             const b = req.body;
             const name = b.name || b.clientName || '';
             const address = b.address || b.clientAddress || '';
-            if (!name || !address) return res.status(400).json({ error: 'Name and address are required' });
+            const phone = b.phone || '';
+            const email = b.email || '';
+            if (!name) return res.status(400).json({ error: 'Name is required' });
+            if (!address && !phone && !email) return res.status(400).json({ error: 'At least one of address, phone, or email is required' });
 
             const lead = {
                 id: `ql_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
                 // identity
                 name,
                 address,
-                phone:          b.phone || '',
-                email:          b.email || '',
+                phone,
+                email,
                 salesRep:       b.salesRep || tokenData.repName || '',
                 estimateNumber: b.estimateNumber || '',
+                // lead origin & call tracking
+                source:         b.source || 'Manual',
+                campaign:       b.campaign || '',
+                adName:         b.adName || '',
+                callStatus:     CALL_STATUSES.includes(b.callStatus) ? b.callStatus : 'New',
                 // services & pricing
                 services:       b.services || [],
                 serviceType:    b.serviceType || '',
@@ -84,7 +94,7 @@ module.exports = async function handler(req, res) {
 
         // PATCH — edit a lead
         if (req.method === 'PATCH') {
-            const { id, name, address, notes, phone, email } = req.body;
+            const { id, name, address, notes, phone, email, callStatus, salesRep } = req.body;
             if (!id) return res.status(400).json({ error: 'ID required' });
 
             const lead = await kv.get(`ql:${id}`);
@@ -98,6 +108,13 @@ module.exports = async function handler(req, res) {
             if (notes !== undefined) lead.notes  = notes;
             if (phone !== undefined) lead.phone  = phone;
             if (email !== undefined) lead.email  = email;
+            if (salesRep !== undefined) lead.salesRep = salesRep;
+            if (callStatus !== undefined) {
+                if (!CALL_STATUSES.includes(callStatus)) {
+                    return res.status(400).json({ error: `Invalid call status. Must be one of: ${CALL_STATUSES.join(', ')}` });
+                }
+                lead.callStatus = callStatus;
+            }
             lead.updatedAt = new Date().toISOString();
 
             await kv.set(`ql:${id}`, lead);
