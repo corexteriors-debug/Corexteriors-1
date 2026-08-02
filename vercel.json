@@ -101,7 +101,7 @@
             "schedule": "0 13 * * *"
         },
         {
-            "path": "/api/sync-fb-leads",
+            "path": "/api/remind?task=sync-fb-leads",
             "schedule": "*/30 * * * *"
         }
     ],
