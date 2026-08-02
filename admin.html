@@ -506,6 +506,19 @@
             margin-top: 2px
         }
 
+        /* WEBSITE LEAD SOURCE BADGE */
+        .web-source-badge {
+            background: rgba(46, 204, 113, .15);
+            border: 1px solid rgba(46, 204, 113, .3);
+            color: #2ecc71;
+            border-radius: 20px;
+            padding: 1px 8px;
+            font-size: .68rem;
+            display: inline-block;
+            margin-top: 2px;
+            margin-left: 4px
+        }
+
         /* PAYMENT BADGE */
         .pay-badge {
             padding: 3px 10px;
@@ -2260,7 +2273,7 @@ Tasks:
             const filtered = allQLLeads.filter(l => {
                 const matchRep = rep === 'all' || l.salesRep === rep;
                 const matchCallStatus = callStatus === 'all' || (l.callStatus || 'New') === callStatus;
-                const matchQ = !q || (l.name || '').toLowerCase().includes(q) || (l.address || '').toLowerCase().includes(q) || (l.notes || '').toLowerCase().includes(q);
+                const matchQ = !q || (l.name || '').toLowerCase().includes(q) || (l.address || '').toLowerCase().includes(q) || (l.notes || '').toLowerCase().includes(q) || (l.company || '').toLowerCase().includes(q);
                 return matchRep && matchCallStatus && matchQ;
             });
             renderQLLeads(filtered);
@@ -2283,8 +2296,8 @@ Tasks:
                     return `<div id="qlrow-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.9rem 1rem">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:.5rem">
                             <div>
-                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}${lead.source === 'Facebook Ads' ? '<span class="fb-source-badge">📘 Facebook Ads</span>' : ''}</div>
-                                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address)}</div>
+                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}${lead.source === 'Facebook Ads' ? '<span class="fb-source-badge">📘 Facebook Ads</span>' : ''}${(lead.source || '').startsWith('Website') ? '<span class="web-source-badge">🌐 ' + esc(lead.source) + '</span>' : ''}</div>
+                                <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address)}${lead.company ? ' &middot; ' + esc(lead.company) : ''}</div>
                                 ${lead.phone || lead.email ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(lead.phone||'') + (lead.phone&&lead.email?' &middot; ':'') + esc(lead.email||'') + '</div>' : ''}
                                 ${lead.campaign ? '<div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:2px">Campaign: ' + esc(lead.campaign) + '</div>' : ''}
                             </div>
