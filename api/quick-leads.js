@@ -1,4 +1,5 @@
 const { kv } = require('@vercel/kv');
+const { runFbLeadsSync } = require('./_syncFbLeads');
 
 const CALL_STATUSES = ['New', 'Called', 'No Answer', 'Interested', 'Not Interested', 'Booked'];
 
@@ -92,8 +93,14 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ success: true, leads });
         }
 
-        // PATCH — edit a lead
+        // PATCH — edit a lead, or (action: 'sync-fb-leads') trigger a manual FB Ads import
         if (req.method === 'PATCH') {
+            if (req.body.action === 'sync-fb-leads') {
+                if (tokenData.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+                const results = await runFbLeadsSync();
+                return res.status(200).json({ success: true, ...results });
+            }
+
             const { id, name, address, notes, phone, email, callStatus, salesRep } = req.body;
             if (!id) return res.status(400).json({ error: 'ID required' });
 

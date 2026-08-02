@@ -1129,6 +1129,7 @@
                             </select>
                             <button onclick="exportQLLeadsExcel()" style="background:#1a6b3a;border:none;color:#fff;font-weight:600;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">⬇ Excel</button>
                             <button onclick="loadQLLeads()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
+                            <button id="fbSyncBtn" onclick="syncFbLeadsNow()" style="background:rgba(24,119,242,.15);border:1px solid rgba(24,119,242,.3);color:#1877f2;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">📘 Sync FB Leads Now</button>
                         </div>
                     </div>
                     <div id="qlLeadsList" style="padding:.5rem 0">
@@ -2327,6 +2328,20 @@ Tasks:
                     toast('Call status updated', 'success');
                 } else { throw new Error(d.error || 'Failed'); }
             } catch (e) { toast('Failed to update call status', 'error') }
+        }
+
+        async function syncFbLeadsNow() {
+            const btn = document.getElementById('fbSyncBtn');
+            btn.disabled = true; btn.textContent = 'Syncing...';
+            try {
+                const r = await fetch(`${API_BASE}/quick-leads`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ action: 'sync-fb-leads' }) });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    toast(`Synced ${d.synced} new FB lead${d.synced === 1 ? '' : 's'}`, 'success');
+                    loadQLLeads();
+                } else { throw new Error(d.error || 'Failed'); }
+            } catch (e) { toast('FB sync failed: ' + e.message, 'error') }
+            btn.disabled = false; btn.textContent = '📘 Sync FB Leads Now';
         }
 
         function openEditQL(id) {
