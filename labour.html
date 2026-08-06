@@ -37,6 +37,9 @@
         .status-badge { border-radius: 20px; padding: .3rem .85rem; font-size: .75rem; font-weight: 700; }
         .badge-active { background: #1b5e20; color: #69f0ae; }
         .badge-out    { background: #1a2a45; color: #546e8a; border: 1px solid #263c5a; }
+        .home-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
+        .logout-link { background: none; border: none; color: #546e8a; font-size: .72rem; text-decoration: underline; cursor: pointer; padding: 0; }
+        .logout-link:active { color: #ef5350; }
         .tab-bar { display: flex; background: #1a2a45; border-bottom: 1px solid #0d1f35; }
         .tab-btn { flex: 1; padding: .75rem; background: none; border: none; border-bottom: 2px solid transparent; color: #546e8a; font-size: .82rem; font-weight: 600; cursor: pointer; letter-spacing: .3px; }
         .tab-btn.active { color: #4fc3f7; border-bottom-color: #4fc3f7; }
@@ -215,7 +218,10 @@
             <div class="worker-name" id="workerName">Worker</div>
             <div class="worker-date" id="workerDate"></div>
         </div>
-        <div class="status-badge badge-out" id="statusBadge">OFF SITE</div>
+        <div class="home-header-right">
+            <div class="status-badge badge-out" id="statusBadge">OFF SITE</div>
+            <button class="logout-link" onclick="logout()">Log Out</button>
+        </div>
     </div>
     <div class="tab-bar">
         <button class="tab-btn active" id="tab-btn-today" onclick="switchTab('today')">TODAY</button>
