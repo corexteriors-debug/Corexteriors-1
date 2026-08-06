@@ -786,7 +786,7 @@ async function toggleTask(taskIndex) {
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
             body: JSON.stringify({ date: currentJob._date, jobId: currentJob.id, taskIndex })
         });
-        const data = await r.json();
+        const data = await r.json().catch(() => ({}));
         if (data.success && currentJob.tasks[taskIndex]) {
             currentJob.tasks[taskIndex].done = data.task.done;
             const item  = document.getElementById('task-' + taskIndex);
@@ -795,8 +795,12 @@ async function toggleTask(taskIndex) {
                 const check = item.querySelector('.task-check');
                 if (check) check.textContent = data.task.done ? '✓' : '';
             }
+        } else if (!data.success) {
+            alert(data.error || 'Could not update task. Check your connection and try again.');
         }
-    } catch { /* offline — skip */ }
+    } catch {
+        alert('Connection error — could not update task. Try again when you have signal.');
+    }
 }
 
 function openJobDoneModal() {
