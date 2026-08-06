@@ -890,14 +890,16 @@ function triggerPhotoUploadHome() {
 }
 async function handlePhotoSelectHome(event) {
     for (const file of Array.from(event.target.files)) {
-        try { await uploadPhoto(await compressImage(file, 1024), pendingPhotoTag); } catch {}
+        try { await uploadPhoto(await compressImage(file, 1024), pendingPhotoTag); }
+        catch (err) { alert('Could not process photo: ' + (err && err.message ? err.message : 'unknown error')); }
     }
     event.target.value = '';
 }
 async function handlePhotoSelect(event) {
     const tag = pendingPhotoTag;
     for (const file of Array.from(event.target.files)) {
-        try { await uploadPhoto(await compressImage(file, 1024), tag); } catch {}
+        try { await uploadPhoto(await compressImage(file, 1024), tag); }
+        catch (err) { alert('Could not process photo: ' + (err && err.message ? err.message : 'unknown error')); }
     }
     event.target.value = '';
     pendingPhotoTag = null;
@@ -928,12 +930,25 @@ async function uploadPhoto(base64, tag) {
     try {
         const r    = await fetch('/api/labour-photo', { method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionToken, calendarEventId: currentJob.id, jobTitle: currentJob.title, photoData: base64, tag }) });
-        const data = await r.json();
+        const data = await r.json().catch(() => ({}));
         if (data.success) {
             pending.replaceWith(renderPhotoThumb(data.url));
             if (gridId === 'photoGridOther') { const sec = document.getElementById('photoSectionOther'); if (sec) sec.style.display = ''; }
-        } else { pending.textContent = '\u2717'; }
-    } catch { pending.textContent = '\u2717'; }
+        } else {
+            failPending(pending, data.error || ('Upload failed (HTTP ' + r.status + ')'));
+        }
+    } catch (err) {
+        failPending(pending, 'Connection error: ' + (err && err.message ? err.message : 'unknown'));
+    }
+}
+
+// Shows a tappable \u2717 that reveals the real error \u2014 silent \u2717s gave no way to
+// diagnose device-specific upload failures (e.g. iOS Safari) after the fact.
+function failPending(pending, message) {
+    pending.textContent = '\u2717';
+    pending.title = message;
+    pending.style.cursor = 'pointer';
+    pending.addEventListener('click', () => alert(message));
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
