@@ -804,6 +804,7 @@ function openJobDoneModal() {
     const jobs  = today.jobs || [];
     if      (jobs.length === 1) openJob(jobs[0].id, 'today');
     else if (jobs.length  > 1) switchTab('week');
+    else alert('No jobs scheduled today.');
 }
 
 // ── Weather ───────────────────────────────────────────────────────────────────
@@ -835,13 +836,23 @@ function openIncidentModal()  { document.getElementById('incidentModal').classLi
 function closeIncidentModal() { document.getElementById('incidentModal').classList.remove('visible'); document.getElementById('incidentText').value = ''; }
 async function submitIncident() {
     const text = document.getElementById('incidentText').value.trim();
-    if (!text) return;
+    if (!text) { alert('Please describe the incident before submitting.'); return; }
     try {
-        await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: workerName || 'Worker', email: 'labour@internal', message: '[INCIDENT REPORT] ' + text, subject: 'Labour Incident Report' }) });
-    } catch { /* non-fatal */ }
-    closeIncidentModal();
-    alert('Report submitted.');
+        const r = await fetch('/api/labour?action=report-incident', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+            body: JSON.stringify({ text })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (data.success) {
+            closeIncidentModal();
+            alert('Report submitted.');
+        } else {
+            alert(data.error || 'Could not submit report. Please call the office directly.');
+        }
+    } catch (err) {
+        alert('Connection error: ' + (err && err.message ? err.message : 'unknown') + '. Please call the office directly.');
+    }
 }
 
 // ── Offline queue ─────────────────────────────────────────────────────────────

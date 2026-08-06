@@ -1,6 +1,7 @@
 const { kv } = require('@vercel/kv');
 const { google } = require('googleapis');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const TIMEZONE = 'America/Toronto';
 const ALLOWED_ORIGINS = ['https://corexteriors.ca', 'https://www.corexteriors.ca'];
@@ -138,6 +139,7 @@ module.exports = async function handler(req, res) {
         if (action === 'crew-status')       return await crewStatus(req, res);
         if (action === 'complete-task')     return await completeTask(req, res);
         if (action === 'add-job-note')      return await addJobNote(req, res);
+        if (action === 'report-incident')   return await reportIncident(req, res);
         if (action === 'today-jobs')        return await todayJobs(req, res);
         if (action === 'week-jobs')         return await weekJobs(req, res);
         if (action === 'daily')             return await dailyLogs(req, res);
@@ -410,6 +412,46 @@ async function addJobNote(req, res) {
     await kv.set(key, log);
 
     return res.status(200).json({ success: true, note });
+}
+
+// ── Incident reports ──────────────────────────────────────────────────────────
+
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function reportIncident(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    const sessionToken = (req.headers.authorization || '').split(' ')[1] || '';
+    const session = await verifyWorkerSession(sessionToken);
+    if (!session) return res.status(401).json({ error: 'Invalid session' });
+
+    const trimmed = String((req.body || {}).text || '').trim();
+    if (!trimmed) return res.status(400).json({ error: 'text required' });
+    if (trimmed.length > 2000) return res.status(400).json({ error: 'text must be 2000 characters or fewer' });
+
+    const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
+    const gmailPass = process.env.GMAIL_APP_PASSWORD;
+    if (!gmailPass) return res.status(500).json({ error: 'Email not configured. Please call the office directly.' });
+
+    try {
+        const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
+        const adminEmail = process.env.ADMIN_EMAIL || gmailUser;
+        await transporter.sendMail({
+            from: `"Core Exteriors Labour" <${gmailUser}>`,
+            to: adminEmail,
+            subject: `⚠️ Incident/Hazard Report — ${session.name || 'Worker'}`,
+            html: `<p><strong>Worker:</strong> ${escapeHtml(session.name || 'Worker')}</p>
+                   <p><strong>Time:</strong> ${nowISO()}</p>
+                   <p><strong>Report:</strong></p>
+                   <p>${escapeHtml(trimmed).replace(/\n/g, '<br>')}</p>`,
+        });
+    } catch (err) {
+        console.error('Incident report email error:', err.message);
+        return res.status(500).json({ error: 'Could not send report. Please call the office directly.' });
+    }
+
+    return res.status(200).json({ success: true });
 }
 
 // ── Jobs / Calendar ───────────────────────────────────────────────────────────
