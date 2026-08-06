@@ -70,6 +70,44 @@ function fmtMinutes(mins) {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
+// Find a job entry in a worker's daily log, creating a stub if it doesn't exist yet
+// (mirrors the stub-creation behavior in api/labour-photo.js).
+// NOTE: the field is called `workerNotes` (not `notes`) because job objects from
+// jobsForDate() already use `notes` for the admin/schedule site-info string (gate
+// codes, etc.) — using the same key would silently clobber it when merged below.
+function findOrCreateJob(log, calendarEventId, jobTitle) {
+    if (!Array.isArray(log.jobs)) log.jobs = [];
+    let job = log.jobs.find(j => j.calendarEventId === calendarEventId);
+    if (!job) {
+        job = { calendarEventId, jobTitle: jobTitle || 'Job', clockIn: nowISO(), clockOut: null, photos: [], workerNotes: [] };
+        log.jobs.push(job);
+    }
+    if (!Array.isArray(job.workerNotes)) job.workerNotes = [];
+    return job;
+}
+
+// Legacy photo entries were plain URL strings — normalize to { url, tag, at }
+function normalizePhoto(p) {
+    return typeof p === 'string' ? { url: p, tag: null, at: null } : p;
+}
+
+// Merge a worker's own job log (clock times, photos, worker notes) into the
+// schedule-derived job list so they persist across app reopens instead of only
+// showing for the session they were added in.
+function mergeWorkerJobData(jobs, log) {
+    const byId = new Map((log.jobs || []).map(j => [j.calendarEventId, j]));
+    return jobs.map(j => {
+        const entry = byId.get(j.id);
+        return {
+            ...j,
+            clockIn:     entry?.clockIn  || null,
+            clockOut:    entry?.clockOut || null,
+            photos:      (entry?.photos || []).map(normalizePhoto),
+            workerNotes: entry?.workerNotes || [],
+        };
+    });
+}
+
 // ── Router ────────────────────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
@@ -86,6 +124,7 @@ module.exports = async function handler(req, res) {
         if (action === 'clock-out')         return await clockOut(req, res);
         if (action === 'crew-status')       return await crewStatus(req, res);
         if (action === 'complete-task')     return await completeTask(req, res);
+        if (action === 'add-job-note')      return await addJobNote(req, res);
         if (action === 'today-jobs')        return await todayJobs(req, res);
         if (action === 'week-jobs')         return await weekJobs(req, res);
         if (action === 'daily')             return await dailyLogs(req, res);
@@ -96,6 +135,7 @@ module.exports = async function handler(req, res) {
         if (action === 'preview-jobs')      return await previewJobs(req, res);
         if (action === 'payroll')           return await payrollReport(req, res);
         if (action === 'toggle-paid')       return await togglePaid(req, res);
+        if (action === 'set-worker-rate')   return await setWorkerRate(req, res);
         return res.status(400).json({ error: 'Unknown action' });
     } catch (err) {
         console.error('Labour API error:', err.message);
@@ -329,6 +369,36 @@ async function completeTask(req, res) {
     return res.status(200).json({ success: true, task: { done: state[taskIndex] } });
 }
 
+// ── Job notes ─────────────────────────────────────────────────────────────────
+
+async function addJobNote(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    const sessionToken = (req.headers.authorization || '').split(' ')[1] || '';
+    const session = await verifyWorkerSession(sessionToken);
+    if (!session) return res.status(401).json({ error: 'Invalid session' });
+
+    const { date, jobId, jobTitle, text, flagged } = req.body || {};
+    if (!date || !jobId || !text) return res.status(400).json({ error: 'date, jobId, text required' });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+    if (!/^[a-zA-Z0-9_\-]{1,256}$/.test(jobId)) return res.status(400).json({ error: 'Invalid jobId' });
+
+    const trimmed = String(text).trim();
+    if (!trimmed) return res.status(400).json({ error: 'text required' });
+    if (trimmed.length > 1000) return res.status(400).json({ error: 'text must be 1000 characters or fewer' });
+
+    const { workerId } = session;
+    const key = `labour:${date}:${workerId}`;
+    const raw = await kv.get(key);
+    const log = normalizePunches(raw || {});
+    const job = findOrCreateJob(log, jobId, jobTitle);
+
+    const note = { text: trimmed, flagged: !!flagged, at: nowISO() };
+    job.workerNotes.push(note);
+    await kv.set(key, log);
+
+    return res.status(200).json({ success: true, note });
+}
+
 // ── Jobs / Calendar ───────────────────────────────────────────────────────────
 
 function stripPricing(text) {
@@ -527,7 +597,7 @@ async function todayJobs(req, res) {
     const raw  = await kv.get(`labour:${todayStr}:${session.workerId}`);
     const log  = normalizePunches(raw);
     const totalMinutes = calcTotalMinutes(log.punches);
-    return res.status(200).json({ success: true, jobs, punches: log.punches, totalMinutes, date: todayStr });
+    return res.status(200).json({ success: true, jobs: mergeWorkerJobData(jobs, log), punches: log.punches, totalMinutes, date: todayStr });
 }
 
 async function weekJobs(req, res) {
@@ -548,7 +618,7 @@ async function weekJobs(req, res) {
         return {
             date: dateStr,
             isToday: dateStr === todayStr,
-            jobs,
+            jobs: mergeWorkerJobData(jobs, log),
             punches: log.punches,
             totalMinutes,
         };
@@ -570,6 +640,7 @@ async function dailyLogs(req, res) {
         const worker = raw ? (({ pinHash: _h, ...rest }) => rest)(raw) : null;
         const logRaw = await kv.get(`labour:${date}:${workerId}`);
         const log    = logRaw ? normalizePunches(logRaw) : null;
+        if (log) (log.jobs || []).forEach(j => { j.photos = (j.photos || []).map(normalizePhoto); });
         const totalMinutes = log ? calcTotalMinutes(log.punches) : 0;
         return { worker, log, totalMinutes };
     }));
@@ -736,7 +807,7 @@ async function payrollReport(req, res) {
         const paidRecord = await kv.get(`payroll-paid:${from}:${worker.id}`);
 
         return {
-            worker: { id: worker.id, name: worker.name },
+            worker: { id: worker.id, name: worker.name, hourlyRate: worker.hourlyRate || 0 },
             week1: { days: week1, totalMinutes: week1Minutes, formatted: fmtMinutes(week1Minutes) },
             week2: { days: week2, totalMinutes: week2Minutes, formatted: fmtMinutes(week2Minutes) },
             biweeklyMinutes: week1Minutes + week2Minutes,
@@ -765,4 +836,20 @@ async function togglePaid(req, res) {
     const record = { paidAt: nowISO(), amount: amount || null };
     await kv.set(key, record);
     return res.status(200).json({ success: true, paid: record });
+}
+
+async function setWorkerRate(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+
+    const { workerId, hourlyRate } = req.body || {};
+    if (!workerId) return res.status(400).json({ error: 'workerId required' });
+    const rate = Number(hourlyRate);
+    if (!Number.isFinite(rate) || rate < 0) return res.status(400).json({ error: 'hourlyRate must be a non-negative number' });
+
+    const worker = await kv.get(`worker:${workerId}`);
+    if (!worker) return res.status(404).json({ error: 'Worker not found' });
+    worker.hourlyRate = rate;
+    await kv.set(`worker:${workerId}`, worker);
+    return res.status(200).json({ success: true, hourlyRate: rate });
 }

@@ -3307,6 +3307,7 @@ function renderDailyLogs(workers, date) {
         const isIn    = punches.some(p => p.in && !p.out);
         const statusLabel = !punches.length ? '\u26ab Not started' : isIn ? '\uD83D\uDFE2 Clocked in' : '\u2713 Done';
         const hrsText = totalMinutes ? (totalMinutes / 60).toFixed(1) + ' hrs' : '\u2014';
+        const flaggedCount = (log?.jobs || []).reduce((sum, j) => sum + (j.workerNotes || []).filter(n => n.flagged).length, 0);
 
         // Outer card
         const card = labEl('div', 'background:#1a2a45;border-radius:12px;margin-bottom:1rem;overflow:hidden');
@@ -3318,6 +3319,10 @@ function renderDailyLogs(workers, date) {
         const leftCol = labEl('div');
         leftCol.appendChild(labEl('div', 'font-weight:700', worker.name));
         leftCol.appendChild(labEl('div', 'font-size:.8rem;color:#aaa;margin-top:.2rem', statusLabel));
+        if (flaggedCount > 0) {
+            leftCol.appendChild(labEl('div', 'font-size:.75rem;color:#ffb300;font-weight:700;margin-top:.2rem',
+                '\uD83D\uDEA9 ' + flaggedCount + ' flagged note' + (flaggedCount > 1 ? 's' : '')));
+        }
         header.appendChild(leftCol);
         header.appendChild(labEl('div', 'text-align:right;font-size:.85rem;color:#aaa', hrsText));
         card.appendChild(header);
@@ -3347,19 +3352,41 @@ function renderDailyLogs(workers, date) {
             jobGrid.appendChild(buildTimeInput('Job In',  job.clockIn,  worker.id, date, 'jobClockIn',  i, null));
             jobGrid.appendChild(buildTimeInput('Job Out', job.clockOut, worker.id, date, 'jobClockOut', i, null));
             jobBox.appendChild(jobGrid);
-            if (job.photos?.length) {
-                const photoGrid = labEl('div', 'display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem');
-                job.photos.forEach(url => {
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer';
-                    img.addEventListener('click', () => window.open(url, '_blank'));
-                    photoGrid.appendChild(img);
+            const photos = job.photos || [];
+            if (photos.length) {
+                [['Before', photos.filter(p => p.tag === 'before')],
+                 ['After',  photos.filter(p => p.tag === 'after')],
+                 ['Other',  photos.filter(p => !p.tag)]].forEach(([label, list]) => {
+                    if (!list.length) return;
+                    jobBox.appendChild(labEl('div', 'font-size:.7rem;color:#546e8a;text-transform:uppercase;margin:.5rem 0 .3rem', label));
+                    const photoGrid = labEl('div', 'display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem');
+                    list.forEach(p => {
+                        const img = document.createElement('img');
+                        img.src = p.url;
+                        img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer';
+                        img.addEventListener('click', () => window.open(p.url, '_blank'));
+                        photoGrid.appendChild(img);
+                    });
+                    jobBox.appendChild(photoGrid);
                 });
-                jobBox.appendChild(photoGrid);
             } else {
                 jobBox.appendChild(labEl('div', 'font-size:.8rem;color:#555', 'No photos'));
             }
+
+            const notes = job.workerNotes || [];
+            if (notes.length) {
+                jobBox.appendChild(labEl('div', 'font-size:.7rem;color:#546e8a;text-transform:uppercase;margin:.75rem 0 .3rem', 'Worker Notes'));
+                notes.forEach(n => {
+                    const noteRow = labEl('div', 'font-size:.82rem;padding:.5rem .6rem;border-radius:6px;margin-bottom:.4rem;line-height:1.4;' +
+                        (n.flagged ? 'background:rgba(230,81,0,.18);border:1px solid rgba(230,81,0,.5)' : 'background:#111e30'));
+                    const timeStr = n.at ? new Date(n.at).toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                    noteRow.appendChild(labEl('div', 'font-size:.7rem;margin-bottom:.2rem;font-weight:700;color:' + (n.flagged ? '#ffb300' : '#546e8a'),
+                        (n.flagged ? '🚩 URGENT · ' : '') + timeStr));
+                    noteRow.appendChild(labEl('div', 'color:#e0e8f0', n.text));
+                    jobBox.appendChild(noteRow);
+                });
+            }
+
             detail.appendChild(jobBox);
         });
 
@@ -3651,6 +3678,18 @@ async function loadPayroll() {
     } catch { container.textContent = 'Connection error.'; }
 }
 
+async function saveWorkerRate(workerId, value) {
+    const token = localStorage.getItem('admin_token') || '';
+    const hourlyRate = parseFloat(value) || 0;
+    try {
+        await fetch('/api/labour?action=set-worker-rate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ workerId, hourlyRate })
+        });
+    } catch { /* non-fatal — will retry on next edit */ }
+}
+
 function fmtPayrollDate(dateStr) {
     const [y, m, d] = dateStr.split('-').map(Number);
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -3730,8 +3769,7 @@ function renderPayroll(data) {
 
     data.workers.forEach(entry => {
         const { worker, week1, week2, biweeklyMinutes } = entry;
-        const rateKey = 'payroll_rate_' + worker.id;
-        const savedRate = localStorage.getItem(rateKey) || '';
+        const savedRate = worker.hourlyRate ? String(worker.hourlyRate) : '';
 
         const card = document.createElement('div');
         card.id = 'paycard_' + worker.id;
@@ -3840,10 +3878,10 @@ function renderPayroll(data) {
             const rate = parseFloat(rateInput.value) || 0;
             const hours = biweeklyMinutes / 60;
             grossVal.textContent = '$' + (rate * hours).toFixed(2);
-            localStorage.setItem(rateKey, rateInput.value);
         }
 
         rateInput.addEventListener('input', recalc);
+        rateInput.addEventListener('change', () => saveWorkerRate(worker.id, rateInput.value));
         if (savedRate) recalc();
 
         payRow.appendChild(rateLabel);

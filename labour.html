@@ -125,6 +125,22 @@
         .photo-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; cursor: pointer; }
         .action-btn { border: none; border-radius: 12px; padding: 1rem; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: .75rem; }
         .btn-blue { background: #1565c0; color: #fff; }
+        .photo-subsection { margin-top: 1rem; }
+        .photo-subsection:first-child { margin-top: 0; }
+        .photo-sub-label { font-size: .72rem; color: #546e8a; text-transform: uppercase; letter-spacing: .3px; margin-bottom: .35rem; }
+        .action-btn-row { display: flex; gap: .6rem; margin-top: .75rem; }
+        .action-btn-row .action-btn { margin-top: 0; }
+        .btn-amber { background: #e65100; color: #fff; }
+
+        /* Job notes */
+        .note-input { width: 100%; background: #0d1f35; border: 1px solid #263c5a; border-radius: 10px; color: #fff; font-size: .88rem; padding: .7rem; min-height: 70px; resize: none; font-family: inherit; }
+        .note-flag-row { display: flex; align-items: center; gap: .5rem; margin-top: .6rem; font-size: .85rem; color: #ddd; }
+        .note-flag-row input { width: 16px; height: 16px; accent-color: #e65100; }
+        .note-list { margin-top: .85rem; display: flex; flex-direction: column; gap: .5rem; }
+        .note-item { background: #0d1f35; border-radius: 8px; padding: .6rem .75rem; font-size: .85rem; line-height: 1.4; }
+        .note-item.flagged { background: rgba(230,81,0,.18); border: 1px solid rgba(230,81,0,.5); }
+        .note-time { font-size: .7rem; color: #546e8a; margin-bottom: .25rem; }
+        .note-flag-tag { color: #ffb300; font-weight: 700; }
 
         /* Loading */
         .loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); align-items: center; justify-content: center; z-index: 999; }
@@ -606,13 +622,69 @@ function renderJobDetail() {
         body.appendChild(taskCard);
     }
 
-    // Photos
+    // Job notes
+    const noteCard = el('div', 'detail-card');
+    noteCard.appendChild(el('div', 'detail-label', '📝 Job Notes'));
+    const noteTextarea = document.createElement('textarea');
+    noteTextarea.className = 'note-input';
+    noteTextarea.id = 'noteInput';
+    noteTextarea.placeholder = 'Add a note about this job...';
+    const flagRow = document.createElement('label');
+    flagRow.className = 'note-flag-row';
+    const flagCheckbox = document.createElement('input');
+    flagCheckbox.type = 'checkbox';
+    flagCheckbox.id = 'noteFlagCheckbox';
+    append(flagRow, flagCheckbox, document.createTextNode('🚩 Flag as urgent'));
+    const addNoteBtn = el('button', 'action-btn btn-amber', 'Add Note');
+    addNoteBtn.addEventListener('click', submitJobNote);
+    const noteListEl = el('div', 'note-list');
+    noteListEl.id = 'noteList';
+    (job.workerNotes || []).slice().reverse().forEach(n => noteListEl.appendChild(renderNoteItem(n)));
+    append(noteCard, noteTextarea, flagRow, addNoteBtn, noteListEl);
+    body.appendChild(noteCard);
+
+    // Photos — Before / After
     const photoCard = el('div', 'detail-card');
     photoCard.appendChild(el('div', 'detail-label', '📸 Photos'));
-    const photoGrid = el('div', 'photo-grid');
-    photoGrid.id = 'photoGrid';
-    const addPhotoBtn = el('button', 'action-btn btn-blue', 'Add Photos');
-    addPhotoBtn.addEventListener('click', () => document.getElementById('photoInput')?.click());
+
+    const beforeSection = el('div', 'photo-subsection');
+    beforeSection.appendChild(el('div', 'photo-sub-label', 'Before'));
+    const beforeGrid = el('div', 'photo-grid');
+    beforeGrid.id = 'photoGridBefore';
+    beforeSection.appendChild(beforeGrid);
+
+    const afterSection = el('div', 'photo-subsection');
+    afterSection.appendChild(el('div', 'photo-sub-label', 'After'));
+    const afterGrid = el('div', 'photo-grid');
+    afterGrid.id = 'photoGridAfter';
+    afterSection.appendChild(afterGrid);
+
+    append(photoCard, beforeSection, afterSection);
+
+    // "Other" grid always exists (even empty) so quick-add photos from the Home
+    // screen — which have no Before/After context — always have a valid drop target.
+    const untagged = (job.photos || []).filter(p => !p.tag);
+    const otherSection = el('div', 'photo-subsection');
+    otherSection.id = 'photoSectionOther';
+    otherSection.appendChild(el('div', 'photo-sub-label', 'Other'));
+    const otherGrid = el('div', 'photo-grid');
+    otherGrid.id = 'photoGridOther';
+    untagged.forEach(p => otherGrid.appendChild(renderPhotoThumb(p.url)));
+    otherSection.appendChild(otherGrid);
+    otherSection.style.display = untagged.length ? '' : 'none';
+    photoCard.appendChild(otherSection);
+
+    (job.photos || []).filter(p => p.tag === 'before').forEach(p => beforeGrid.appendChild(renderPhotoThumb(p.url)));
+    (job.photos || []).filter(p => p.tag === 'after').forEach(p => afterGrid.appendChild(renderPhotoThumb(p.url)));
+
+    const btnRow = el('div', 'action-btn-row');
+    const addBeforeBtn = el('button', 'action-btn btn-blue', 'Add Before Photo');
+    addBeforeBtn.addEventListener('click', () => { pendingPhotoTag = 'before'; document.getElementById('photoInput')?.click(); });
+    const addAfterBtn = el('button', 'action-btn btn-amber', 'Add After Photo');
+    addAfterBtn.addEventListener('click', () => { pendingPhotoTag = 'after'; document.getElementById('photoInput')?.click(); });
+    append(btnRow, addBeforeBtn, addAfterBtn);
+    photoCard.appendChild(btnRow);
+
     const photoInput = document.createElement('input');
     photoInput.type    = 'file';
     photoInput.id      = 'photoInput';
@@ -621,8 +693,56 @@ function renderJobDetail() {
     photoInput.setAttribute('capture', 'environment');
     photoInput.style.display = 'none';
     photoInput.addEventListener('change', handlePhotoSelect);
-    append(photoCard, photoGrid, addPhotoBtn, photoInput);
+    photoCard.appendChild(photoInput);
     body.appendChild(photoCard);
+}
+
+function renderPhotoThumb(url) {
+    const img = document.createElement('img');
+    img.className = 'photo-thumb';
+    img.src = url;
+    img.addEventListener('click', () => window.open(url, '_blank'));
+    return img;
+}
+
+function renderNoteItem(n) {
+    const item = el('div', 'note-item' + (n.flagged ? ' flagged' : ''));
+    const time = el('div', 'note-time');
+    if (n.flagged) time.appendChild(el('span', 'note-flag-tag', '🚩 URGENT · '));
+    time.appendChild(document.createTextNode(fmtTime(n.at)));
+    const text = el('div', null, n.text);
+    append(item, time, text);
+    return item;
+}
+
+async function submitJobNote() {
+    if (!currentJob || !currentJob._date) return;
+    const textarea = document.getElementById('noteInput');
+    const text = textarea.value.trim();
+    if (!text) return;
+    const flagged = document.getElementById('noteFlagCheckbox')?.checked || false;
+    showLoading(true);
+    try {
+        const r = await fetch('/api/labour?action=add-job-note', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionToken },
+            body: JSON.stringify({ date: currentJob._date, jobId: currentJob.id, jobTitle: currentJob.title, text, flagged })
+        });
+        const data = await r.json();
+        if (data.success) {
+            if (!Array.isArray(currentJob.workerNotes)) currentJob.workerNotes = [];
+            currentJob.workerNotes.push(data.note);
+            document.getElementById('noteList')?.prepend(renderNoteItem(data.note));
+            textarea.value = '';
+            const flagBox = document.getElementById('noteFlagCheckbox');
+            if (flagBox) flagBox.checked = false;
+        } else {
+            alert(data.error || 'Could not add note. Try again.');
+        }
+    } catch {
+        alert('Connection error. Try again.');
+    }
+    showLoading(false);
 }
 
 async function fetchCrewStatus() {
@@ -743,24 +863,29 @@ async function syncOfflineQueue() {
 window.addEventListener('online', syncOfflineQueue);
 
 // ── Photo upload ──────────────────────────────────────────────────────────────
+let pendingPhotoTag = null;
+
 function triggerPhotoUploadHome() {
     const today = weekDays.find(d => d.isToday) || {};
     const jobs  = today.jobs || [];
     if (!jobs.length) { alert('No jobs scheduled today.'); return; }
     if (jobs.length === 1) currentJob = Object.assign({}, jobs[0], { _date: today.date });
+    pendingPhotoTag = null;
     document.getElementById('photoInputHome')?.click();
 }
 async function handlePhotoSelectHome(event) {
     for (const file of Array.from(event.target.files)) {
-        try { await uploadPhoto(await compressImage(file, 1024)); } catch {}
+        try { await uploadPhoto(await compressImage(file, 1024), pendingPhotoTag); } catch {}
     }
     event.target.value = '';
 }
 async function handlePhotoSelect(event) {
+    const tag = pendingPhotoTag;
     for (const file of Array.from(event.target.files)) {
-        try { await uploadPhoto(await compressImage(file, 1024)); } catch {}
+        try { await uploadPhoto(await compressImage(file, 1024), tag); } catch {}
     }
     event.target.value = '';
+    pendingPhotoTag = null;
 }
 function compressImage(file, maxPx) {
     return new Promise((resolve, reject) => {
@@ -778,20 +903,20 @@ function compressImage(file, maxPx) {
         img.src = url;
     });
 }
-async function uploadPhoto(base64) {
+async function uploadPhoto(base64, tag) {
     if (!currentJob) return;
-    const grid = document.getElementById('photoGrid');
+    const gridId = tag === 'before' ? 'photoGridBefore' : tag === 'after' ? 'photoGridAfter' : 'photoGridOther';
+    const grid = document.getElementById(gridId);
     if (!grid) return;
     const pending = el('div'); pending.style.cssText = 'background:#1a2a45;border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.5rem';
     pending.textContent = '\u23F3'; grid.appendChild(pending);
     try {
         const r    = await fetch('/api/labour-photo', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionToken, calendarEventId: currentJob.id, jobTitle: currentJob.title, photoData: base64 }) });
+            body: JSON.stringify({ sessionToken, calendarEventId: currentJob.id, jobTitle: currentJob.title, photoData: base64, tag }) });
         const data = await r.json();
         if (data.success) {
-            const img = document.createElement('img'); img.className = 'photo-thumb'; img.src = data.url;
-            img.addEventListener('click', () => window.open(data.url, '_blank'));
-            pending.replaceWith(img);
+            pending.replaceWith(renderPhotoThumb(data.url));
+            if (gridId === 'photoGridOther') { const sec = document.getElementById('photoSectionOther'); if (sec) sec.style.display = ''; }
         } else { pending.textContent = '\u2717'; }
     } catch { pending.textContent = '\u2717'; }
 }
