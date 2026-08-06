@@ -99,6 +99,10 @@
         {
             "path": "/api/remind",
             "schedule": "0 13 * * *"
+        },
+        {
+            "path": "/api/remind?task=sync-fb-leads",
+            "schedule": "0 12 * * *"
         }
     ],
     "redirects": [

@@ -2,45 +2,49 @@ const nodemailer = require('nodemailer');
 const { kv } = require('@vercel/kv');
 
 async function saveLeadToCrm({ name, email, phone, address, serviceLabel, message, company, source }) {
+    // Website submissions are raw, unqualified inquiries — they land in the
+    // Sales Leads tab (quick-leads) for a rep to call and qualify, same storage
+    // Facebook Ads leads use, not directly in the Sales tab's estimate/job records.
     const lead = {
-        id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        clientName: name || '',
+        id: `ql_web_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        name: name || '',
+        address: address || '',
         phone: phone || '',
         email: email || '',
-        address: address || '',
-        serviceType: serviceLabel || '',
-        notes: message || '',
-        company: company || '',
-        leadSource: company ? 'website-commercial' : 'website-residential', // residential vs. commercial tag
-        pageSource: source || '', // which page/form this came from (e.g. 'contact.html')
-        estimatedValue: '',
         salesRep: '',
         estimateNumber: '',
+        source: company ? 'Website (Commercial)' : 'Website (Residential)',
+        campaign: '',
+        adName: source || '', // which page/form this came from (e.g. 'contact.html')
+        callStatus: 'New',
+        company: company || '',
         services: [],
-        bundleDiscount: 0,
-        discount: 0,
+        serviceType: serviceLabel || '',
         subtotal: '',
         hst: '',
         total: '',
+        discount: 0,
+        bundleDiscount: 0,
+        estimatedValue: '',
+        visitDate: '',
         saleDate: '',
         saleTime: '',
         paymentStatus: 'Unpaid',
         paymentMethod: '',
         paymentAmount: 0,
+        notes: message || '',
         jobDetails: null,
         survey: {},
         legal: {},
         hasSignature: false,
-        createdByAdmin: false,
         status: 'New',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
     };
 
-    await kv.set(`lead:${lead.id}`, lead);
-    const leadIds = (await kv.get('lead_ids')) || [];
+    await kv.set(`ql:${lead.id}`, lead);
+    const leadIds = (await kv.get('ql_ids')) || [];
     leadIds.unshift(lead.id);
-    await kv.set('lead_ids', leadIds);
+    await kv.set('ql_ids', leadIds);
 
     return lead;
 }

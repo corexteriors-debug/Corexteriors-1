@@ -1,8 +1,11 @@
 const { kv } = require('@vercel/kv');
 const nodemailer = require('nodemailer');
+const { runFbLeadsSync } = require('./_syncFbLeads');
 
-// Runs daily via Vercel Cron (see vercel.json)
-// Sends a reminder email to clients whose job is scheduled for tomorrow
+// Runs via Vercel Cron (see vercel.json) — two schedules share this one function
+// to stay under the Hobby-plan 12-function cap:
+//   /api/remind                    daily — sends tomorrow's job reminder emails
+//   /api/remind?task=sync-fb-leads every 30 min — imports new Facebook Ads leads
 
 module.exports = async (req, res) => {
     // Only allow GET (Vercel Cron uses GET)
@@ -14,6 +17,17 @@ module.exports = async (req, res) => {
         const authHeader = req.headers.authorization || '';
         if (authHeader !== `Bearer ${cronSecret}`) {
             return res.status(401).json({ error: 'Unauthorized' });
+        }
+    }
+
+    if (req.query.task === 'sync-fb-leads') {
+        try {
+            const results = await runFbLeadsSync();
+            console.log('FB leads sync result:', results);
+            return res.status(200).json({ success: true, ...results });
+        } catch (err) {
+            console.error('FB leads sync error:', err);
+            return res.status(500).json({ error: err.message });
         }
     }
 
