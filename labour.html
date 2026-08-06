@@ -263,7 +263,7 @@
         <div class="week-wrap" id="weekList"></div>
     </div>
 
-    <input type="file" id="photoInputHome" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotoSelectHome(event)">
+    <input type="file" id="photoInputHome" accept="image/*" multiple style="display:none" onchange="handlePhotoSelectHome(event)">
 </div>
 
 <!-- SCREEN 3: JOB DETAIL -->
@@ -543,16 +543,26 @@ async function toggleClock() {
 // ── Job detail ────────────────────────────────────────────────────────────────
 function openJob(jobId, fromTab, dateStr) {
     jobReturnTab = fromTab || 'today';
-    let job = null;
-    for (const day of weekDays) {
-        const found = day.jobs.find(j => j.id === jobId);
-        if (found) { job = Object.assign({}, found, { _date: dateStr || day.date }); break; }
-    }
-    if (!job) return;
-    currentJob = job;
 
-    document.getElementById('jobDetailTitle').textContent = job.title;
-    document.getElementById('jobDetailTime').textContent  = fmtTime(job.start) + (job.end ? ' – ' + fmtTime(job.end) : '');
+    // The same calendar job can appear under more than one date bucket (evening
+    // jobs can straddle the UTC day boundary server-side), so a plain first-match
+    // scan can silently grab the wrong day's clock/photo/note data. Prefer the day
+    // this job was actually opened from — dateStr for the week tab, isToday for
+    // the today tab — before falling back to a scan.
+    const preferredDay = dateStr ? weekDays.find(d => d.date === dateStr) : weekDays.find(d => d.isToday);
+    let found = preferredDay && preferredDay.jobs.find(j => j.id === jobId);
+    let matchedDate = preferredDay && preferredDay.date;
+    if (!found) {
+        for (const day of weekDays) {
+            const f = day.jobs.find(j => j.id === jobId);
+            if (f) { found = f; matchedDate = day.date; break; }
+        }
+    }
+    if (!found) return;
+    currentJob = Object.assign({}, found, { _date: matchedDate });
+
+    document.getElementById('jobDetailTitle').textContent = currentJob.title;
+    document.getElementById('jobDetailTime').textContent  = fmtTime(currentJob.start) + (currentJob.end ? ' – ' + fmtTime(currentJob.end) : '');
 
     renderJobDetail();
     showScreen('job');
@@ -690,7 +700,6 @@ function renderJobDetail() {
     photoInput.id      = 'photoInput';
     photoInput.accept  = 'image/*';
     photoInput.multiple= true;
-    photoInput.setAttribute('capture', 'environment');
     photoInput.style.display = 'none';
     photoInput.addEventListener('change', handlePhotoSelect);
     photoCard.appendChild(photoInput);

@@ -36,6 +36,19 @@ function todayKey() {
     return new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE });
 }
 
+// Returns the America/Toronto UTC offset (e.g. "-04:00") for a given YYYY-MM-DD
+// date, correctly accounting for DST.
+function torontoOffset(dateStr) {
+    const noon = new Date(`${dateStr}T12:00:00Z`);
+    const parts = new Intl.DateTimeFormat('en', { timeZone: TIMEZONE, timeZoneName: 'shortOffset' }).formatToParts(noon);
+    const tzName = (parts.find(p => p.type === 'timeZoneName') || {}).value || '';
+    const match = tzName.match(/GMT([+-]\d+)/);
+    const offsetHours = match ? parseInt(match[1]) : -5;
+    const sign = offsetHours >= 0 ? '+' : '-';
+    const absH = String(Math.abs(offsetHours)).padStart(2, '0');
+    return `${sign}${absH}:00`;
+}
+
 function hashPin(pin) {
     const secret = process.env.PIN_HMAC_SECRET;
     if (!secret) throw new Error('PIN_HMAC_SECRET env var is required');
@@ -526,12 +539,17 @@ async function jobsForDate(dateStr, calClient) {
     let calJobs = [];
     if (calClient) {
         try {
-            // Use explicit UTC (Z) timestamps — Google Calendar API requires RFC3339
-            // with a timezone offset. Covering full UTC day captures all Toronto-time events.
+            // Query using the Toronto-local day boundary, not literal UTC midnight.
+            // An evening job (e.g. 3pm-9pm EDT) ends at 1am UTC the *next* day — with
+            // a naive `${dateStr}T23:59:59Z` window, Google's overlap-based matching
+            // returns that same event for both its real date and the next UTC date,
+            // which then shows the job (and its clock/photo/note data) under two
+            // different days in the worker app.
+            const offset = torontoOffset(dateStr);
             const response = await calClient.events.list({
                 calendarId: process.env.GOOGLE_CALENDAR_ID.trim(),
-                timeMin: `${dateStr}T00:00:00Z`,
-                timeMax: `${dateStr}T23:59:59Z`,
+                timeMin: `${dateStr}T00:00:00${offset}`,
+                timeMax: `${dateStr}T23:59:59${offset}`,
                 singleEvents: true, orderBy: 'startTime', maxResults: 50,
             });
             calJobs = await Promise.all((response.data.items || [])
@@ -671,14 +689,7 @@ async function editLog(req, res) {
         if (!timeStr) return null;
         if (timeStr.includes('T')) return timeStr;
         if (!/^\d{2}:\d{2}$/.test(timeStr)) return null;
-        const noon = new Date(`${date}T12:00:00Z`);
-        const parts = new Intl.DateTimeFormat('en', { timeZone: TIMEZONE, timeZoneName: 'shortOffset' }).formatToParts(noon);
-        const tzName = (parts.find(p => p.type === 'timeZoneName') || {}).value || '';
-        const match = tzName.match(/GMT([+-]\d+)/);
-        const offsetHours = match ? parseInt(match[1]) : -5;
-        const sign = offsetHours >= 0 ? '+' : '-';
-        const absH = String(Math.abs(offsetHours)).padStart(2, '0');
-        const d = new Date(`${date}T${timeStr}:00${sign}${absH}:00`);
+        const d = new Date(`${date}T${timeStr}:00${torontoOffset(date)}`);
         if (isNaN(d.getTime())) return null;
         return d.toISOString();
     }
