@@ -34,27 +34,46 @@ module.exports = async function handler(req, res) {
 
         // Optionally create a Stripe checkout session and embed the link in the email
         let checkoutUrl = null;
+        let cardFeeAmount = 0;
         if (paymentRequest && paymentRequest.amount >= 0.50) {
             const stripeKey = (process.env.STRIPE_SECRET_KEY || '').trim();
             if (stripeKey) {
                 try {
                     const stripe = new Stripe(stripeKey);
                     const amountCents = Math.round(parseFloat(paymentRequest.amount) * 100);
+                    // Credit card payments carry a 5% processing fee, itemized as its
+                    // own line so it's disclosed at checkout rather than folded silently
+                    // into the total.
+                    const feeCents = Math.round(amountCents * 0.05);
+                    cardFeeAmount = feeCents / 100;
                     const isDeposit = paymentRequest.type === 'deposit';
                     const session = await stripe.checkout.sessions.create({
                         payment_method_types: ['card'],
                         customer_email: estimate.email,
-                        line_items: [{
-                            price_data: {
-                                currency: 'cad',
-                                product_data: {
-                                    name: isDeposit ? 'Deposit — Core Exteriors' : 'Payment — Core Exteriors',
-                                    description: paymentRequest.description || `Services for ${estimate.clientName}`,
+                        line_items: [
+                            {
+                                price_data: {
+                                    currency: 'cad',
+                                    product_data: {
+                                        name: isDeposit ? 'Deposit — Core Exteriors' : 'Payment — Core Exteriors',
+                                        description: paymentRequest.description || `Services for ${estimate.clientName}`,
+                                    },
+                                    unit_amount: amountCents,
                                 },
-                                unit_amount: amountCents,
+                                quantity: 1,
                             },
-                            quantity: 1,
-                        }],
+                            {
+                                price_data: {
+                                    currency: 'cad',
+                                    product_data: {
+                                        name: 'Card Processing Fee (5%)',
+                                        description: 'Applies to credit card payments only',
+                                    },
+                                    unit_amount: feeCents,
+                                },
+                                quantity: 1,
+                            },
+                        ],
                         mode: 'payment',
                         success_url: `https://corexteriors.ca/sales?payment=success&session_id={CHECKOUT_SESSION_ID}`,
                         cancel_url: `https://corexteriors.ca/sales?payment=cancelled`,
@@ -98,7 +117,7 @@ module.exports = async function handler(req, res) {
             }
         }
 
-        const emailSent = await sendDocEmail(estimate, pdfBytes, docType, checkoutUrl, paymentRequest, brochures, photoUrls);
+        const emailSent = await sendDocEmail(estimate, pdfBytes, docType, checkoutUrl, paymentRequest, brochures, photoUrls, cardFeeAmount);
 
         return res.status(200).json({ success: true, emailSent, paymentLinkSent: !!checkoutUrl });
     } catch (error) {
@@ -125,7 +144,7 @@ async function uploadSitePhotos(photos, ref) {
     return results.filter(r => r.status === 'fulfilled').map(r => r.value.url);
 }
 
-async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest, brochures, photoUrls) {
+async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest, brochures, photoUrls, cardFeeAmount) {
     const gmailUser  = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass  = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -146,7 +165,10 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
     // Payment button block — shown only when a Stripe checkout URL is available
     const paymentBlock = checkoutUrl && paymentRequest ? (() => {
         const isDeposit = paymentRequest.type === 'deposit';
-        const amountStr = '$' + parseFloat(paymentRequest.amount).toFixed(2) + ' CAD';
+        const baseAmount = parseFloat(paymentRequest.amount);
+        const feeAmount  = cardFeeAmount || 0;
+        const amountStr  = '$' + (baseAmount + feeAmount).toFixed(2) + ' CAD';
+        const feeStr     = '$' + feeAmount.toFixed(2) + ' CAD';
         const payLabel  = isDeposit ? 'Deposit' : 'Payment';
         return `
            <div style="margin:24px 0;text-align:center">
@@ -158,17 +180,18 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
                &#128179; Pay ${payLabel} &mdash; ${amountStr}
              </a>
              <p style="font-size:11px;color:#999;margin-top:10px">&#128274; Powered by Stripe &mdash; your card details are never shared with us. Link expires in 24 hours.</p>
+             <p style="font-size:12px;color:#7a5500;margin-top:6px">Includes a 5% credit card processing fee (${feeStr}). E-transfer, cash, and cheque have no fee.</p>
            </div>`;
     })() : '';
 
     const bodyNote = isInvoice
         ? `<p>Please find your invoice attached. Payment is due upon completion of services.</p>
            ${paymentBlock || `<div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:14px;font-size:13px;color:#1b5e20;margin:16px 0">
-             <strong>Payment:</strong> E-transfer to <strong>corexteriors@gmail.com</strong> — Cash, cheque, and credit card also accepted.
+             <strong>Payment:</strong> E-transfer to <strong>corexteriors@gmail.com</strong> — Cash, cheque, and credit card also accepted (credit card payments include a 5% processing fee).
            </div>`}`
         : `<p>Please find your estimate attached. This estimate is valid for 30 days.</p>
            ${paymentBlock || `<div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:14px;font-size:13px;color:#1b5e20;margin:16px 0">
-             <strong>To confirm your booking:</strong> A 25% deposit is required. E-transfer to <strong>corexteriors@gmail.com</strong> or call us.
+             <strong>To confirm your booking:</strong> A 25% deposit is required. E-transfer to <strong>corexteriors@gmail.com</strong> or call us. Credit card payments include a 5% processing fee.
            </div>`}`;
 
     const brochureLabels = (brochures && brochures.labels) || [];

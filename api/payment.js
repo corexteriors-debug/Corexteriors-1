@@ -32,6 +32,10 @@ module.exports = async (req, res) => {
         if (amountCents < 50) {
             return res.status(400).json({ error: 'Amount must be at least $0.50' });
         }
+        // Credit card payments carry a 5% processing fee, itemized as its own line
+        // so it's disclosed at checkout rather than folded silently into the total.
+        const CARD_FEE_RATE = 0.05;
+        const feeCents = Math.round(amountCents * CARD_FEE_RATE);
 
         const isDeposit = paymentType === 'deposit';
         const productName = isDeposit ? 'Deposit — Core Exteriors' : 'Payment — Core Exteriors';
@@ -40,17 +44,30 @@ module.exports = async (req, res) => {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             customer_email: clientEmail,
-            line_items: [{
-                price_data: {
-                    currency: 'cad',
-                    product_data: {
-                        name: productName,
-                        description: description || `Service payment for ${clientName || 'Client'}`,
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'cad',
+                        product_data: {
+                            name: productName,
+                            description: description || `Service payment for ${clientName || 'Client'}`,
+                        },
+                        unit_amount: amountCents,
                     },
-                    unit_amount: amountCents,
+                    quantity: 1,
                 },
-                quantity: 1,
-            }],
+                {
+                    price_data: {
+                        currency: 'cad',
+                        product_data: {
+                            name: 'Card Processing Fee (5%)',
+                            description: 'Applies to credit card payments only',
+                        },
+                        unit_amount: feeCents,
+                    },
+                    quantity: 1,
+                },
+            ],
             mode: 'payment',
             success_url: `https://corexteriors.ca/sales?payment=success&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `https://corexteriors.ca/sales?payment=cancelled`,
@@ -95,6 +112,7 @@ module.exports = async (req, res) => {
                 clientName: clientName || 'Valued Customer',
                 clientEmail,
                 amount: parseFloat(amount),
+                feeAmount: feeCents / 100,
                 checkoutUrl,
                 isDeposit,
                 description: description || 'Exterior Services',
@@ -119,7 +137,7 @@ module.exports = async (req, res) => {
     }
 };
 
-async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, isDeposit, description, repName, invoicePdfBytes, estimateNumber }) {
+async function sendPaymentEmail({ clientName, clientEmail, amount, feeAmount, checkoutUrl, isDeposit, description, repName, invoicePdfBytes, estimateNumber }) {
     const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
     if (!gmailPass) return false;
@@ -130,6 +148,8 @@ async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, 
     });
 
     const amountStr = '$' + amount.toFixed(2) + ' CAD';
+    const feeStr = '$' + feeAmount.toFixed(2) + ' CAD';
+    const totalStr = '$' + (amount + feeAmount).toFixed(2) + ' CAD';
     const label = isDeposit ? 'Deposit' : 'Payment';
     const contractNum = estimateNumber || '';
 
@@ -161,11 +181,14 @@ async function sendPaymentEmail({ clientName, clientEmail, amount, checkoutUrl, 
     <div style="text-align:center;margin:32px 0">
       <a href="${checkoutUrl}"
          style="display:inline-block;background:#F5B800;color:#1A1A1A;font-size:17px;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;letter-spacing:.3px">
-        &#128179; Pay Securely Now &mdash; ${amountStr}
+        &#128179; Pay Securely Now &mdash; ${totalStr}
       </a>
     </div>
     <div style="background:#fff8e8;border:1px solid #F5B800;border-radius:8px;padding:14px;font-size:13px;color:#7a5500;margin:16px 0">
       <strong>Reminder:</strong> A 25% deposit is due at signing. Your 10-day cooling off period is in effect from today.
+    </div>
+    <div style="background:#fff8e8;border:1px solid #F5B800;border-radius:8px;padding:14px;font-size:13px;color:#7a5500;margin:16px 0">
+      <strong>Card payment note:</strong> Credit card payments include a 5% processing fee (${feeStr}), already included in the ${totalStr} total above. E-transfer, cash, and cheque have no fee.
     </div>
     <div style="background:#fff;border:1px solid #e9ecef;border-radius:10px;padding:16px;font-size:13px;color:#555;margin-top:16px">
       <strong>&#128274; Secure Payment</strong><br>
