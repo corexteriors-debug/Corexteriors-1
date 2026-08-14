@@ -639,11 +639,17 @@ function weekDates(dateStr) {
     const day = d.getUTCDay();
     const monday = new Date(d);
     monday.setUTCDate(d.getUTCDate() - ((day + 6) % 7));
-    return Array.from({ length: 7 }, (_, i) => {
+    const dates = Array.from({ length: 7 }, (_, i) => {
         const dd = new Date(monday);
         dd.setUTCDate(monday.getUTCDate() + i);
         return dd.toISOString().slice(0, 10);
     });
+    // Always append the following Monday so workers can see and plan for
+    // it any day of the current week, not just once the week rolls over.
+    const nextMonday = new Date(monday);
+    nextMonday.setUTCDate(monday.getUTCDate() + 7);
+    dates.push(nextMonday.toISOString().slice(0, 10));
+    return dates;
 }
 
 async function todayJobs(req, res) {
@@ -684,7 +690,9 @@ async function weekJobs(req, res) {
         };
     }));
 
-    const weekTotalMinutes = days.reduce((sum, d) => sum + d.totalMinutes, 0);
+    // dates[] is 8 entries (7-day week + the following Monday for lookahead
+    // planning); only the first 7 belong to "this week" for the hours total.
+    const weekTotalMinutes = days.slice(0, 7).reduce((sum, d) => sum + d.totalMinutes, 0);
     return res.status(200).json({ success: true, today: todayStr, days, weekTotalMinutes });
 }
 
