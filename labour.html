@@ -898,14 +898,18 @@ let pendingPhotoTag = null;
 function triggerPhotoUploadHome() {
     const today = weekDays.find(d => d.isToday) || {};
     const jobs  = today.jobs || [];
-    if (!jobs.length) { alert('No jobs scheduled today.'); return; }
     if (jobs.length > 1) {
         // Can't guess which job the photo belongs to — the picker would still
         // open with no job set, and the upload would silently no-op.
         alert('You have more than one job today. Open the specific job first, then use Add Before Photo / Add After Photo there.');
         return;
     }
-    currentJob = Object.assign({}, jobs[0], { _date: today.date });
+    // No job scheduled today — still let the photo through. It lands in a
+    // "General" bucket (same findOrCreateJob pattern the server already uses
+    // for stub jobs) so it shows up in the labour log instead of being blocked.
+    currentJob = jobs.length === 1
+        ? Object.assign({}, jobs[0], { _date: today.date })
+        : { id: 'general', title: 'General', _date: today.date };
     pendingPhotoTag = null;
     document.getElementById('photoInputHome')?.click();
 }
