@@ -534,7 +534,7 @@ async function toggleClock() {
             todayMinutes = data.totalMinutes || 0;
             const today  = weekDays.find(d => d.isToday);
             if (today) { today.punches = todayPunches; today.totalMinutes = todayMinutes; }
-            weekMinutes  = weekDays.reduce((s, d) => s + (d.totalMinutes || 0), 0);
+            weekMinutes  = weekDays.slice(0, 7).reduce((s, d) => s + (d.totalMinutes || 0), 0);
             renderHome();
         } else {
             alert(data.error || 'Could not update clock. Try again.');
