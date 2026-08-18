@@ -31,8 +31,8 @@ A local, one-off script (not deployed, not a Vercel function):
    service account's Drive (service accounts have their own Drive,
    separate from any human account — the app's photos would otherwise
    be invisible to us).
-3. Shares that folder as Editor with `oblokulovmirkomil@gmail.com`, so
-   it appears under "Shared with me" in normal Drive.
+3. Shares that folder as Editor with `corexteriors@gmail.com`, so it
+   appears under "Shared with me" in normal Drive.
 4. Prints the new folder's ID to stdout.
 
 We take that ID and set it as `GOOGLE_DRIVE_ROOT_FOLDER_ID` in Vercel's
@@ -129,7 +129,7 @@ rather than an automated suite). Verification for this change:
 
 - Manually run `scripts/setup-drive-folder.js` once against the real
   service account and confirm the folder appears under "Shared with
-  me" for `oblokulovmirkomil@gmail.com`.
+  me" for `corexteriors@gmail.com`.
 - After deploying, upload a real before/after/other photo from
   `labour.html` and confirm: (a) it still appears in the app/admin
   exactly as before, (b) it lands in Drive at
