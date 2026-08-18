@@ -4,14 +4,21 @@ const { Readable } = require('stream');
 
 const TAG_FOLDER_NAMES = { before: 'Before', after: 'After' };
 
+// Service accounts have no Drive storage quota for file bytes (Google's 2022
+// policy change — confirmed by a live 403 storageQuotaExceeded when this used
+// google.auth.JWT). Uploads instead go through OAuth delegation: a one-time
+// consent from corexteriors@gmail.com (scripts/authorize-drive.js) produced a
+// refresh token, so uploads use that account's own quota.
 function buildDriveClient() {
-    const email = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
-    const key   = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
-    if (!email || !key) {
-        console.warn('Drive backup: missing GOOGLE_SERVICE_ACCOUNT_EMAIL/GOOGLE_PRIVATE_KEY, skipping');
+    const clientId     = (process.env.GOOGLE_OAUTH_CLIENT_ID || '').trim();
+    const clientSecret = (process.env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim();
+    const refreshToken  = (process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '').trim();
+    if (!clientId || !clientSecret || !refreshToken) {
+        console.warn('Drive backup: missing GOOGLE_OAUTH_CLIENT_ID/GOOGLE_OAUTH_CLIENT_SECRET/GOOGLE_DRIVE_REFRESH_TOKEN, skipping');
         return null;
     }
-    const auth = new google.auth.JWT({ email, key, scopes: ['https://www.googleapis.com/auth/drive.file'] });
+    const auth = new google.auth.OAuth2(clientId, clientSecret);
+    auth.setCredentials({ refresh_token: refreshToken });
     return google.drive({ version: 'v3', auth });
 }
 

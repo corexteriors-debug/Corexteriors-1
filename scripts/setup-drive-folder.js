@@ -1,30 +1,31 @@
 #!/usr/bin/env node
 // One-time setup: creates (or finds) the root Drive folder for labour photo
-// backups and shares it with corexteriors@gmail.com. Run manually, once —
-// not deployed, not part of any request path.
+// backups, directly in corexteriors@gmail.com's own Drive. Run manually,
+// once, after scripts/authorize-drive.js — not deployed, not part of any
+// request path.
 //
-// Requires GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY in the
-// environment. These already exist in Vercel's Production env for this
-// project (used by api/calendar.js). To run locally:
+// Requires GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, and
+// GOOGLE_DRIVE_REFRESH_TOKEN in the environment:
 //
-//   vercel env pull .env.drive-setup --environment=production
-//   set -a; source .env.drive-setup; set +a
+//   export GOOGLE_OAUTH_CLIENT_ID=...
+//   export GOOGLE_OAUTH_CLIENT_SECRET=...
+//   export GOOGLE_DRIVE_REFRESH_TOKEN=...   # from authorize-drive.js
 //   node scripts/setup-drive-folder.js
-//   rm .env.drive-setup   # contains ALL project secrets — delete right after
 
 const { google } = require('googleapis');
 
 const ROOT_FOLDER_NAME = 'Core Exteriors – Labour Photos';
-const SHARE_WITH = 'corexteriors@gmail.com';
 
 async function main() {
-    const email = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
-    const key   = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n').trim();
-    if (!email || !key) {
-        console.error('Missing GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY in environment.');
+    const clientId     = (process.env.GOOGLE_OAUTH_CLIENT_ID || '').trim();
+    const clientSecret = (process.env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim();
+    const refreshToken = (process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '').trim();
+    if (!clientId || !clientSecret || !refreshToken) {
+        console.error('Missing GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, or GOOGLE_DRIVE_REFRESH_TOKEN in environment.');
         process.exit(1);
     }
-    const auth = new google.auth.JWT({ email, key, scopes: ['https://www.googleapis.com/auth/drive.file'] });
+    const auth = new google.auth.OAuth2(clientId, clientSecret);
+    auth.setCredentials({ refresh_token: refreshToken });
     const drive = google.drive({ version: 'v3', auth });
 
     const existing = await drive.files.list({
@@ -43,19 +44,6 @@ async function main() {
         });
         folderId = created.data.id;
         console.log(`Created folder: ${folderId}`);
-    }
-
-    const perms = await drive.permissions.list({ fileId: folderId, fields: 'permissions(id, emailAddress, role)' });
-    const alreadyShared = (perms.data.permissions || []).some(p => p.emailAddress === SHARE_WITH);
-    if (alreadyShared) {
-        console.log(`Already shared with ${SHARE_WITH}`);
-    } else {
-        await drive.permissions.create({
-            fileId: folderId,
-            requestBody: { type: 'user', role: 'writer', emailAddress: SHARE_WITH },
-            sendNotificationEmail: true,
-        });
-        console.log(`Shared with ${SHARE_WITH}`);
     }
 
     console.log('\nSet this in Vercel (Production env vars):');
