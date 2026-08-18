@@ -947,23 +947,33 @@ function compressImage(file, maxPx) {
 }
 async function uploadPhoto(base64, tag) {
     if (!currentJob) return;
+    // The grid only exists once the job-detail screen has rendered at least once
+    // this session (renderJobDetail() creates it). Quick-uploading from the Home
+    // screen's Photo button never opens job detail, so grid is often null here \u2014
+    // the upload must still go through; we just have nowhere to animate a spinner.
     const gridId = tag === 'before' ? 'photoGridBefore' : tag === 'after' ? 'photoGridAfter' : 'photoGridOther';
     const grid = document.getElementById(gridId);
-    if (!grid) return;
-    const pending = el('div'); pending.style.cssText = 'background:#1a2a45;border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.5rem';
-    pending.textContent = '\u23F3'; grid.appendChild(pending);
+    let pending = null;
+    if (grid) {
+        pending = el('div'); pending.style.cssText = 'background:#1a2a45;border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.5rem';
+        pending.textContent = '\u23F3'; grid.appendChild(pending);
+    }
     try {
         const r    = await fetch('/api/labour-photo', { method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionToken, calendarEventId: currentJob.id, jobTitle: currentJob.title, photoData: base64, tag }) });
         const data = await r.json().catch(() => ({}));
         if (data.success) {
-            pending.replaceWith(renderPhotoThumb(data.url));
-            if (gridId === 'photoGridOther') { const sec = document.getElementById('photoSectionOther'); if (sec) sec.style.display = ''; }
+            if (pending) {
+                pending.replaceWith(renderPhotoThumb(data.url));
+                if (gridId === 'photoGridOther') { const sec = document.getElementById('photoSectionOther'); if (sec) sec.style.display = ''; }
+            }
         } else {
-            failPending(pending, data.error || ('Upload failed (HTTP ' + r.status + ')'));
+            const message = data.error || ('Upload failed (HTTP ' + r.status + ')');
+            if (pending) failPending(pending, message); else alert(message);
         }
     } catch (err) {
-        failPending(pending, 'Connection error: ' + (err && err.message ? err.message : 'unknown'));
+        const message = 'Connection error: ' + (err && err.message ? err.message : 'unknown');
+        if (pending) failPending(pending, message); else alert(message);
     }
 }
 
