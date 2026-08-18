@@ -4,11 +4,13 @@
 
 **Goal:** Every worker-uploaded job photo (before/after/other) also gets copied into an organized Google Drive folder tree, without changing how the app itself stores or displays photos today.
 
-**Architecture:** A new helper module `api/_googleDrive.js` resolves (and KV-caches) a `{date}/{jobTitle}/{Before|After|Other}` folder chain under a fixed root folder, then uploads the photo. `api/labour-photo.js` calls it, awaited, wrapped so failures never affect the worker-facing response. A one-time local script creates the root folder and shares it with `corexteriors@gmail.com`.
+**Architecture:** A new helper module `api/_googleDrive.js` resolves (and KV-caches) a `{date}/{jobTitle}/{Before|After|Other}` folder chain under a fixed root folder, then uploads the photo. `api/labour-photo.js` calls it, awaited, wrapped so failures never affect the worker-facing response.
 
 **Tech Stack:** `googleapis` (already a dependency, same package used for Calendar), `@vercel/kv` (already used throughout `api/labour.js` / `api/labour-photo.js`), Node's built-in `stream.Readable`.
 
 **Spec:** `docs/superpowers/specs/2026-08-18-labour-photo-drive-backup-design.md`
+
+**Revision (post-smoke-test):** Tasks 1 and 2 below (as originally written, using `google.auth.JWT` with the service account) were implemented and committed, then smoke-tested live. The smoke test found that service accounts have no Drive storage quota for file uploads (`403 storageQuotaExceeded` — a Google platform constraint, not a bug). `api/_googleDrive.js` was revised in place to use OAuth delegation (`google.auth.OAuth2` + a refresh token for `corexteriors@gmail.com`) instead — see the spec's "Revision" section. Task 3 below (the original service-account-sharing setup script) was superseded by two OAuth scripts, documented in Task 3 (Revised) further down. Tasks 1 and 2's code samples are left as originally written for history; the actual shipped code differs only in `buildDriveClient()`.
 
 ---
 
@@ -354,25 +356,62 @@ Check `corexteriors@gmail.com`'s Google Drive → "Shared with me" → confirm "
 
 ---
 
+### Task 3 (Revised): OAuth delegation instead of service account
+
+**Superseded by this task** after the smoke test in Task 4 found service
+accounts have no Drive storage quota. See spec's "Revision" section for
+the full explanation.
+
+**Files:**
+- Create: `scripts/authorize-drive.js`
+- Modify: `scripts/setup-drive-folder.js` (OAuth2 auth instead of JWT, no sharing step)
+- Modify: `api/_googleDrive.js` (`buildDriveClient()` only)
+
+- [x] **Step 1: Create a Google Cloud OAuth Client** (user action, Cloud Console — not automatable): Desktop app type, in the same project as the existing service account. Add `corexteriors@gmail.com` as a test user on the OAuth consent screen. Produces a Client ID and Client Secret.
+
+- [x] **Step 2: Write `scripts/authorize-drive.js`** — runs a local loopback HTTP server on `127.0.0.1:53682`, prints a Google authorization URL, exchanges the resulting code for tokens, prints the refresh token. (Full source already committed — see file.)
+
+- [x] **Step 3: Rewrite `scripts/setup-drive-folder.js`** to build a `google.auth.OAuth2` client from `GOOGLE_OAUTH_CLIENT_ID`/`GOOGLE_OAUTH_CLIENT_SECRET`/`GOOGLE_DRIVE_REFRESH_TOKEN` instead of `google.auth.JWT`, and create the root folder directly in `corexteriors@gmail.com`'s own Drive (no `permissions.create` sharing step — the account already owns it).
+
+- [x] **Step 4: Update `api/_googleDrive.js`'s `buildDriveClient()`** to the same OAuth2 pattern. Rest of the module (`findOrCreateFolder`, `backupPhotoToDrive`, KV caching) unchanged.
+
+- [x] **Step 5: `node --check` all three files, commit.**
+
+- [ ] **Step 6: Run `scripts/authorize-drive.js` with the real Client ID/Secret** (requires the user to open the printed URL and approve as `corexteriors@gmail.com` in their own browser — this is a real Google sign-in, not something automatable). Capture the printed refresh token.
+
+- [ ] **Step 7: Run `scripts/setup-drive-folder.js` with the Client ID/Secret/refresh token** to create the root folder in `corexteriors@gmail.com`'s Drive. Capture the printed `GOOGLE_DRIVE_ROOT_FOLDER_ID`.
+
+- [ ] **Step 8: Add all four new env vars to Vercel Production:** `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_DRIVE_REFRESH_TOKEN`, `GOOGLE_DRIVE_ROOT_FOLDER_ID`.
+
+---
+
 ### Task 4: Add the env var and smoke-test end to end
+
+**Status:** Steps 1–4 below were executed with the original service-account
+auth. Step 1 (`GOOGLE_DRIVE_ROOT_FOLDER_ID`) and Steps 2–3 (deploy) are done
+and don't need repeating for OAuth — same env var, same deploy. Step 4's
+smoke test is what surfaced the `storageQuotaExceeded` blocker (folders were
+created fine; the actual file upload failed). **Once Task 3 (Revised) Step 8
+adds the four OAuth env vars, re-run Step 4 below to confirm the file upload
+itself now succeeds** — that's the one part that hadn't been proven yet.
 
 **Files:** none (Vercel dashboard/CLI + live app)
 
-- [ ] **Step 1: Add the env var to Vercel**
+- [x] **Step 1: Add the env var to Vercel**
 
 ```bash
 vercel env add GOOGLE_DRIVE_ROOT_FOLDER_ID production
 ```
 Paste the folder ID from Task 3 Step 4 when prompted.
 
-- [ ] **Step 2: Push the code changes and let auto-deploy run**
+- [x] **Step 2: Push the code changes and let auto-deploy run**
 
 ```bash
 git push origin main
 ```
 (GitHub is linked to Vercel — this triggers a Production deploy automatically, per this project's existing deploy setup.)
 
-- [ ] **Step 3: Confirm the deploy succeeded**
+- [x] **Step 3: Confirm the deploy succeeded**
 
 ```bash
 vercel ls --scope core-exteriors-projects
