@@ -5,10 +5,43 @@
 Job photos uploaded by workers (before/after/other) are stored only in
 Vercel Blob, referenced by URL from KV job logs. There's no organized,
 human-browsable view of them — reviewing or organizing past job photos
-means digging through the admin dashboard job-by-job. The site already
-has a Google service account (`GOOGLE_SERVICE_ACCOUNT_EMAIL` /
-`GOOGLE_PRIVATE_KEY`) used for Calendar; Drive access reuses the same
-credentials.
+means digging through the admin dashboard job-by-job.
+
+## Revision: service account auth doesn't work for file storage
+
+The original version of this spec planned to reuse the existing Google
+service account (`GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY`,
+already used for Calendar) for Drive access too. That was tried and
+fails: as of Google's 2022 policy change, service accounts have **no
+storage quota** to hold actual file bytes — they can create folders
+(free, metadata-only) but uploading a photo fails with
+`403 storageQuotaExceeded`. This isn't fixable in our code; it's a
+platform constraint. The two ways around it are Shared Drives (a
+Google Workspace/paid-business feature — not available on the plain
+`corexteriors@gmail.com` consumer account) or **OAuth delegation**:
+get one-time consent from a real Google account and upload against
+*that account's* quota. This spec now uses OAuth delegation.
+
+## Auth: OAuth delegation to corexteriors@gmail.com
+
+A separate Google Cloud OAuth Client (type: **Desktop app**, so it can
+use a loopback redirect without needing a public HTTPS callback URL)
+is created in the same Google Cloud project as the existing service
+account. A one-time local script performs the OAuth consent flow:
+opens an authorization URL, the human signs in as
+`corexteriors@gmail.com` and approves Drive access, and the script
+exchanges the resulting code for an access + **refresh** token. Only
+the refresh token needs to be kept — it's stored as
+`GOOGLE_DRIVE_REFRESH_TOKEN` alongside the OAuth client's
+`GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`, all in
+Vercel's Production env vars. Runtime code (`api/_googleDrive.js`)
+builds a `google.auth.OAuth2` client from these three values instead
+of `google.auth.JWT`; the `googleapis` library auto-refreshes the
+access token from the refresh token as needed, so no re-consent is
+ever required unless the token is explicitly revoked.
+
+This changes *only* the auth mechanism. Folder structure, KV caching,
+and failure isolation (below) are unchanged from the original design.
 
 ## Non-goals
 
@@ -21,26 +54,38 @@ credentials.
 - No retry queue or user-visible error if the Drive copy fails — it's
   a best-effort backup, not a system of record.
 
-## One-time setup: `scripts/setup-drive-folder.js`
+## One-time setup
 
-A local, one-off script (not deployed, not a Vercel function):
+Two local, one-off scripts (not deployed, not Vercel functions):
 
-1. Authenticates as the existing service account with scope
-   `https://www.googleapis.com/auth/drive.file`.
-2. Creates a root folder named `Core Exteriors – Labour Photos` in the
-   service account's Drive (service accounts have their own Drive,
-   separate from any human account — the app's photos would otherwise
-   be invisible to us).
-3. Shares that folder as Editor with `corexteriors@gmail.com`, so it
-   appears under "Shared with me" in normal Drive.
-4. Prints the new folder's ID to stdout.
+**`scripts/authorize-drive.js`** — performs the OAuth consent flow:
+1. Starts a temporary HTTP server on `http://127.0.0.1:53682`.
+2. Prints a Google authorization URL (scope
+   `https://www.googleapis.com/auth/drive.file`) for the human to open
+   and approve while signed in as `corexteriors@gmail.com`.
+3. Google redirects back to the loopback server with a code; the
+   script exchanges it for tokens and prints the refresh token.
 
-We take that ID and set it as `GOOGLE_DRIVE_ROOT_FOLDER_ID` in Vercel's
-project env vars (and local `.env` for dev). Runtime code never
-searches for or creates the root folder — it's a fixed, known ID.
+We set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` (from
+the Google Cloud OAuth Client, created by hand in Cloud Console — see
+Task list) and `GOOGLE_DRIVE_REFRESH_TOKEN` (from this script's
+output) in Vercel's Production env vars.
 
-This script is run once by hand after review; it is not part of the
-request-handling code path.
+**`scripts/setup-drive-folder.js`** — creates the root Drive folder,
+now authenticating as `corexteriors@gmail.com` via the refresh token
+instead of the service account (it's uploading to that account's own
+Drive now, so no separate sharing step is needed — the account already
+owns the folder):
+1. Creates a root folder named `Core Exteriors – Labour Photos`
+   directly in `corexteriors@gmail.com`'s own Drive.
+2. Prints the new folder's ID to stdout.
+
+We take that ID and set it as `GOOGLE_DRIVE_ROOT_FOLDER_ID`. Runtime
+code never searches for or creates the root folder — it's a fixed,
+known ID.
+
+Both scripts are run once by hand after review; neither is part of
+the request-handling code path.
 
 ## Runtime flow: `api/labour-photo.js`
 
@@ -127,9 +172,11 @@ No existing test framework in this repo (matches prior labour-portal
 work, which was verified by direct code review + manual exercise
 rather than an automated suite). Verification for this change:
 
-- Manually run `scripts/setup-drive-folder.js` once against the real
-  service account and confirm the folder appears under "Shared with
-  me" for `corexteriors@gmail.com`.
+- Manually run `scripts/authorize-drive.js` once, approve as
+  `corexteriors@gmail.com`, and confirm a refresh token is printed.
+  Then run `scripts/setup-drive-folder.js` and confirm the folder
+  appears directly in that account's own Drive (no sharing step
+  needed — it's the owner).
 - After deploying, upload a real before/after/other photo from
   `labour.html` and confirm: (a) it still appears in the app/admin
   exactly as before, (b) it lands in Drive at
