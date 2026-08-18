@@ -1,5 +1,6 @@
 const { kv } = require('@vercel/kv');
 const { put } = require('@vercel/blob');
+const { backupPhotoToDrive } = require('./_googleDrive');
 
 const TIMEZONE = 'America/Toronto';
 const ALLOWED_ORIGINS = ['https://corexteriors.ca', 'https://www.corexteriors.ca'];
@@ -10,7 +11,7 @@ async function verifyWorkerSession(token) {
     if (!session) return null;
     const worker = await kv.get(`worker:${session.workerId}`);
     if (!worker || !worker.active) return null;
-    return session;
+    return { ...session, workerName: worker.name };
 }
 
 module.exports = async function handler(req, res) {
@@ -67,6 +68,18 @@ module.exports = async function handler(req, res) {
         }
 
         await kv.set(logKey, log);
+
+        await backupPhotoToDrive({
+            date,
+            jobId: calendarEventId,
+            jobTitle: jobTitle || 'Job',
+            tag: normalizedTag,
+            workerName: session.workerName,
+            buffer,
+            mimeType,
+            fileExt: mimeType === 'image/jpeg' ? 'jpg' : mimeType.split('/')[1],
+        });
+
         return res.status(200).json({ success: true, url: blob.url, tag: normalizedTag });
 
     } catch (err) {
