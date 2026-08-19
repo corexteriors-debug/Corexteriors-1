@@ -60,9 +60,13 @@ Two local, one-off scripts (not deployed, not Vercel functions):
 
 **`scripts/authorize-drive.js`** — performs the OAuth consent flow:
 1. Starts a temporary HTTP server on `http://127.0.0.1:53682`.
-2. Prints a Google authorization URL (scope
-   `https://www.googleapis.com/auth/drive.file`) for the human to open
-   and approve while signed in as `corexteriors@gmail.com`.
+2. Prints a Google authorization URL (scopes
+   `https://www.googleapis.com/auth/drive.file` and
+   `https://www.googleapis.com/auth/drive.readonly` — the second was
+   added for the separate calendar-attachment-images feature, see
+   `docs/superpowers/specs/2026-08-18-calendar-attachment-images-design.md`)
+   for the human to open and approve while signed in as
+   `corexteriors@gmail.com`.
 3. Google redirects back to the loopback server with a code; the
    script exchanges it for tokens and prints the refresh token.
 
