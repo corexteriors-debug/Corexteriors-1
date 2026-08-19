@@ -659,6 +659,16 @@ function renderJobDetail() {
     append(noteCard, noteTextarea, flagRow, addNoteBtn, noteListEl);
     body.appendChild(noteCard);
 
+    // Reference Photos — manager-attached via Google Calendar, read-only
+    if (job.referenceImages && job.referenceImages.length) {
+        const refCard = el('div', 'detail-card');
+        refCard.appendChild(el('div', 'detail-label', '📎 Reference Photos'));
+        const refGrid = el('div', 'photo-grid');
+        job.referenceImages.forEach(url => refGrid.appendChild(renderPhotoThumb(url)));
+        refCard.appendChild(refGrid);
+        body.appendChild(refCard);
+    }
+
     // Photos — Before / After
     const photoCard = el('div', 'detail-card');
     photoCard.appendChild(el('div', 'detail-label', '📸 Photos'));

@@ -34,7 +34,10 @@ async function main() {
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         prompt: 'consent', // force a refresh token even if this client was authorized before
-        scope: ['https://www.googleapis.com/auth/drive.file'],
+        scope: [
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive.readonly',
+        ],
     });
 
     console.log('\nOpen this URL, sign in as corexteriors@gmail.com, and approve:\n');

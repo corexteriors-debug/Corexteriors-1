@@ -2,6 +2,7 @@ const { kv } = require('@vercel/kv');
 const { google } = require('googleapis');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { mirrorAttachmentToBlob } = require('./_googleDrive');
 
 const TIMEZONE = 'America/Toronto';
 const ALLOWED_ORIGINS = ['https://corexteriors.ca', 'https://www.corexteriors.ca'];
@@ -577,6 +578,7 @@ async function jobsForDate(dateStr, calClient) {
         start:       `${dateStr}T00:00:00`,
         end:         `${dateStr}T23:59:59`,
         source:      'manual',
+        referenceImages: [], // manual jobs have no calendar event to attach images to
     }));
     let calJobs = [];
     if (calClient) {
@@ -601,6 +603,12 @@ async function jobsForDate(dateStr, calClient) {
                     // Load task completion state stored separately for calendar jobs
                     const taskState = await kv.get(`labour-task-state:${dateStr}:${e.id}`) || {};
                     const tasks = parsed.tasks.map((t, i) => ({ ...t, done: !!taskState[i] }));
+                    // Manager-attached images (e.g. highlighting what needs work) —
+                    // mirrored to Blob since workers have no Drive access of their own.
+                    const imageAttachments = (e.attachments || []).filter(a => a.mimeType && a.mimeType.startsWith('image/'));
+                    const referenceImages = (await Promise.all(
+                        imageAttachments.map(a => mirrorAttachmentToBlob({ fileId: a.fileId, mimeType: a.mimeType, fileName: a.title }))
+                    )).filter(Boolean);
                     return {
                         id:          e.id,
                         title:       e.summary || 'Job',
@@ -612,6 +620,7 @@ async function jobsForDate(dateStr, calClient) {
                         start:       e.start.dateTime || e.start.date,
                         end:         e.end.dateTime   || e.end.date,
                         source:      'calendar',
+                        referenceImages,
                     };
                 }));
         } catch (calErr) {

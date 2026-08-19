@@ -1,4 +1,5 @@
 const { kv } = require('@vercel/kv');
+const { put } = require('@vercel/blob');
 const { google } = require('googleapis');
 const { Readable } = require('stream');
 
@@ -86,4 +87,34 @@ async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buff
     }
 }
 
-module.exports = { backupPhotoToDrive };
+// Mirrors a Calendar-attached Drive file (which our OAuth-delegated account
+// didn't create, hence needs drive.readonly, not just drive.file) into Vercel
+// Blob so it can be shown to PIN-authenticated workers as a normal image URL.
+// Cached forever in KV by fileId — a manager re-attaching a different image
+// gets a new fileId from Calendar, so this never serves stale content.
+// Never throws — see docs/superpowers/specs/2026-08-18-calendar-attachment-images-design.md.
+async function mirrorAttachmentToBlob({ fileId, mimeType, fileName }) {
+    try {
+        const cacheKey = `calendar-attachment-blob:${fileId}`;
+        const cached = await kv.get(cacheKey);
+        if (cached) return cached;
+
+        const drive = buildDriveClient();
+        if (!drive) return null;
+
+        const res = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'arraybuffer' });
+        const buffer = Buffer.from(res.data);
+
+        const blob = await put(`calendar-attachments/${fileId}-${fileName || 'image'}`, buffer, {
+            access: 'public', contentType: mimeType, addRandomSuffix: true,
+        });
+
+        await kv.set(cacheKey, blob.url);
+        return blob.url;
+    } catch (err) {
+        console.error('Calendar attachment mirror failed:', err.message);
+        return null;
+    }
+}
+
+module.exports = { backupPhotoToDrive, mirrorAttachmentToBlob };
