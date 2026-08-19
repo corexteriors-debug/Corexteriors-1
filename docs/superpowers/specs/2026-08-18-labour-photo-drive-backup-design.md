@@ -161,6 +161,22 @@ address or a short ID suffix to every folder name, adding noise for
 the common case where titles are already unique) — acceptable given
 this is a browse-and-organize aid, not the system of record.
 
+## Known nuance: `findOrCreateFolder` isn't race-safe under concurrent requests
+
+`findOrCreateFolder` is a check-then-create pattern (query for an
+existing folder, create one if not found) with no locking. Confirmed
+during smoke testing: firing several rapid automated test uploads to
+the same not-yet-existing date/job folder within the same few-hundred
+milliseconds produced two duplicate "2026-08-18" folders, because both
+requests' existence checks ran before either had committed its create.
+Real usage doesn't hit this — a worker taps one upload button at a
+time, sequentially, so two requests racing to create the *same*
+not-yet-existing folder in the same instant essentially can't happen.
+Worst case if it ever did: a harmless duplicate sibling folder, not
+data loss (the photo still uploads successfully either way). Not
+adding KV-based locking for this — the cost doesn't match a scenario
+this unlikely for a best-effort backup feature.
+
 ## Error handling summary
 
 | Failure point | Behavior |

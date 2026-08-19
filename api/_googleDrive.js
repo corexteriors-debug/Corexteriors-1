@@ -43,18 +43,15 @@ async function findOrCreateFolder(drive, name, parentId) {
 // Never throws — any failure is logged and swallowed so a Drive outage can never
 // break a worker's photo upload. See docs/superpowers/specs/2026-08-18-labour-photo-drive-backup-design.md.
 async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buffer, mimeType, fileExt }) {
-    let debugStep = 'start';
     try {
         const rootId = (process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || '').trim();
         if (!rootId) { console.warn('Drive backup: missing GOOGLE_DRIVE_ROOT_FOLDER_ID, skipping'); return; }
-        debugStep = 'buildClient';
         const drive = buildDriveClient();
         if (!drive) return;
 
         const tagKey  = (tag === 'before' || tag === 'after') ? tag : 'other';
         const tagName = TAG_FOLDER_NAMES[tagKey] || 'Other';
 
-        debugStep = 'dateFolder';
         const dateCacheKey = `drive-folder:${date}`;
         let dateFolderId = await kv.get(dateCacheKey);
         if (!dateFolderId) {
@@ -62,7 +59,6 @@ async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buff
             await kv.set(dateCacheKey, dateFolderId);
         }
 
-        debugStep = 'jobFolder';
         const jobCacheKey = `drive-folder:${date}:${jobId}`;
         let jobFolderId = await kv.get(jobCacheKey);
         if (!jobFolderId) {
@@ -70,7 +66,6 @@ async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buff
             await kv.set(jobCacheKey, jobFolderId);
         }
 
-        debugStep = 'tagFolder';
         const tagCacheKey = `drive-folder:${date}:${jobId}:${tagKey}`;
         let tagFolderId = await kv.get(tagCacheKey);
         if (!tagFolderId) {
@@ -78,7 +73,6 @@ async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buff
             await kv.set(tagCacheKey, tagFolderId);
         }
 
-        debugStep = 'upload';
         const time = new Date().toLocaleTimeString('en-CA', { timeZone: 'America/Toronto', hour12: false }).replace(/:/g, '');
         const safeName = (workerName || 'worker').replace(/[\\/'"]/g, '');
         const fileName = `${safeName}-${time}.${fileExt}`;
@@ -88,10 +82,8 @@ async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buff
             media: { mimeType, body: Readable.from(buffer) },
             fields: 'id',
         });
-        await kv.set('drive-backup-debug:last', { ok: true, at: new Date().toISOString(), jobId, tag });
     } catch (err) {
         console.error('Drive backup failed:', err.message);
-        await kv.set('drive-backup-debug:last', { ok: false, step: debugStep, message: err.message, stack: (err.stack || '').slice(0, 800), at: new Date().toISOString(), jobId, tag }).catch(() => {});
     }
 }
 
