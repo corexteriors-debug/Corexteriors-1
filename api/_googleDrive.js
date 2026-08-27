@@ -5,6 +5,39 @@ const { Readable } = require('stream');
 
 const TAG_FOLDER_NAMES = { before: 'Before', after: 'After' };
 
+const DRIVE_HEALTH_KEY = 'drive-backup:health';
+
+// Records the outcome of the most recent Drive backup attempt so the admin
+// dashboard can surface silent failures (the catch in backupPhotoToDrive
+// swallows errors by design, so without this a broken refresh token / quota
+// issue goes unnoticed until someone checks Drive — which last time was 9 days).
+// Wrapped so a KV hiccup here can never itself break a photo upload.
+async function recordDriveHealth(ok, errMsg) {
+    try {
+        const prev = (await kv.get(DRIVE_HEALTH_KEY)) || {};
+        const now = new Date().toISOString();
+        if (ok) {
+            await kv.set(DRIVE_HEALTH_KEY, {
+                status: 'ok',
+                lastSuccessAt: now,
+                lastErrorAt: prev.lastErrorAt || null,
+                lastError: prev.lastError || null,
+                consecutiveFailures: 0,
+            });
+        } else {
+            await kv.set(DRIVE_HEALTH_KEY, {
+                status: 'error',
+                lastSuccessAt: prev.lastSuccessAt || null,
+                lastErrorAt: now,
+                lastError: String(errMsg || 'unknown'),
+                consecutiveFailures: (prev.consecutiveFailures || 0) + 1,
+            });
+        }
+    } catch (e) {
+        console.error('Drive health record failed:', e.message);
+    }
+}
+
 // Service accounts have no Drive storage quota for file bytes (Google's 2022
 // policy change — confirmed by a live 403 storageQuotaExceeded when this used
 // google.auth.JWT). Uploads instead go through OAuth delegation: a one-time
@@ -45,9 +78,9 @@ async function findOrCreateFolder(drive, name, parentId) {
 async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buffer, mimeType, fileExt }) {
     try {
         const rootId = (process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || '').trim();
-        if (!rootId) { console.warn('Drive backup: missing GOOGLE_DRIVE_ROOT_FOLDER_ID, skipping'); return; }
+        if (!rootId) { console.warn('Drive backup: missing GOOGLE_DRIVE_ROOT_FOLDER_ID, skipping'); await recordDriveHealth(false, 'missing GOOGLE_DRIVE_ROOT_FOLDER_ID'); return; }
         const drive = buildDriveClient();
-        if (!drive) return;
+        if (!drive) { await recordDriveHealth(false, 'missing OAuth client id/secret/refresh token'); return; }
 
         const tagKey  = (tag === 'before' || tag === 'after') ? tag : 'other';
         const tagName = TAG_FOLDER_NAMES[tagKey] || 'Other';
@@ -82,8 +115,11 @@ async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buff
             media: { mimeType, body: Readable.from(buffer) },
             fields: 'id',
         });
+
+        await recordDriveHealth(true);
     } catch (err) {
         console.error('Drive backup failed:', err.message);
+        await recordDriveHealth(false, err.message);
     }
 }
 

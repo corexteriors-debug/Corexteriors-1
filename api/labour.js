@@ -144,6 +144,7 @@ module.exports = async function handler(req, res) {
         if (action === 'today-jobs')        return await todayJobs(req, res);
         if (action === 'week-jobs')         return await weekJobs(req, res);
         if (action === 'daily')             return await dailyLogs(req, res);
+        if (action === 'drive-health')      return await driveHealth(req, res);
         if (action === 'edit-log')          return await editLog(req, res);
         if (action === 'add-job')           return await addJob(req, res);
         if (action === 'remove-job')        return await removeJob(req, res);
@@ -722,6 +723,16 @@ async function dailyLogs(req, res) {
         return { worker, log, totalMinutes };
     }));
     return res.status(200).json({ success: true, date, workers: results.filter(r => r.worker) });
+}
+
+// ── Admin: Drive backup health ────────────────────────────────────────────────
+// Exposes the health record written by _googleDrive.recordDriveHealth so admin.html
+// can warn when photo → Google Drive mirroring is silently failing.
+async function driveHealth(req, res) {
+    if (req.method !== 'GET') return res.status(405).end();
+    if (!await verifyAdminToken(req)) return res.status(401).json({ error: 'Admin only' });
+    const health = await kv.get('drive-backup:health');
+    return res.status(200).json({ success: true, health: health || null });
 }
 
 // ── Admin: edit log ───────────────────────────────────────────────────────────

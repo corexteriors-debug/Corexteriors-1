@@ -1343,6 +1343,7 @@ Tasks:
                             <button onclick="loadDailyLogs()" style="background:#1565c0;border:none;border-radius:8px;padding:.4rem .75rem;color:#fff;cursor:pointer;font-size:.85rem">Load</button>
                         </div>
                     </div>
+                    <div id="driveHealthBanner" style="display:none;margin:.75rem;padding:.75rem 1rem;border-radius:8px;font-size:.85rem;line-height:1.4"></div>
                     <div id="dailyLogsContainer" style="padding:.75rem">
                         <p style="color:#888;text-align:center;padding:1.5rem">Select a date and click Load</p>
                     </div>
@@ -3597,12 +3598,65 @@ async function loadDailyLogs() {
     const token = localStorage.getItem('admin_token') || '';
     const container = document.getElementById('dailyLogsContainer');
     container.textContent = 'Loading…';
+    checkDriveHealth();
     try {
         const r = await fetch('/api/labour?action=daily&date=' + encodeURIComponent(date), { headers: { 'Authorization': 'Bearer ' + token } });
         const data = await r.json();
         if (!data.success) { container.textContent = 'Error loading logs.'; return; }
         renderDailyLogs(data.workers, date);
     } catch { container.textContent = 'Connection error.'; }
+}
+
+// Fetches the Drive-backup health record and warns if photo → Google Drive
+// mirroring is failing. The backend swallows Drive errors so a broken refresh
+// token / quota issue is otherwise invisible — this is the only signal.
+// Built with textContent (not innerHTML) so the error message from Google's API
+// can never inject markup into the dashboard.
+async function checkDriveHealth() {
+    const banner = document.getElementById('driveHealthBanner');
+    if (!banner) return;
+    const token = localStorage.getItem('admin_token') || '';
+    try {
+        const r = await fetch('/api/labour?action=drive-health', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await r.json();
+        const h = data.health;
+        banner.textContent = '';
+
+        // No record yet (no photos uploaded since this feature shipped), or the
+        // last attempt succeeded — stay quiet.
+        // Threshold is deliberately simple: any current-error state is surfaced.
+        // Switch to (h.consecutiveFailures >= N) here if it ever proves noisy.
+        if (!h || h.status !== 'error') { banner.style.display = 'none'; return; }
+
+        const fmt = (iso) => iso ? new Date(iso).toLocaleString('en-CA', { timeZone: 'America/Toronto' }) : null;
+
+        banner.style.background = '#4a1c1c';
+        banner.style.border = '1px solid #ef5350';
+        banner.style.color = '#ffcdd2';
+
+        const head = document.createElement('div');
+        const strong = document.createElement('strong');
+        strong.textContent = '⚠️ Google Drive photo backup is failing.';
+        head.appendChild(strong);
+        head.appendChild(document.createTextNode(
+            ' ' + (h.consecutiveFailures || 0) + ' failed upload(s) in a row. '
+            + 'Photos are still saved in the app, but not mirrored to Drive.'));
+
+        const detail = document.createElement('div');
+        detail.style.opacity = '.85';
+        detail.style.marginTop = '.35rem';
+        detail.appendChild(document.createTextNode('Last error: '));
+        const code = document.createElement('code');
+        code.textContent = h.lastError || 'unknown';
+        detail.appendChild(code);
+        detail.appendChild(document.createTextNode(
+            ' at ' + (fmt(h.lastErrorAt) || 'unknown')
+            + '. Last successful backup: ' + (fmt(h.lastSuccessAt) || 'never') + '.'));
+
+        banner.appendChild(head);
+        banner.appendChild(detail);
+        banner.style.display = 'block';
+    } catch { banner.style.display = 'none'; }
 }
 
 function toggleLabourRow(id) {
