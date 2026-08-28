@@ -1,5 +1,4 @@
 const { kv } = require('@vercel/kv');
-const { put } = require('@vercel/blob');
 const { google } = require('googleapis');
 const { Readable } = require('stream');
 
@@ -123,11 +122,17 @@ async function backupPhotoToDrive({ date, jobId, jobTitle, tag, workerName, buff
     }
 }
 
-// Mirrors a Calendar-attached Drive file (which our OAuth-delegated account
-// didn't create, hence needs drive.readonly, not just drive.file) into Vercel
-// Blob so it can be shown to PIN-authenticated workers as a normal image URL.
-// Cached forever in KV by fileId — a manager re-attaching a different image
-// gets a new fileId from Calendar, so this never serves stale content.
+// Mirrors a Calendar-attached Drive file into Vercel Blob so it can be shown to
+// PIN-authenticated workers as a normal image URL. Cached forever in KV by fileId.
+//
+// DISABLED for NEW attachments as of 2026-08-27: reading a file the app didn't
+// create needs the restricted `drive.readonly` scope, which was dropped so the
+// OAuth app could reach Production without a CASA security assessment (see
+// scripts/authorize-drive.js). Already-mirrored images still serve from the KV
+// cache; uncached ones return null instead of making a Drive call that would
+// fail with insufficient scope and spam the logs. To restore: re-add
+// drive.readonly in authorize-drive.js, re-mint the token, and delete the
+// early `return null` below.
 // Never throws — see docs/superpowers/specs/2026-08-18-calendar-attachment-images-design.md.
 async function mirrorAttachmentToBlob({ fileId, mimeType, fileName }) {
     try {
@@ -135,18 +140,8 @@ async function mirrorAttachmentToBlob({ fileId, mimeType, fileName }) {
         const cached = await kv.get(cacheKey);
         if (cached) return cached;
 
-        const drive = buildDriveClient();
-        if (!drive) return null;
-
-        const res = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'arraybuffer' });
-        const buffer = Buffer.from(res.data);
-
-        const blob = await put(`calendar-attachments/${fileId}-${fileName || 'image'}`, buffer, {
-            access: 'public', contentType: mimeType, addRandomSuffix: true,
-        });
-
-        await kv.set(cacheKey, blob.url);
-        return blob.url;
+        // drive.readonly dropped — can't fetch uncached attachments anymore.
+        return null;
     } catch (err) {
         console.error('Calendar attachment mirror failed:', err.message);
         return null;
