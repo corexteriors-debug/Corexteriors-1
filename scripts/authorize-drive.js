@@ -34,9 +34,13 @@ async function main() {
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         prompt: 'consent', // force a refresh token even if this client was authorized before
+        // drive.file only (non-sensitive) — lets the app go to Production with no
+        // OAuth verification. drive.readonly was dropped 2026-08-27: it's a
+        // restricted scope that forced a CASA security assessment, and it was only
+        // used by mirrorAttachmentToBlob (calendar reference images), an accepted
+        // feature loss. Photo backup uses only drive.file.
         scope: [
             'https://www.googleapis.com/auth/drive.file',
-            'https://www.googleapis.com/auth/drive.readonly',
         ],
     });
 
