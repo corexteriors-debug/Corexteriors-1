@@ -994,6 +994,7 @@
                 <button class="tab-btn active" data-tab="overview">📊 Overview</button>
                 <button class="tab-btn" data-tab="leads">💰 Sales</button>
                 <button class="tab-btn" data-tab="salesleads">📋 Leads</button>
+                <button class="tab-btn" data-tab="doorhangers">🚪 Door Hangers</button>
                 <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
                 <button class="tab-btn" data-tab="materials">🧮 Materials</button>
                 <button class="tab-btn" data-tab="labour">👷 Labour</button>
@@ -1148,6 +1149,38 @@
                     <div id="qlLeadsList" style="padding:.5rem 0">
                         <div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Click Refresh or switch to this tab to load</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ========== TAB: DOOR HANGERS ========== -->
+            <div class="tab-content" id="tab-doorhangers">
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title"><h2>🚪 Schedule a Route</h2></div>
+                    <form id="assignmentForm" style="padding:1rem;display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+                        <input type="text" id="dhRepName" placeholder="Rep name" required style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.85rem;grid-column:span 1">
+                        <input type="date" id="dhDate" required style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.85rem">
+                        <input type="text" id="dhArea" placeholder="Area / streets (e.g. Oxford St W, Wharncliffe Rd)" required style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.85rem;grid-column:span 2">
+                        <input type="number" id="dhTarget" placeholder="Target hangers (optional)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.85rem">
+                        <input type="text" id="dhNotes" placeholder="Notes (optional)" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.6rem .85rem;color:#fff;font-size:.85rem">
+                        <button type="submit" style="grid-column:span 2;background:linear-gradient(135deg,#e67e22,#d35400);border:none;color:#fff;font-weight:700;padding:.7rem;border-radius:8px;cursor:pointer">➕ Assign Route</button>
+                    </form>
+                </div>
+
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
+                        <h2>📋 Assignments</h2>
+                        <button onclick="loadAssignmentsAdmin()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
+                    </div>
+                    <div id="assignmentsList" style="padding:.5rem 1rem 1rem"></div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
+                        <h2>📍 Coverage Log</h2>
+                        <button onclick="loadCoverageLog()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
+                    </div>
+                    <p style="padding:0 1rem;font-size:.78rem;color:rgba(255,255,255,.4)">Non-lead outcomes (No Answer, Already Has One, Do Not Solicit, flagged off-route). Successful "Hung" placements appear as 🚪 Door Hanger leads in the Leads tab.</p>
+                    <div id="coverageLogList" style="padding:.5rem 1rem 1rem"></div>
                 </div>
             </div>
 
@@ -1713,8 +1746,93 @@ Tasks:
                 btn.classList.add('active');
                 document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
                 if (btn.dataset.tab === 'salesleads') loadQLLeads();
+                if (btn.dataset.tab === 'doorhangers') { loadAssignmentsAdmin(); loadCoverageLog(); }
             });
         });
+
+        // ---------- DOOR HANGERS: assignments + coverage log ----------
+        document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                repName: document.getElementById('dhRepName').value.trim(),
+                date: document.getElementById('dhDate').value,
+                area: document.getElementById('dhArea').value.trim(),
+                targetCount: document.getElementById('dhTarget').value,
+                notes: document.getElementById('dhNotes').value.trim(),
+            };
+            try {
+                const r = await fetch(`${API_BASE}/assignments`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify(body),
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    toast('Route assigned', 'success');
+                    e.target.reset();
+                    loadAssignmentsAdmin();
+                } else { throw new Error(d.error || 'Failed'); }
+            } catch (err) { toast('Failed to create assignment', 'error'); }
+        });
+
+        async function loadAssignmentsAdmin() {
+            const container = document.getElementById('assignmentsList');
+            try {
+                const r = await fetch(`${API_BASE}/assignments`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                const assignments = (d.assignments || []).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+                if (!assignments.length) { container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:1.5rem">No assignments yet.</div>'; return; }
+                const statusColor = { planned: '#3498db', 'in-progress': '#f1c40f', done: '#2ecc71' };
+                container.innerHTML = `<div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem">` +
+                    assignments.map(a => `
+                        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:.7rem .9rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap">
+                            <div>
+                                <div style="font-weight:700;font-size:.88rem">${esc(a.area)}</div>
+                                <div style="font-size:.75rem;color:rgba(255,255,255,.45)">${esc(a.repName)} &middot; ${esc(a.date)}${a.targetCount ? ' &middot; target ' + a.targetCount : ''}${a.notes ? ' &middot; ' + esc(a.notes) : ''}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:.5rem">
+                                <span style="color:${statusColor[a.status] || '#999'};font-size:.75rem;font-weight:700;text-transform:capitalize">${esc(a.status)}</span>
+                                ${a.status !== 'done' ? `<button onclick="setAssignmentStatus('${a.id}','done')" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:.75rem">Mark Done</button>` : ''}
+                                <button onclick="deleteAssignment('${a.id}')" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:.75rem">Delete</button>
+                            </div>
+                        </div>`).join('') + `</div>`;
+            } catch (err) { container.innerHTML = '<div style="color:#e74c3c;text-align:center;padding:1rem">Failed to load assignments.</div>'; }
+        }
+
+        async function setAssignmentStatus(id, status) {
+            try {
+                const r = await fetch(`${API_BASE}/assignments`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, status }) });
+                const d = await r.json();
+                if (r.ok && d.success) { toast('Updated', 'success'); loadAssignmentsAdmin(); }
+                else throw new Error(d.error);
+            } catch (e) { toast('Failed to update status', 'error'); }
+        }
+
+        async function deleteAssignment(id) {
+            if (!confirm('Delete this assignment?')) return;
+            try {
+                const r = await fetch(`${API_BASE}/assignments`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id }) });
+                const d = await r.json();
+                if (r.ok && d.success) { toast('Deleted', 'success'); loadAssignmentsAdmin(); }
+                else throw new Error(d.error);
+            } catch (e) { toast('Failed to delete', 'error'); }
+        }
+
+        async function loadCoverageLog() {
+            const container = document.getElementById('coverageLogList');
+            try {
+                const r = await fetch(`${API_BASE}/door-hangers`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                const entries = (d.entries || []).slice(0, 100);
+                if (!entries.length) { container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:1.5rem">No coverage log entries yet.</div>'; return; }
+                const statusColor = { 'No Answer': '#f1c40f', 'Already Has One': '#7f8c8d', 'No Safe Access': '#e67e22', 'Do Not Solicit': '#e74c3c' };
+                container.innerHTML = `<div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">` +
+                    entries.map(en => `
+                        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.55rem .8rem;display:flex;justify-content:space-between;gap:.5rem;font-size:.8rem">
+                            <span>${esc(en.address || `${en.lat?.toFixed(5)}, ${en.lng?.toFixed(5)}`)}${en.flagged ? ' <span style="color:#e74c3c">(off-route: ' + esc(en.flagReason || '') + ')</span>' : ''}</span>
+                            <span style="color:${statusColor[en.status] || '#999'};white-space:nowrap">${esc(en.status)} &middot; ${esc(en.repName)}</span>
+                        </div>`).join('') + `</div>`;
+            } catch (err) { container.innerHTML = '<div style="color:#e74c3c;text-align:center;padding:1rem">Failed to load coverage log.</div>'; }
+        }
 
         // LOAD LEADS
         async function loadLeads() {
@@ -2297,7 +2415,7 @@ Tasks:
                     return `<div id="qlrow-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.9rem 1rem">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:.5rem">
                             <div>
-                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}${lead.source === 'Facebook Ads' ? '<span class="fb-source-badge">📘 Facebook Ads</span>' : ''}${(lead.source || '').startsWith('Website') ? '<span class="web-source-badge">🌐 ' + esc(lead.source) + '</span>' : ''}</div>
+                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}${lead.source === 'Facebook Ads' ? '<span class="fb-source-badge">📘 Facebook Ads</span>' : ''}${(lead.source || '').startsWith('Website') ? '<span class="web-source-badge">🌐 ' + esc(lead.source) + '</span>' : ''}${lead.source === 'Door Hanger' ? '<span class="web-source-badge" style="background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.3);color:#9b59b6">🚪 Door Hanger</span>' : ''}</div>
                                 <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address)}${lead.company ? ' &middot; ' + esc(lead.company) : ''}</div>
                                 ${lead.phone || lead.email ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(lead.phone||'') + (lead.phone&&lead.email?' &middot; ':'') + esc(lead.email||'') + '</div>' : ''}
                                 ${lead.campaign ? '<div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:2px">Campaign: ' + esc(lead.campaign) + '</div>' : ''}

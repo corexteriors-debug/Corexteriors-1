@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Door Hangers | Core Exteriors</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#e67e22">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0 }
+        html { overflow-x: hidden; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a1628, #1a2a4a, #0d1f3c);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        .wrapper { min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* LOGIN */
+        .portal-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem }
+        .login-card {
+            background: rgba(255,255,255,.05); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,.1); border-radius: 20px;
+            padding: 2.5rem; max-width: 420px; width: 100%; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3)
+        }
+        .login-card h1 { font-size: 1.6rem; margin-bottom: .3rem }
+        .login-card .subtitle { color: rgba(255,255,255,.5); margin-bottom: 1.5rem; font-size: .9rem }
+        .login-card input {
+            width: 100%; padding: 12px 14px; margin-bottom: .8rem; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: #fff; font-size: .95rem;
+        }
+        .login-card input::placeholder { color: rgba(255,255,255,.35) }
+        .login-btn, .btn {
+            width: 100%; padding: 13px; border-radius: 10px; border: none;
+            background: linear-gradient(135deg,#e67e22,#d35400); color: #fff; font-weight: 700;
+            font-size: .95rem; cursor: pointer; font-family: inherit;
+        }
+        .login-error { color: #e74c3c; font-size: .85rem; margin-top: .8rem; display: none }
+
+        /* MAIN APP */
+        .app-header {
+            padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+        .app-header h1 { font-size: 1.05rem }
+        .app-header .rep { font-size: .78rem; color: rgba(255,255,255,.5) }
+        .logout-link { color: rgba(255,255,255,.4); font-size: .8rem; text-decoration: none; cursor: pointer }
+
+        .assignment-banner {
+            margin: .9rem 1.2rem; padding: .9rem 1rem; border-radius: 12px;
+            background: rgba(230,126,34,.12); border: 1px solid rgba(230,126,34,.3); font-size: .85rem;
+        }
+        .assignment-banner b { display: block; margin-bottom: .2rem }
+
+        .panel { padding: 1.2rem; flex: 1; display: flex; flex-direction: column; }
+        .status-card {
+            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+            border-radius: 16px; padding: 1.5rem; text-align: center; margin-bottom: 1rem;
+        }
+        .status-card .big { font-size: 2.2rem; font-weight: 800; margin-bottom: .2rem }
+        .status-card .label { color: rgba(255,255,255,.5); font-size: .82rem }
+        .pulse-dot {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #2ecc71;
+            margin-right: 6px; animation: pulse 1.4s infinite;
+        }
+        @keyframes pulse { 0%{opacity:1} 50%{opacity:.3} 100%{opacity:1} }
+
+        #map { width: 100%; height: 62vh; border-radius: 14px; margin-bottom: 1rem; background: #14213d; }
+        .legend { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; font-size: .75rem; }
+        .legend span { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,.6) }
+        .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block }
+
+        .btn-danger { background: linear-gradient(135deg,#e74c3c,#c0392b) }
+        .btn-outline { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15) }
+        .btn-row { display: flex; gap: .6rem; margin-top: .5rem }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(20,30,50,.95); border: 1px solid rgba(255,255,255,.15);
+            padding: .8rem 1.2rem; border-radius: 12px; font-size: .85rem; z-index: 999; display: none;
+            max-width: 90%; text-align: center;
+        }
+
+        .hint { font-size: .78rem; color: rgba(255,255,255,.4); text-align: center; margin-top: .4rem }
+    </style>
+</head>
+
+<body>
+    <!-- LOGIN -->
+    <div class="portal-wrapper" id="loginScreen">
+        <div class="login-card">
+            <h1>🚪 Door Hangers</h1>
+            <p class="subtitle">Core Exteriors — Field Rep Access</p>
+            <form id="loginForm">
+                <input type="text" id="repName" placeholder="Your Name" autocomplete="name" required>
+                <input type="password" id="salesPassword" placeholder="Sales password" autocomplete="off" required>
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
+            <p class="login-error" id="loginError">Invalid password. Please try again.</p>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div class="wrapper" id="appScreen" style="display:none">
+        <div class="app-header">
+            <div>
+                <h1>🚪 Door Hangers</h1>
+                <div class="rep" id="repLabel"></div>
+            </div>
+            <span class="logout-link" id="logoutBtn">Sign Out</span>
+        </div>
+
+        <div class="assignment-banner" id="assignmentBanner" style="display:none">
+            <b id="assignmentArea"></b>
+            <span id="assignmentMeta"></span>
+        </div>
+
+        <!-- PHASE A: TRACKING -->
+        <div class="panel" id="phaseA">
+            <div class="status-card">
+                <div class="big" id="pointCount">0</div>
+                <div class="label" id="trackingLabel">Not tracking</div>
+            </div>
+            <div id="startControls">
+                <button class="btn" id="startBtn">▶️ Start Route</button>
+                <p class="hint">Keep this page open and your screen on while you walk — tracking pauses if the phone locks or you switch apps.</p>
+            </div>
+            <div id="activeControls" style="display:none">
+                <div style="text-align:center;margin-bottom:.8rem">
+                    <span class="pulse-dot"></span><span style="font-size:.85rem;color:rgba(255,255,255,.6)">Recording your route…</span>
+                </div>
+                <button class="btn btn-danger" id="endBtn">⏹️ End Route</button>
+            </div>
+        </div>
+
+        <!-- PHASE B: BATCH CONFIRM -->
+        <div class="panel" id="phaseB" style="display:none">
+            <div class="legend">
+                <span><i style="background:#95a5a6"></i>Unmarked</span>
+                <span><i style="background:#2ecc71"></i>Hung</span>
+                <span><i style="background:#f1c40f"></i>No Answer</span>
+                <span><i style="background:#7f8c8d"></i>Already Has One</span>
+                <span><i style="background:#e74c3c"></i>Do Not Solicit</span>
+            </div>
+            <div id="map"></div>
+            <p class="hint">Tap a stop along your route to cycle its status, then submit. Only stops you mark get recorded.</p>
+            <div class="btn-row">
+                <button class="btn btn-outline" id="cancelSubmitBtn">Back</button>
+                <button class="btn" id="submitBtn">✅ Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Google Maps JS API — replace GOOGLE_MAPS_JS_KEY with the project's browser-restricted key. -->
+    <script>
+        window.GOOGLE_MAPS_JS_KEY = 'GOOGLE_MAPS_JS_KEY';
+    </script>
+    <script>
+        const API_BASE = '/api';
+        let authToken = localStorage.getItem('dh_sales_token') || '';
+        let repName = localStorage.getItem('dh_sales_rep_name') || '';
+        let currentRoute = null;   // { id, points }
+        let watchId = null;
+        let pointBuffer = [];
+        let flushTimer = null;
+        let wakeLock = null;
+        let map, markers = [];
+        const STOP_CYCLE = [null, 'Hung', 'No Answer', 'Already Has One', 'Do Not Solicit'];
+        const STOP_COLORS = { null: '#95a5a6', 'Hung': '#2ecc71', 'No Answer': '#f1c40f', 'Already Has One': '#7f8c8d', 'Do Not Solicit': '#e74c3c' };
+
+        function toast(msg, type) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            t.style.borderColor = type === 'error' ? 'rgba(231,76,60,.5)' : 'rgba(46,204,113,.4)';
+            clearTimeout(t._h);
+            t._h = setTimeout(() => t.style.display = 'none', 3500);
+        }
+
+        // ---------- AUTH ----------
+        async function checkAuth() {
+            if (!authToken) return showLogin();
+            try {
+                const r = await fetch(`${API_BASE}/auth`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                if (!r.ok) return showLogin();
+                const d = await r.json();
+                repName = d.repName || repName;
+                showApp();
+            } catch (e) { showLogin(); }
+        }
+
+        function showLogin() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('appScreen').style.display = 'none';
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'flex';
+            document.getElementById('repLabel').textContent = repName;
+            loadAssignment();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('repName').value.trim();
+            const pw = document.getElementById('salesPassword').value;
+            try {
+                const r = await fetch(`${API_BASE}/auth`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw, role: 'sales', repName: name }),
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    authToken = d.token; repName = name;
+                    localStorage.setItem('dh_sales_token', authToken);
+                    localStorage.setItem('dh_sales_rep_name', repName);
+                    showApp();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            } catch (e) {
+                document.getElementById('loginError').textContent = 'Network error. Try again.';
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            authToken = ''; repName = '';
+            localStorage.removeItem('dh_sales_token');
+            localStorage.removeItem('dh_sales_rep_name');
+            location.reload();
+        });
+
+        // ---------- TODAY'S ASSIGNMENT ----------
+        let todaysAssignment = null;
+        async function loadAssignment() {
+            try {
+                const r = await fetch(`${API_BASE}/assignments`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                const today = new Date().toISOString().slice(0, 10);
+                todaysAssignment = (d.assignments || []).find(a => a.date === today && a.status !== 'done') || null;
+                if (todaysAssignment) {
+                    document.getElementById('assignmentBanner').style.display = 'block';
+                    document.getElementById('assignmentArea').textContent = '📍 Today: ' + todaysAssignment.area;
+                    document.getElementById('assignmentMeta').textContent = todaysAssignment.notes || (todaysAssignment.targetCount ? `Target: ${todaysAssignment.targetCount} hangers` : '');
+                }
+            } catch (e) { /* no assignment, not fatal */ }
+        }
+
+        // ---------- PHASE A: START/TRACK/END ----------
+        document.getElementById('startBtn').addEventListener('click', startRoute);
+        document.getElementById('endBtn').addEventListener('click', endRoute);
+
+        async function startRoute() {
+            if (!navigator.geolocation) return toast('Geolocation not supported on this device/browser.', 'error');
+            try {
+                const r = await fetch(`${API_BASE}/routes`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ action: 'start', assignmentId: todaysAssignment ? todaysAssignment.id : null }),
+                });
+                const d = await r.json();
+                if (!r.ok || !d.success) return toast(d.error || 'Could not start route', 'error');
+                currentRoute = d.route;
+                pointBuffer = [];
+
+                if ('wakeLock' in navigator) {
+                    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { /* not fatal */ }
+                }
+
+                watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
+                    enableHighAccuracy: true, maximumAge: 5000, timeout: 15000,
+                });
+                flushTimer = setInterval(flushPoints, 30000);
+
+                document.getElementById('startControls').style.display = 'none';
+                document.getElementById('activeControls').style.display = 'block';
+                document.getElementById('trackingLabel').textContent = 'Tracking active';
+                toast('Route started — go place hangers!', 'success');
+            } catch (e) {
+                toast('Network error starting route.', 'error');
+            }
+        }
+
+        function onPosition(pos) {
+            pointBuffer.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, ts: Date.now() });
+            document.getElementById('pointCount').textContent = (currentRoute.pointCount || 0) + pointBuffer.length;
+        }
+
+        function onPositionError(err) {
+            console.error('Geolocation error:', err);
+            toast('Location permission needed to track your route.', 'error');
+        }
+
+        async function flushPoints() {
+            if (!currentRoute || !pointBuffer.length) return;
+            const toSend = pointBuffer.splice(0, pointBuffer.length);
+            try {
+                const r = await fetch(`${API_BASE}/routes`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ action: 'append', routeId: currentRoute.id, points: toSend }),
+                });
+                const d = await r.json();
+                if (r.ok && d.success) currentRoute.pointCount = d.pointCount;
+                else pointBuffer.unshift(...toSend); // retry next flush
+            } catch (e) {
+                pointBuffer.unshift(...toSend); // retry next flush
+            }
+        }
+
+        async function endRoute() {
+            if (watchId != null) navigator.geolocation.clearWatch(watchId);
+            clearInterval(flushTimer);
+            if (wakeLock) { try { await wakeLock.release(); } catch (e) {} wakeLock = null; }
+            await flushPoints();
+
+            try {
+                const r = await fetch(`${API_BASE}/routes`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ action: 'end', routeId: currentRoute.id }),
+                });
+                const d = await r.json();
+                if (!r.ok || !d.success) return toast(d.error || 'Could not end route', 'error');
+                await loadFullRoute(currentRoute.id);
+            } catch (e) {
+                toast('Network error ending route.', 'error');
+            }
+        }
+
+        // ---------- PHASE B: MAP + BATCH CONFIRM ----------
+        async function loadFullRoute(routeId) {
+            const r = await fetch(`${API_BASE}/routes?id=${routeId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+            const d = await r.json();
+            if (!r.ok || !d.success) return toast('Could not load route for confirmation.', 'error');
+            currentRoute = d.route;
+
+            document.getElementById('phaseA').style.display = 'none';
+            document.getElementById('phaseB').style.display = 'flex';
+            document.getElementById('phaseB').style.flexDirection = 'column';
+            ensureMapLoaded(() => renderRouteMap(currentRoute));
+        }
+
+        function ensureMapLoaded(cb) {
+            if (window.google && window.google.maps) return cb();
+            const s = document.createElement('script');
+            s.src = `https://maps.googleapis.com/maps/api/js?key=${window.GOOGLE_MAPS_JS_KEY}`;
+            s.onload = cb;
+            s.onerror = () => toast('Could not load Google Maps. Check the API key.', 'error');
+            document.head.appendChild(s);
+        }
+
+        // Cluster the raw breadcrumb points into candidate "stops" roughly
+        // one house-frontage apart, so the rep can tap real houses on their
+        // own path without typing any addresses.
+        function clusterStops(points, minMeters) {
+            if (!points.length) return [];
+            const R = 6371000;
+            const dist = (a, b) => {
+                const dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180;
+                const la1 = a.lat * Math.PI / 180, la2 = b.lat * Math.PI / 180;
+                const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
+                return 2 * R * Math.asin(Math.sqrt(h));
+            };
+            const stops = [points[0]];
+            for (const p of points) {
+                if (dist(stops[stops.length - 1], p) >= minMeters) stops.push(p);
+            }
+            return stops;
+        }
+
+        function renderRouteMap(route) {
+            const points = route.points || [];
+            if (!points.length) {
+                toast('No GPS points were recorded for this route.', 'error');
+                return;
+            }
+            const center = points[Math.floor(points.length / 2)];
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: center.lat, lng: center.lng }, zoom: 19, mapTypeId: 'roadmap',
+            });
+
+            new google.maps.Polyline({
+                path: points.map(p => ({ lat: p.lat, lng: p.lng })),
+                strokeColor: '#e67e22', strokeOpacity: 0.9, strokeWeight: 4, map,
+            });
+
+            const stops = clusterStops(points, 12);
+            markers = stops.map(p => {
+                const state = { status: null };
+                const marker = new google.maps.Marker({
+                    position: { lat: p.lat, lng: p.lng }, map,
+                    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: STOP_COLORS[null], fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+                });
+                marker.addListener('click', () => {
+                    const idx = STOP_CYCLE.indexOf(state.status);
+                    state.status = STOP_CYCLE[(idx + 1) % STOP_CYCLE.length];
+                    marker.setIcon({ path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: STOP_COLORS[state.status], fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 });
+                });
+                return { marker, lat: p.lat, lng: p.lng, state };
+            });
+        }
+
+        document.getElementById('cancelSubmitBtn').addEventListener('click', () => {
+            document.getElementById('phaseB').style.display = 'none';
+            document.getElementById('phaseA').style.display = 'flex';
+            document.getElementById('startControls').style.display = 'block';
+            document.getElementById('activeControls').style.display = 'none';
+            document.getElementById('trackingLabel').textContent = 'Not tracking';
+            document.getElementById('pointCount').textContent = '0';
+            currentRoute = null;
+        });
+
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            const confirmedStops = markers
+                .filter(m => m.state.status)
+                .map(m => ({ lat: m.lat, lng: m.lng, status: m.state.status }));
+
+            if (!confirmedStops.length) return toast('Mark at least one stop before submitting.', 'error');
+
+            try {
+                const r = await fetch(`${API_BASE}/door-hangers`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ routeId: currentRoute.id, confirmedStops }),
+                });
+                const d = await r.json();
+                if (!r.ok || !d.success) return toast(d.error || 'Submit failed', 'error');
+                const created = d.results.filter(x => x.outcome === 'lead_created').length;
+                const flagged = d.results.filter(x => x.outcome === 'flagged_off_route').length;
+                toast(`Submitted: ${created} new leads${flagged ? `, ${flagged} flagged off-route` : ''}.`, 'success');
+                document.getElementById('cancelSubmitBtn').click();
+            } catch (e) {
+                toast('Network error submitting.', 'error');
+            }
+        });
+
+        checkAuth();
+    </script>
+</body>
+
+</html>
