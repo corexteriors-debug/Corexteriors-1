@@ -46,6 +46,13 @@
             font-size: .95rem; cursor: pointer; font-family: inherit;
         }
         .login-error { color: #e74c3c; font-size: .85rem; margin-top: .8rem; display: none }
+        .role-toggle { display: flex; gap: .5rem; margin-bottom: 1.2rem }
+        .role-btn {
+            flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15);
+            background: rgba(255,255,255,.05); color: rgba(255,255,255,.6); font-family: inherit;
+            font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .15s;
+        }
+        .role-btn.active { background: rgba(230,126,34,.18); border-color: rgba(230,126,34,.5); color: #fff }
 
         /* MAIN APP */
         .app-header {
@@ -100,7 +107,11 @@
     <div class="portal-wrapper" id="loginScreen">
         <div class="login-card">
             <h1>🚪 Door Hangers</h1>
-            <p class="subtitle">Core Exteriors — Field Rep Access</p>
+            <p class="subtitle">Core Exteriors — Field Access</p>
+            <div class="role-toggle">
+                <button type="button" class="role-btn active" id="roleSalesBtn" onclick="setLoginRole('sales')">👷 Sales Rep</button>
+                <button type="button" class="role-btn" id="roleManagerBtn" onclick="setLoginRole('manager')">🔑 Manager</button>
+            </div>
             <form id="loginForm">
                 <input type="text" id="repUsername" placeholder="Username" autocomplete="username" required>
                 <input type="password" id="repPassword" placeholder="Password" autocomplete="current-password" required>
@@ -255,10 +266,48 @@
             }
         }
 
+        // Sales reps use this page directly; Managers just need a fast way in
+        // to the admin dashboard without a separate URL to remember. This
+        // toggle only changes what the login form does — it doesn't duplicate
+        // any manager tooling here, that all still lives in admin.html.
+        let loginRole = 'sales';
+        function setLoginRole(role) {
+            loginRole = role;
+            document.getElementById('roleSalesBtn').classList.toggle('active', role === 'sales');
+            document.getElementById('roleManagerBtn').classList.toggle('active', role === 'manager');
+            const usernameField = document.getElementById('repUsername');
+            usernameField.style.display = role === 'sales' ? 'block' : 'none';
+            usernameField.required = role === 'sales';
+            document.getElementById('repPassword').placeholder = role === 'sales' ? 'Password' : 'Manager password';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('repUsername').value.trim();
             const pw = document.getElementById('repPassword').value;
+
+            if (loginRole === 'manager') {
+                try {
+                    const r = await fetch(`${API_BASE}/auth`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password: pw, role: 'admin' }),
+                    });
+                    const d = await r.json();
+                    if (r.ok && d.success) {
+                        localStorage.setItem('admin_token', d.token);
+                        window.location.href = 'admin.html';
+                    } else {
+                        document.getElementById('loginError').textContent = 'Invalid manager password.';
+                        document.getElementById('loginError').style.display = 'block';
+                    }
+                } catch (e) {
+                    document.getElementById('loginError').textContent = 'Network error. Try again.';
+                    document.getElementById('loginError').style.display = 'block';
+                }
+                return;
+            }
+
+            const username = document.getElementById('repUsername').value.trim();
             try {
                 const r = await fetch(`${API_BASE}/auth`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -270,6 +319,7 @@
                     localStorage.setItem('dh_sales_token', authToken);
                     showApp();
                 } else {
+                    document.getElementById('loginError').textContent = 'Invalid username or password.';
                     document.getElementById('loginError').style.display = 'block';
                 }
             } catch (e) {
