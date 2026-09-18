@@ -41,21 +41,16 @@ module.exports = async function handler(req, res) {
                 createdAt: new Date().toISOString(),
             };
             await kv.set(`assignment:${assignment.id}`, assignment);
-            const ids = (await kv.get('assignment_ids')) || [];
-            ids.unshift(assignment.id);
-            await kv.set('assignment_ids', ids);
+            await kv.lpush('assignment_ids', assignment.id);
             return res.status(201).json({ success: true, assignment });
         }
 
         // GET — admin sees all; sales sees their own
         if (req.method === 'GET') {
-            const ids = (await kv.get('assignment_ids')) || [];
-            const assignments = [];
-            for (const id of ids) {
-                const a = await kv.get(`assignment:${id}`);
-                if (!a) continue;
-                if (tokenData.role === 'admin' || a.repName === tokenData.repName) assignments.push(a);
-            }
+            const ids = await kv.lrange('assignment_ids', 0, -1);
+            if (!ids.length) return res.status(200).json({ success: true, assignments: [] });
+            const records = await kv.mget(...ids.map(id => `assignment:${id}`));
+            const assignments = records.filter(a => a && (tokenData.role === 'admin' || a.repName === tokenData.repName));
             return res.status(200).json({ success: true, assignments });
         }
 
@@ -87,8 +82,7 @@ module.exports = async function handler(req, res) {
             const { id } = req.body;
             if (!id) return res.status(400).json({ error: 'ID required' });
             await kv.del(`assignment:${id}`);
-            const ids = ((await kv.get('assignment_ids')) || []).filter(i => i !== id);
-            await kv.set('assignment_ids', ids);
+            await kv.lrem('assignment_ids', 0, id);
             return res.status(200).json({ success: true });
         }
 

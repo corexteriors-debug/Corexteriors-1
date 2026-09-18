@@ -1174,13 +1174,22 @@
                     <div id="assignmentsList" style="padding:.5rem 1rem 1rem"></div>
                 </div>
 
-                <div class="table-card">
+                <div class="table-card" style="margin-bottom:1.5rem">
                     <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
                         <h2>📍 Coverage Log</h2>
                         <button onclick="loadCoverageLog()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
                     </div>
-                    <p style="padding:0 1rem;font-size:.78rem;color:rgba(255,255,255,.4)">Non-lead outcomes (No Answer, Already Has One, Do Not Solicit, flagged off-route). Successful "Hung" placements appear as 🚪 Door Hanger leads in the Leads tab.</p>
+                    <p style="padding:0 1rem;font-size:.78rem;color:rgba(255,255,255,.4)">Non-lead outcomes (No Answer, Already Has One, Do Not Solicit, flagged off-route/insufficient dwell). Successful "Hung" placements appear as 🚪 Door Hanger leads in the Leads tab.</p>
                     <div id="coverageLogList" style="padding:.5rem 1rem 1rem"></div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center">
+                        <h2>🚫 Do Not Solicit List</h2>
+                        <button onclick="loadDnsList()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
+                    </div>
+                    <p style="padding:0 1rem;font-size:.78rem;color:rgba(255,255,255,.4)">Addresses reps have flagged as do-not-solicit. These block future "Hung" placements at the same address. Remove an entry here only if it was flagged in error.</p>
+                    <div id="dnsList" style="padding:.5rem 1rem 1rem"></div>
                 </div>
             </div>
 
@@ -1746,7 +1755,7 @@ Tasks:
                 btn.classList.add('active');
                 document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
                 if (btn.dataset.tab === 'salesleads') loadQLLeads();
-                if (btn.dataset.tab === 'doorhangers') { loadAssignmentsAdmin(); loadCoverageLog(); }
+                if (btn.dataset.tab === 'doorhangers') { loadAssignmentsAdmin(); loadCoverageLog(); loadDnsList(); }
             });
         });
 
@@ -1825,13 +1834,40 @@ Tasks:
                 const entries = (d.entries || []).slice(0, 100);
                 if (!entries.length) { container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:1.5rem">No coverage log entries yet.</div>'; return; }
                 const statusColor = { 'No Answer': '#f1c40f', 'Already Has One': '#7f8c8d', 'No Safe Access': '#e67e22', 'Do Not Solicit': '#e74c3c' };
+                entries.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
                 container.innerHTML = `<div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">` +
-                    entries.map(en => `
+                    entries.slice(0, 200).map(en => `
                         <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.55rem .8rem;display:flex;justify-content:space-between;gap:.5rem;font-size:.8rem">
-                            <span>${esc(en.address || `${en.lat?.toFixed(5)}, ${en.lng?.toFixed(5)}`)}${en.flagged ? ' <span style="color:#e74c3c">(off-route: ' + esc(en.flagReason || '') + ')</span>' : ''}</span>
+                            <span>${esc(en.address || `${en.lat?.toFixed(5)}, ${en.lng?.toFixed(5)}`)}${en.flagged ? ' <span style="color:#e74c3c">(flagged: ' + esc(en.flagReason || '') + ')</span>' : ''}${en.blocked ? ' <span style="color:#e74c3c">(blocked — on DNS list)</span>' : ''}</span>
                             <span style="color:${statusColor[en.status] || '#999'};white-space:nowrap">${esc(en.status)} &middot; ${esc(en.repName)}</span>
                         </div>`).join('') + `</div>`;
             } catch (err) { container.innerHTML = '<div style="color:#e74c3c;text-align:center;padding:1rem">Failed to load coverage log.</div>'; }
+        }
+
+        async function loadDnsList() {
+            const container = document.getElementById('dnsList');
+            try {
+                const r = await fetch(`${API_BASE}/door-hangers?type=dns`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                const entries = (d.entries || []).sort((a, b) => new Date(b.flaggedAt || 0) - new Date(a.flaggedAt || 0));
+                if (!entries.length) { container.innerHTML = '<div style="color:rgba(255,255,255,.3);text-align:center;padding:1.5rem">No do-not-solicit entries yet.</div>'; return; }
+                container.innerHTML = `<div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">` +
+                    entries.map(en => `
+                        <div style="background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.2);border-radius:8px;padding:.55rem .8rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem;font-size:.8rem">
+                            <span>${esc(en.address || `${en.lat?.toFixed(5)}, ${en.lng?.toFixed(5)}`)}<br><span style="font-size:.72rem;color:rgba(255,255,255,.4)">Flagged by ${esc(en.flaggedBy)} on ${new Date(en.flaggedAt).toLocaleDateString('en-CA')}</span></span>
+                            <button onclick="removeDns('${en.id}')" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#e74c3c;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:.75rem;white-space:nowrap">Remove</button>
+                        </div>`).join('') + `</div>`;
+            } catch (err) { container.innerHTML = '<div style="color:#e74c3c;text-align:center;padding:1rem">Failed to load do-not-solicit list.</div>'; }
+        }
+
+        async function removeDns(id) {
+            if (!confirm('Remove this address from the do-not-solicit list? Future routes will be able to solicit it again.')) return;
+            try {
+                const r = await fetch(`${API_BASE}/door-hangers`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id }) });
+                const d = await r.json();
+                if (r.ok && d.success) { toast('Removed', 'success'); loadDnsList(); }
+                else throw new Error(d.error);
+            } catch (e) { toast('Failed to remove', 'error'); }
         }
 
         // LOAD LEADS
@@ -2428,7 +2464,7 @@ Tasks:
                         </div>
                         ${svcList ? '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.4rem">' + esc(svcList) + '</div>' : ''}
                         ${visitStr ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:.4rem">Service date: ' + visitStr + '</div>' : ''}
-                        ${lead.notes ? '<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.6rem">' + esc(lead.notes) + '</div>' : ''}
+                        ${lead.notes ? '<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.6rem;white-space:pre-line">' + esc(lead.notes) + '</div>' : ''}
                         <div class="dropdown" style="margin-bottom:.6rem">
                             <button class="badge callbadge-${callStatusKey}" onclick="toggleDrop('callstatus-${lead.id}')">📞 ${esc(callStatus)}</button>
                             <div class="dropdown-menu" id="callstatus-${lead.id}">

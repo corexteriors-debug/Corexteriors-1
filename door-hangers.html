@@ -211,6 +211,48 @@
             document.getElementById('appScreen').style.display = 'flex';
             document.getElementById('repLabel').textContent = repName;
             loadAssignment();
+            resumeIfNeeded();
+        }
+
+        // ---------- CRASH/RELOAD RESILIENCE ----------
+        // A phone locking, an app switch, or a tab reload shouldn't cost a rep
+        // an entire walked route. We persist just enough (which route, which
+        // phase, any un-flushed points) to pick back up where they left off.
+        function saveDhState(state) {
+            if (state) localStorage.setItem('dh_state', JSON.stringify(state));
+            else localStorage.removeItem('dh_state');
+        }
+        function loadDhState() {
+            try { return JSON.parse(localStorage.getItem('dh_state') || 'null'); } catch (e) { return null; }
+        }
+        function savePointBuffer() {
+            localStorage.setItem('dh_point_buffer', JSON.stringify(pointBuffer));
+        }
+        function loadPointBuffer() {
+            try { return JSON.parse(localStorage.getItem('dh_point_buffer') || '[]'); } catch (e) { return []; }
+        }
+
+        async function resumeIfNeeded() {
+            const state = loadDhState();
+            if (!state || !state.routeId) return;
+
+            if (state.phase === 'confirming') {
+                toast('Resuming your last route — pick up where you left off.', 'success');
+                await loadFullRoute(state.routeId, { skipEnd: true });
+                return;
+            }
+
+            if (state.phase === 'tracking') {
+                try {
+                    const r = await fetch(`${API_BASE}/routes?id=${state.routeId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                    const d = await r.json();
+                    if (!r.ok || !d.success || d.route.status !== 'active') { saveDhState(null); return; }
+                    currentRoute = d.route;
+                    pointBuffer = loadPointBuffer();
+                    resumeTracking();
+                    toast('Resumed tracking your in-progress route.', 'success');
+                } catch (e) { /* leave state for next resume attempt */ }
+            }
         }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -266,36 +308,69 @@
 
         async function startRoute() {
             if (!navigator.geolocation) return toast('Geolocation not supported on this device/browser.', 'error');
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn.disabled) return; // guard against double-tap creating two routes
+            startBtn.disabled = true;
             try {
                 const r = await fetch(`${API_BASE}/routes`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ action: 'start', assignmentId: todaysAssignment ? todaysAssignment.id : null }),
                 });
                 const d = await r.json();
-                if (!r.ok || !d.success) return toast(d.error || 'Could not start route', 'error');
+                if (!r.ok || !d.success) { toast(d.error || 'Could not start route', 'error'); return; }
                 currentRoute = d.route;
                 pointBuffer = [];
-
-                if ('wakeLock' in navigator) {
-                    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { /* not fatal */ }
-                }
-
-                watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
-                    enableHighAccuracy: true, maximumAge: 5000, timeout: 15000,
-                });
-                flushTimer = setInterval(flushPoints, 30000);
-
-                document.getElementById('startControls').style.display = 'none';
-                document.getElementById('activeControls').style.display = 'block';
-                document.getElementById('trackingLabel').textContent = 'Tracking active';
+                saveDhState({ routeId: currentRoute.id, phase: 'tracking' });
+                resumeTracking();
                 toast('Route started — go place hangers!', 'success');
             } catch (e) {
                 toast('Network error starting route.', 'error');
+            } finally {
+                startBtn.disabled = false;
             }
         }
 
+        // Wires up the actual GPS watch + flush timer + UI state. Used both by
+        // a fresh Start Route tap and by resumeIfNeeded() after a reload.
+        function resumeTracking() {
+            if (watchId != null) navigator.geolocation.clearWatch(watchId);
+            if (flushTimer) clearInterval(flushTimer);
+
+            requestWakeLock();
+            watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
+                enableHighAccuracy: true, maximumAge: 5000, timeout: 15000,
+            });
+            flushTimer = setInterval(flushPoints, 30000);
+
+            document.getElementById('startControls').style.display = 'none';
+            document.getElementById('activeControls').style.display = 'block';
+            document.getElementById('trackingLabel').textContent = 'Tracking active';
+            document.getElementById('pointCount').textContent = (currentRoute.pointCount || 0) + pointBuffer.length;
+        }
+
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) return;
+            try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { /* not fatal — see visibilitychange reacquire */ }
+        }
+
+        // iOS/most mobile browsers release the wake lock (and can throttle
+        // watchPosition) when the tab is backgrounded. Re-request the lock and
+        // flush any buffered points as soon as the rep comes back to the tab,
+        // instead of leaving tracking silently degraded with no indication.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                flushPoints();
+            } else if (document.visibilityState === 'visible' && currentRoute && watchId != null) {
+                requestWakeLock();
+            }
+        });
+
         function onPosition(pos) {
-            pointBuffer.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, ts: Date.now() });
+            pointBuffer.push({
+                lat: pos.coords.latitude, lng: pos.coords.longitude, ts: Date.now(),
+                accuracy: pos.coords.accuracy,
+            });
+            savePointBuffer();
             document.getElementById('pointCount').textContent = (currentRoute.pointCount || 0) + pointBuffer.length;
         }
 
@@ -307,6 +382,7 @@
         async function flushPoints() {
             if (!currentRoute || !pointBuffer.length) return;
             const toSend = pointBuffer.splice(0, pointBuffer.length);
+            savePointBuffer();
             try {
                 const r = await fetch(`${API_BASE}/routes`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
@@ -314,28 +390,36 @@
                 });
                 const d = await r.json();
                 if (r.ok && d.success) currentRoute.pointCount = d.pointCount;
-                else pointBuffer.unshift(...toSend); // retry next flush
+                else { pointBuffer.unshift(...toSend); savePointBuffer(); } // retry next flush
             } catch (e) {
-                pointBuffer.unshift(...toSend); // retry next flush
+                pointBuffer.unshift(...toSend); savePointBuffer(); // retry next flush
             }
         }
 
         async function endRoute() {
-            if (watchId != null) navigator.geolocation.clearWatch(watchId);
-            clearInterval(flushTimer);
-            if (wakeLock) { try { await wakeLock.release(); } catch (e) {} wakeLock = null; }
-            await flushPoints();
-
+            const endBtn = document.getElementById('endBtn');
+            if (endBtn.disabled) return; // guard against double-tap
+            endBtn.disabled = true;
             try {
+                if (watchId != null) navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                clearInterval(flushTimer);
+                if (wakeLock) { try { await wakeLock.release(); } catch (e) {} wakeLock = null; }
+                await flushPoints();
+
                 const r = await fetch(`${API_BASE}/routes`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ action: 'end', routeId: currentRoute.id }),
                 });
                 const d = await r.json();
-                if (!r.ok || !d.success) return toast(d.error || 'Could not end route', 'error');
+                if (!r.ok || !d.success) { toast(d.error || 'Could not end route', 'error'); return; }
+                saveDhState({ routeId: currentRoute.id, phase: 'confirming' });
+                localStorage.removeItem('dh_point_buffer');
                 await loadFullRoute(currentRoute.id);
             } catch (e) {
                 toast('Network error ending route.', 'error');
+            } finally {
+                endBtn.disabled = false;
             }
         }
 
@@ -357,7 +441,11 @@
             const s = document.createElement('script');
             s.src = `https://maps.googleapis.com/maps/api/js?key=${window.GOOGLE_MAPS_JS_KEY}`;
             s.onload = cb;
-            s.onerror = () => toast('Could not load Google Maps. Check the API key.', 'error');
+            s.onerror = () => {
+                // A toast fades away and leaves a blank map with no explanation —
+                // this failure needs to stay visible since the rep can't proceed at all.
+                document.getElementById('map').innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:1.5rem;color:#e74c3c;font-size:.9rem">⚠️ Map failed to load.<br>Your route is saved — contact your manager, the Maps setup needs fixing before you can confirm stops.</div>';
+            };
             document.head.appendChild(s);
         }
 
@@ -420,28 +508,39 @@
             document.getElementById('trackingLabel').textContent = 'Not tracking';
             document.getElementById('pointCount').textContent = '0';
             currentRoute = null;
+            saveDhState(null);
         });
 
         document.getElementById('submitBtn').addEventListener('click', async () => {
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn.disabled) return;
             const confirmedStops = markers
                 .filter(m => m.state.status)
                 .map(m => ({ lat: m.lat, lng: m.lng, status: m.state.status }));
 
             if (!confirmedStops.length) return toast('Mark at least one stop before submitting.', 'error');
 
+            submitBtn.disabled = true;
             try {
                 const r = await fetch(`${API_BASE}/door-hangers`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ routeId: currentRoute.id, confirmedStops }),
                 });
                 const d = await r.json();
-                if (!r.ok || !d.success) return toast(d.error || 'Submit failed', 'error');
+                if (!r.ok || !d.success) { toast(d.error || 'Submit failed', 'error'); return; }
                 const created = d.results.filter(x => x.outcome === 'lead_created').length;
-                const flagged = d.results.filter(x => x.outcome === 'flagged_off_route').length;
-                toast(`Submitted: ${created} new leads${flagged ? `, ${flagged} flagged off-route` : ''}.`, 'success');
+                const flagged = d.results.filter(x => x.outcome === 'flagged_off_route' || x.outcome === 'flagged_insufficient_dwell').length;
+                const blocked = d.results.filter(x => x.outcome === 'blocked_do_not_solicit').length;
+                let msg = `Submitted: ${created} new leads`;
+                if (flagged) msg += `, ${flagged} flagged for review`;
+                if (blocked) msg += `, ${blocked} blocked (do-not-solicit)`;
+                toast(msg + '.', 'success');
+                saveDhState(null);
                 document.getElementById('cancelSubmitBtn').click();
             } catch (e) {
-                toast('Network error submitting.', 'error');
+                toast('Network error submitting — your route is still saved, try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
             }
         });
 
