@@ -926,6 +926,14 @@
                 <h1>📋 New Estimate</h1>
                 <div class="header-actions">
                     <button class="btn-sm" id="newEstBtn">+ New</button>
+                    <div class="portal-switcher" style="position:relative;display:inline-block">
+                        <button class="btn-sm" onclick="togglePortalMenu(event)">🔀 Portals ▾</button>
+                        <div class="portal-menu" id="portalMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:50;background:#14213d;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:.4rem;min-width:160px;box-shadow:0 10px 30px rgba(0,0,0,.4)">
+                            <a href="admin.html" style="display:block;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.82rem;white-space:nowrap">🔑 Admin</a>
+                            <a href="labour.html" style="display:block;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.82rem;white-space:nowrap">👷 Labour</a>
+                            <a href="door-hangers.html" style="display:block;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.82rem;white-space:nowrap">🚪 Door Hangers</a>
+                        </div>
+                    </div>
                     <button class="btn-sm danger" id="logoutBtn">Sign Out</button>
                 </div>
             </div>
@@ -1390,6 +1398,12 @@
             document.getElementById('estimatorScreen').style.display = 'none';
             document.getElementById('estFooter').style.display = 'none';
         });
+
+        function togglePortalMenu(e) {
+            e.stopPropagation();
+            document.getElementById('portalMenu').style.display = document.getElementById('portalMenu').style.display === 'block' ? 'none' : 'block';
+        }
+        document.addEventListener('click', () => { const m = document.getElementById('portalMenu'); if (m) m.style.display = 'none'; });
 
         document.getElementById('newEstBtn').addEventListener('click', () => {
             if (confirm('Start a new estimate? Current data will be cleared.')) { clearForm(); genEstimateId() }

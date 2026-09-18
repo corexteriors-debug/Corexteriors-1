@@ -985,6 +985,14 @@
                     <button class="btn btn-blue" id="followupBtn">📧 Send Follow ups</button>
                     <button class="btn btn-outline" id="syncCalBtn">📅 Sync Calendar</button>
                     <button class="btn btn-outline" id="refreshBtn">🔄 Refresh</button>
+                    <div class="portal-switcher" style="position:relative;display:inline-block">
+                        <button class="btn btn-outline" onclick="togglePortalMenu(event)">🔀 Portals ▾</button>
+                        <div class="portal-menu" id="portalMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:50;background:#14213d;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:.4rem;min-width:160px;box-shadow:0 10px 30px rgba(0,0,0,.4)">
+                            <a href="sales.html" style="display:block;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.82rem;white-space:nowrap">💰 Sales</a>
+                            <a href="labour.html" style="display:block;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.82rem;white-space:nowrap">👷 Labour</a>
+                            <a href="door-hangers.html" style="display:block;padding:8px 10px;border-radius:6px;color:rgba(255,255,255,.85);text-decoration:none;font-size:.82rem;white-space:nowrap">🚪 Door Hangers</a>
+                        </div>
+                    </div>
                     <button class="btn btn-danger" id="logoutBtn">Sign Out</button>
                 </div>
             </div>
@@ -1762,6 +1770,13 @@ Tasks:
         });
 
         // TABS
+        // ---------- PORTAL SWITCHER ----------
+        function togglePortalMenu(e) {
+            e.stopPropagation();
+            document.getElementById('portalMenu').style.display = document.getElementById('portalMenu').style.display === 'block' ? 'none' : 'block';
+        }
+        document.addEventListener('click', () => { const m = document.getElementById('portalMenu'); if (m) m.style.display = 'none'; });
+
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));

@@ -54,6 +54,24 @@
         }
         .role-btn.active { background: rgba(230,126,34,.18); border-color: rgba(230,126,34,.5); color: #fff }
 
+        /* PORTAL SWITCHER */
+        .portal-switcher { position: relative; display: inline-block }
+        .portal-switcher-btn {
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.7);
+            font-family: inherit; font-size: .78rem; padding: 6px 10px; border-radius: 8px; cursor: pointer;
+        }
+        .portal-menu {
+            display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 50;
+            background: #14213d; border: 1px solid rgba(255,255,255,.15); border-radius: 10px;
+            padding: .4rem; min-width: 160px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+        }
+        .portal-menu.open { display: block }
+        .portal-menu a {
+            display: block; padding: 8px 10px; border-radius: 6px; color: rgba(255,255,255,.85);
+            text-decoration: none; font-size: .82rem; white-space: nowrap;
+        }
+        .portal-menu a:hover { background: rgba(255,255,255,.08) }
+
         /* MAIN APP */
         .app-header {
             padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center;
@@ -128,7 +146,17 @@
                 <h1>🚪 Door Hangers</h1>
                 <div class="rep" id="repLabel"></div>
             </div>
-            <span class="logout-link" id="logoutBtn">Sign Out</span>
+            <div style="display:flex;align-items:center;gap:.6rem">
+                <div class="portal-switcher">
+                    <button class="portal-switcher-btn" onclick="togglePortalMenu(event)">🔀 Portals ▾</button>
+                    <div class="portal-menu" id="portalMenu">
+                        <a href="admin.html">🔑 Admin</a>
+                        <a href="sales.html">💰 Sales</a>
+                        <a href="labour.html">👷 Labour</a>
+                    </div>
+                </div>
+                <span class="logout-link" id="logoutBtn">Sign Out</span>
+            </div>
         </div>
 
         <div class="assignment-banner" id="assignmentBanner" style="display:none">
@@ -190,6 +218,13 @@
         let map, markers = [];
         const STOP_CYCLE = [null, 'Hung', 'No Answer', 'Already Has One', 'Do Not Solicit'];
         const STOP_COLORS = { null: '#95a5a6', 'Hung': '#2ecc71', 'No Answer': '#f1c40f', 'Already Has One': '#7f8c8d', 'Do Not Solicit': '#e74c3c' };
+
+        // ---------- PORTAL SWITCHER ----------
+        function togglePortalMenu(e) {
+            e.stopPropagation();
+            document.getElementById('portalMenu').classList.toggle('open');
+        }
+        document.addEventListener('click', () => document.getElementById('portalMenu')?.classList.remove('open'));
 
         function toast(msg, type) {
             const t = document.getElementById('toast');
