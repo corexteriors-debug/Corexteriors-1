@@ -1782,7 +1782,7 @@ Tasks:
                 password: document.getElementById('repFormPassword').value,
             };
             try {
-                const r = await fetch(`${API_BASE}/dh-reps`, {
+                const r = await fetch(`${API_BASE}/quick-leads?resource=reps`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify(body),
                 });
@@ -1798,7 +1798,7 @@ Tasks:
         async function loadReps() {
             const container = document.getElementById('repsList');
             try {
-                const r = await fetch(`${API_BASE}/dh-reps`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=reps`, { headers: { 'Authorization': `Bearer ${authToken}` } });
                 const d = await r.json();
                 const reps = d.reps || [];
 
@@ -1827,7 +1827,7 @@ Tasks:
 
         async function toggleRepActive(username, active) {
             try {
-                const r = await fetch(`${API_BASE}/dh-reps`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ username, active }) });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=reps`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ username, active }) });
                 const d = await r.json();
                 if (r.ok && d.success) { toast(active ? 'Rep activated' : 'Rep deactivated', 'success'); loadReps(); }
                 else throw new Error(d.error);
@@ -1839,7 +1839,7 @@ Tasks:
             if (!newPassword) return;
             if (newPassword.length < 6) return toast('Password must be at least 6 characters', 'error');
             try {
-                const r = await fetch(`${API_BASE}/dh-reps`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ username, newPassword }) });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=reps`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ username, newPassword }) });
                 const d = await r.json();
                 if (r.ok && d.success) toast('Password reset — let the rep know their new password.', 'success');
                 else throw new Error(d.error);
@@ -1849,7 +1849,7 @@ Tasks:
         async function deleteRep(username) {
             if (!confirm(`Delete the account for @${username}? Their past routes/leads keep their name, but they won't be able to log in anymore.`)) return;
             try {
-                const r = await fetch(`${API_BASE}/dh-reps`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ username }) });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=reps`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ username }) });
                 const d = await r.json();
                 if (r.ok && d.success) { toast('Rep account deleted', 'success'); loadReps(); }
                 else throw new Error(d.error);
@@ -1867,7 +1867,7 @@ Tasks:
                 notes: document.getElementById('dhNotes').value.trim(),
             };
             try {
-                const r = await fetch(`${API_BASE}/assignments`, {
+                const r = await fetch(`${API_BASE}/quick-leads?resource=assignments`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify(body),
                 });
@@ -1888,7 +1888,7 @@ Tasks:
             const container = document.getElementById('assignmentsList');
             if (!loadMore) { assignmentsEntries = []; assignmentsOffset = 0; }
             try {
-                const r = await fetch(`${API_BASE}/assignments?limit=${ASSIGNMENTS_PAGE_SIZE}&offset=${assignmentsOffset}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=assignments&limit=${ASSIGNMENTS_PAGE_SIZE}&offset=${assignmentsOffset}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
                 const d = await r.json();
                 assignmentsEntries = assignmentsEntries.concat(d.assignments || []);
                 assignmentsOffset += (d.assignments || []).length;
@@ -1920,7 +1920,7 @@ Tasks:
 
         async function setAssignmentStatus(id, status) {
             try {
-                const r = await fetch(`${API_BASE}/assignments`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, status }) });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=assignments`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id, status }) });
                 const d = await r.json();
                 if (r.ok && d.success) { toast('Updated', 'success'); loadAssignmentsAdmin(); }
                 else throw new Error(d.error);
@@ -1930,7 +1930,7 @@ Tasks:
         async function deleteAssignment(id) {
             if (!confirm('Delete this assignment?')) return;
             try {
-                const r = await fetch(`${API_BASE}/assignments`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id }) });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=assignments`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id }) });
                 const d = await r.json();
                 if (r.ok && d.success) { toast('Deleted', 'success'); loadAssignmentsAdmin(); }
                 else throw new Error(d.error);
@@ -1949,7 +1949,7 @@ Tasks:
             const container = document.getElementById('coverageLogList');
             if (!loadMore) { coverageLogEntries = []; coverageLogOffset = 0; }
             try {
-                const r = await fetch(`${API_BASE}/door-hangers?limit=${COVERAGE_LOG_PAGE_SIZE}&offset=${coverageLogOffset}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=confirm&limit=${COVERAGE_LOG_PAGE_SIZE}&offset=${coverageLogOffset}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
                 const d = await r.json();
                 coverageLogEntries = coverageLogEntries.concat(d.entries || []);
                 coverageLogOffset += (d.entries || []).length;
@@ -1979,7 +1979,7 @@ Tasks:
             const container = document.getElementById('dnsList');
             if (!loadMore) { dnsListEntries = []; dnsListOffset = 0; }
             try {
-                const r = await fetch(`${API_BASE}/door-hangers?type=dns&limit=${DNS_LIST_PAGE_SIZE}&offset=${dnsListOffset}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=confirm&type=dns&limit=${DNS_LIST_PAGE_SIZE}&offset=${dnsListOffset}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
                 const d = await r.json();
                 dnsListEntries = dnsListEntries.concat(d.entries || []);
                 dnsListOffset += (d.entries || []).length;
@@ -2004,7 +2004,7 @@ Tasks:
         async function removeDns(id) {
             if (!confirm('Remove this address from the do-not-solicit list? Future routes will be able to solicit it again.')) return;
             try {
-                const r = await fetch(`${API_BASE}/door-hangers`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id }) });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=confirm`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ id }) });
                 const d = await r.json();
                 if (r.ok && d.success) { toast('Removed', 'success'); loadDnsList(); }
                 else throw new Error(d.error);

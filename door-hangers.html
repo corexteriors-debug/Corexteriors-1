@@ -244,7 +244,7 @@
 
             if (state.phase === 'tracking') {
                 try {
-                    const r = await fetch(`${API_BASE}/routes?id=${state.routeId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                    const r = await fetch(`${API_BASE}/quick-leads?resource=routes&id=${state.routeId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
                     const d = await r.json();
                     if (!r.ok || !d.success || d.route.status !== 'active') { saveDhState(null); return; }
                     currentRoute = d.route;
@@ -288,7 +288,7 @@
         let todaysAssignment = null;
         async function loadAssignment() {
             try {
-                const r = await fetch(`${API_BASE}/assignments`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const r = await fetch(`${API_BASE}/quick-leads?resource=assignments`, { headers: { 'Authorization': `Bearer ${authToken}` } });
                 const d = await r.json();
                 const today = new Date().toISOString().slice(0, 10);
                 todaysAssignment = (d.assignments || []).find(a => a.date === today && a.status !== 'done') || null;
@@ -310,7 +310,7 @@
             if (startBtn.disabled) return; // guard against double-tap creating two routes
             startBtn.disabled = true;
             try {
-                const r = await fetch(`${API_BASE}/routes`, {
+                const r = await fetch(`${API_BASE}/quick-leads?resource=routes`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ action: 'start', assignmentId: todaysAssignment ? todaysAssignment.id : null }),
                 });
@@ -382,7 +382,7 @@
             const toSend = pointBuffer.splice(0, pointBuffer.length);
             savePointBuffer();
             try {
-                const r = await fetch(`${API_BASE}/routes`, {
+                const r = await fetch(`${API_BASE}/quick-leads?resource=routes`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ action: 'append', routeId: currentRoute.id, points: toSend }),
                 });
@@ -405,7 +405,7 @@
                 if (wakeLock) { try { await wakeLock.release(); } catch (e) {} wakeLock = null; }
                 await flushPoints();
 
-                const r = await fetch(`${API_BASE}/routes`, {
+                const r = await fetch(`${API_BASE}/quick-leads?resource=routes`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ action: 'end', routeId: currentRoute.id }),
                 });
@@ -423,7 +423,7 @@
 
         // ---------- PHASE B: MAP + BATCH CONFIRM ----------
         async function loadFullRoute(routeId) {
-            const r = await fetch(`${API_BASE}/routes?id=${routeId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+            const r = await fetch(`${API_BASE}/quick-leads?resource=routes&id=${routeId}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
             const d = await r.json();
             if (!r.ok || !d.success) return toast('Could not load route for confirmation.', 'error');
             currentRoute = d.route;
@@ -520,7 +520,7 @@
 
             submitBtn.disabled = true;
             try {
-                const r = await fetch(`${API_BASE}/door-hangers`, {
+                const r = await fetch(`${API_BASE}/quick-leads?resource=confirm`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ routeId: currentRoute.id, confirmedStops }),
                 });
