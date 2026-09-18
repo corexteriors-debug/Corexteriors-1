@@ -45,13 +45,17 @@ module.exports = async function handler(req, res) {
             return res.status(201).json({ success: true, assignment });
         }
 
-        // GET — admin sees all; sales sees their own
+        // GET — admin sees all (paginated); sales sees their own (door-hangers.html
+        // doesn't pass limit/offset — assignment volume per rep is naturally low,
+        // so the default page is generous enough to just mean "everything").
         if (req.method === 'GET') {
-            const ids = await kv.lrange('assignment_ids', 0, -1);
-            if (!ids.length) return res.status(200).json({ success: true, assignments: [] });
-            const records = await kv.mget(...ids.map(id => `assignment:${id}`));
+            const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 500, 1), 500);
+            const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+            const total = await kv.llen('assignment_ids');
+            const ids = total ? await kv.lrange('assignment_ids', offset, offset + limit - 1) : [];
+            const records = ids.length ? await kv.mget(...ids.map(id => `assignment:${id}`)) : [];
             const assignments = records.filter(a => a && (tokenData.role === 'admin' || a.repName === tokenData.repName));
-            return res.status(200).json({ success: true, assignments });
+            return res.status(200).json({ success: true, assignments, total, hasMore: offset + ids.length < total });
         }
 
         // PATCH — update status/notes/target (admin, or the assigned rep updating status)

@@ -79,17 +79,16 @@ module.exports = async function handler(req, res) {
             return res.status(201).json({ success: true, lead });
         }
 
-        // GET — retrieve leads (admin sees all, sales sees own)
+        // GET — retrieve leads (admin sees all, sales sees own).
+        // Batch-fetched via mget (one round trip) instead of one kv.get per
+        // lead in a loop — with the door-hanger campaign now feeding this same
+        // pipeline, this list only grows, and N sequential round trips was
+        // going to get slow well before the campaign ended.
         if (req.method === 'GET') {
             const ids = (await kv.get('ql_ids')) || [];
-            const leads = [];
-            for (const id of ids) {
-                const lead = await kv.get(`ql:${id}`);
-                if (!lead) continue;
-                if (tokenData.role === 'admin' || lead.salesRep === tokenData.repName) {
-                    leads.push(lead);
-                }
-            }
+            if (!ids.length) return res.status(200).json({ success: true, leads: [] });
+            const records = await kv.mget(...ids.map(id => `ql:${id}`));
+            const leads = records.filter(lead => lead && (tokenData.role === 'admin' || lead.salesRep === tokenData.repName));
             return res.status(200).json({ success: true, leads });
         }
 

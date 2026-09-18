@@ -314,20 +314,29 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ success: true, results, routeFlagged: !!route.flagged });
         }
 
-        // GET — list door-hanger coverage log entries (admin: all, sales: own), or ?type=dns for the do-not-solicit list.
+        // GET — paginated list of coverage log entries (admin: all, sales: own),
+        // or ?type=dns for the do-not-solicit list. Paginated server-side via
+        // native list ops (not "fetch everything, slice in the browser") so
+        // this stays responsive once the campaign has generated thousands of
+        // log entries — a full 10,000-hanger run will produce far more than
+        // 10,000 coverage-log rows once every non-Hung outcome is counted.
         if (req.method === 'GET') {
+            const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
+            const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+
             if (req.query.type === 'dns') {
                 if (tokenData.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
-                const ids = await kv.lrange('dns_ids', 0, -1);
+                const total = await kv.llen('dns_ids');
+                const ids = total ? await kv.lrange('dns_ids', offset, offset + limit - 1) : [];
                 const entries = ids.length ? (await kv.mget(...ids.map(id => `dns:${id}`))).filter(Boolean) : [];
-                return res.status(200).json({ success: true, entries });
+                return res.status(200).json({ success: true, entries, total, hasMore: offset + entries.length < total });
             }
 
-            const ids = await kv.lrange('dh_ids', 0, -1);
-            if (!ids.length) return res.status(200).json({ success: true, entries: [] });
-            const records = await kv.mget(...ids.map(id => `dh:${id}`));
+            const total = await kv.llen('dh_ids');
+            const ids = total ? await kv.lrange('dh_ids', offset, offset + limit - 1) : [];
+            const records = ids.length ? await kv.mget(...ids.map(id => `dh:${id}`)) : [];
             const entries = records.filter(entry => entry && (tokenData.role === 'admin' || entry.repName === tokenData.repName));
-            return res.status(200).json({ success: true, entries });
+            return res.status(200).json({ success: true, entries, total, hasMore: offset + ids.length < total });
         }
 
         // DELETE — remove a false-positive do-not-solicit entry (admin only)

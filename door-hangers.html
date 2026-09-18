@@ -102,11 +102,11 @@
             <h1>🚪 Door Hangers</h1>
             <p class="subtitle">Core Exteriors — Field Rep Access</p>
             <form id="loginForm">
-                <input type="text" id="repName" placeholder="Your Name" autocomplete="name" required>
-                <input type="password" id="salesPassword" placeholder="Sales password" autocomplete="off" required>
+                <input type="text" id="repUsername" placeholder="Username" autocomplete="username" required>
+                <input type="password" id="repPassword" placeholder="Password" autocomplete="current-password" required>
                 <button type="submit" class="login-btn">Sign In</button>
             </form>
-            <p class="login-error" id="loginError">Invalid password. Please try again.</p>
+            <p class="login-error" id="loginError">Invalid username or password.</p>
         </div>
     </div>
 
@@ -170,7 +170,7 @@
     <script>
         const API_BASE = '/api';
         let authToken = localStorage.getItem('dh_sales_token') || '';
-        let repName = localStorage.getItem('dh_sales_rep_name') || '';
+        let repName = ''; // always sourced from the server (GET /api/auth), never trusted from local storage
         let currentRoute = null;   // { id, points }
         let watchId = null;
         let pointBuffer = [];
@@ -257,18 +257,17 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('repName').value.trim();
-            const pw = document.getElementById('salesPassword').value;
+            const username = document.getElementById('repUsername').value.trim();
+            const pw = document.getElementById('repPassword').value;
             try {
                 const r = await fetch(`${API_BASE}/auth`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: pw, role: 'sales', repName: name }),
+                    body: JSON.stringify({ password: pw, role: 'sales', username }),
                 });
                 const d = await r.json();
                 if (r.ok && d.success) {
-                    authToken = d.token; repName = name;
+                    authToken = d.token; repName = d.repName || username;
                     localStorage.setItem('dh_sales_token', authToken);
-                    localStorage.setItem('dh_sales_rep_name', repName);
                     showApp();
                 } else {
                     document.getElementById('loginError').style.display = 'block';
@@ -282,7 +281,6 @@
         document.getElementById('logoutBtn').addEventListener('click', () => {
             authToken = ''; repName = '';
             localStorage.removeItem('dh_sales_token');
-            localStorage.removeItem('dh_sales_rep_name');
             location.reload();
         });
 

@@ -1,4 +1,5 @@
 const { kv } = require('@vercel/kv');
+const { verifyPassword } = require('./_authCrypto');
 
 module.exports = async function handler(req, res) {
     // CORS headers
@@ -27,7 +28,7 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const { password, role, repName } = req.body;
+        const { password, role, repName, username } = req.body;
 
         if (!password || !role) {
             return res.status(400).json({ error: 'Password and role are required' });
@@ -39,7 +40,19 @@ module.exports = async function handler(req, res) {
         let authenticated = false;
         let token = '';
 
-        if (role === 'sales' && password === SALES_PASSWORD) {
+        // Per-rep login (door-hanger reps): a username means this is a real,
+        // individually-issued credential (see api/dh-reps.js), not the single
+        // shared Sales password everyone else in sales.html still uses —
+        // repName is taken from the verified account record, never the client.
+        if (role === 'sales' && username) {
+            const cleanUsername = String(username).trim().toLowerCase();
+            const rep = await kv.get(`dhrep:${cleanUsername}`);
+            if (rep && rep.active && verifyPassword(password, rep.salt, rep.hash)) {
+                authenticated = true;
+                token = 'sales_' + Buffer.from(Date.now().toString() + '_sales').toString('base64');
+                await kv.set(`token:${token}`, { role: 'sales', repName: rep.name, repUsername: rep.username, created: Date.now() }, { ex: 604800 });
+            }
+        } else if (role === 'sales' && password === SALES_PASSWORD) {
             authenticated = true;
             token = 'sales_' + Buffer.from(Date.now().toString() + '_sales').toString('base64');
             await kv.set(`token:${token}`, { role: 'sales', repName: repName || '', created: Date.now() }, { ex: 604800 });
@@ -50,7 +63,8 @@ module.exports = async function handler(req, res) {
         }
 
         if (authenticated) {
-            return res.status(200).json({ success: true, token, role });
+            const tokenData = await kv.get(`token:${token}`);
+            return res.status(200).json({ success: true, token, role, repName: (tokenData && tokenData.repName) || '' });
         } else {
             return res.status(401).json({ error: 'Invalid password' });
         }
