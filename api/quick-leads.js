@@ -7,6 +7,19 @@ function cleanText(value, max) {
     return String(value || '').slice(0, max);
 }
 
+function cleanBrochureUrl(value) {
+    const raw = cleanText(value, 2000);
+    if (!raw) return '';
+    try {
+        const url = new URL(raw);
+        if (url.protocol !== 'https:' || url.hostname !== 'sign.corexteriors.ca') return '';
+        if (url.pathname !== '/api/file') return '';
+        return url.toString();
+    } catch {
+        return '';
+    }
+}
+
 function cleanDraft(raw) {
     if (!raw || typeof raw !== 'object') return null;
     const squareFeet = Number(raw.squareFeet);
@@ -20,6 +33,7 @@ function cleanDraft(raw) {
         total: cleanText(raw.total, 40),
         estimateNumber: cleanText(raw.estimateNumber, 40),
         notes: cleanText(raw.notes, 500),
+        brochureUrl: cleanBrochureUrl(raw.brochureUrl),
         createdAt: cleanText(raw.createdAt, 40) || new Date().toISOString(),
     };
 }
@@ -134,8 +148,14 @@ module.exports = async function handler(req, res) {
                 const clean = cleanDraft(draft);
                 if (!clean) return res.status(400).json({ error: 'Draft required' });
                 lead.drafts = Array.isArray(lead.drafts) ? lead.drafts : [];
-                const already = clean.estimateNumber && lead.drafts.some((item) => item.estimateNumber === clean.estimateNumber);
-                if (!already) {
+                const existing = lead.drafts.find((item) =>
+                    (clean.estimateNumber && item.estimateNumber === clean.estimateNumber)
+                    || (clean.squareFeet && item.squareFeet === clean.squareFeet)
+                );
+                if (existing) {
+                    if (clean.brochureUrl) existing.brochureUrl = clean.brochureUrl;
+                    if (clean.service && !existing.service) existing.service = clean.service;
+                } else {
                     lead.drafts.unshift(clean);
                     lead.drafts = lead.drafts.slice(0, 20);
                 }

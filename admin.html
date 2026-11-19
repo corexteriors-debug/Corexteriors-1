@@ -2335,11 +2335,15 @@ Tasks:
                 const headline = [sqft, draft.service].filter(Boolean).join(' · ');
                 const prices = [draft.subtotal && ('Subtotal ' + draftMoney(draft.subtotal)), draft.hst && ('HST ' + draftMoney(draft.hst)), draft.total && ('Total ' + draftMoney(draft.total))].filter(Boolean).join(' · ');
                 const meta = [draft.estimateNumber, when].filter(Boolean).join(' · ');
+                const brochure = draft.brochureUrl
+                    ? '<div style="margin-top:.35rem"><a class="ql-drafts-mail" href="' + esc(draft.brochureUrl) + '" target="_blank" rel="noopener">View brochure</a></div>'
+                    : '';
                 return '<div class="ql-draft">'
                     + (headline ? '<div style="font-size:.82rem;color:#fff;font-weight:600">' + esc(headline) + '</div>' : '')
                     + (draft.request ? '<div style="font-size:.75rem;color:rgba(255,255,255,.55);margin-top:2px">' + esc(draft.request) + '</div>' : '')
                     + (prices ? '<div style="font-size:.75rem;color:#C9A84C;margin-top:2px">' + esc(prices) + '</div>' : '')
                     + (meta ? '<div style="font-size:.7rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(meta) + '</div>' : '')
+                    + brochure
                     + '</div>';
             }).join('') : '<div class="ql-draft-empty">No agent draft yet.</div>';
             return '<div class="ql-drafts"><div class="ql-drafts-head"><div class="ql-drafts-label">DRAFTS</div><a class="ql-drafts-mail" href="https://mail.google.com/mail/?authuser=corexteriors@gmail.com#drafts" target="_blank" rel="noopener">Open Gmail drafts</a></div>' + body + '</div>';
