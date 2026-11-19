@@ -325,6 +325,31 @@
             height: 200px
         }
 
+        .ql-drafts {
+            margin: .15rem 0 .7rem;
+            background: rgba(27, 58, 107, .45);
+            border: 1px solid rgba(201, 168, 76, .4);
+            border-radius: 10px;
+            padding: .65rem .75rem
+        }
+
+        .ql-drafts-label {
+            font-size: .68rem;
+            letter-spacing: .08em;
+            color: #C9A84C;
+            font-weight: 700;
+            margin-bottom: .35rem
+        }
+
+        .ql-draft {
+            padding: .45rem 0;
+            border-top: 1px solid rgba(255, 255, 255, .08)
+        }
+
+        .ql-draft:first-of-type { border-top: none; padding-top: 0 }
+
+        .ql-draft-empty { font-size: .75rem; color: rgba(255, 255, 255, .35) }
+
         @media(max-width:768px) {
             .charts-row {
                 grid-template-columns: 1fr
@@ -2280,6 +2305,31 @@ Tasks:
             renderQLLeads(filtered);
         }
 
+        function draftMoney(value) {
+            if (!value) return '';
+            const amount = Number(String(value).replace(/[^0-9.-]/g, ''));
+            if (!Number.isFinite(amount)) return String(value);
+            return amount.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
+        }
+
+        function renderAgentDrafts(lead) {
+            const drafts = Array.isArray(lead.drafts) ? lead.drafts : [];
+            const body = drafts.length ? drafts.map(draft => {
+                const when = draft.createdAt ? new Date(draft.createdAt).toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+                const sqft = draft.squareFeet ? Number(draft.squareFeet).toLocaleString('en-CA') + ' sq ft' : '';
+                const headline = [sqft, draft.service].filter(Boolean).join(' · ');
+                const prices = [draft.subtotal && ('Subtotal ' + draftMoney(draft.subtotal)), draft.hst && ('HST ' + draftMoney(draft.hst)), draft.total && ('Total ' + draftMoney(draft.total))].filter(Boolean).join(' · ');
+                const meta = [draft.estimateNumber, when].filter(Boolean).join(' · ');
+                return '<div class="ql-draft">'
+                    + (headline ? '<div style="font-size:.82rem;color:#fff;font-weight:600">' + esc(headline) + '</div>' : '')
+                    + (draft.request ? '<div style="font-size:.75rem;color:rgba(255,255,255,.55);margin-top:2px">' + esc(draft.request) + '</div>' : '')
+                    + (prices ? '<div style="font-size:.75rem;color:#C9A84C;margin-top:2px">' + esc(prices) + '</div>' : '')
+                    + (meta ? '<div style="font-size:.7rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(meta) + '</div>' : '')
+                    + '</div>';
+            }).join('') : '<div class="ql-draft-empty">No agent draft yet.</div>';
+            return '<div class="ql-drafts"><div class="ql-drafts-label">DRAFTS</div>' + body + '</div>';
+        }
+
         function renderQLLeads(leads) {
             const container = document.getElementById('qlLeadsList');
             document.getElementById('qlCount').textContent = `(${leads.length} of ${allQLLeads.length})`;
@@ -2311,6 +2361,7 @@ Tasks:
                         ${svcList ? '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.4rem">' + esc(svcList) + '</div>' : ''}
                         ${visitStr ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:.4rem">Service date: ' + visitStr + '</div>' : ''}
                         ${lead.notes ? '<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.6rem">' + esc(lead.notes) + '</div>' : ''}
+                        ${renderAgentDrafts(lead)}
                         <div class="dropdown" style="margin-bottom:.6rem">
                             <button class="badge callbadge-${callStatusKey}" onclick="toggleDrop('callstatus-${lead.id}')">📞 ${esc(callStatus)}</button>
                             <div class="dropdown-menu" id="callstatus-${lead.id}">

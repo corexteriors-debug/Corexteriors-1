@@ -3,6 +3,27 @@ const { runFbLeadsSync } = require('./_syncFbLeads');
 
 const CALL_STATUSES = ['New', 'Called', 'No Answer', 'Interested', 'Not Interested', 'Booked'];
 
+function cleanText(value, max) {
+    return String(value || '').slice(0, max);
+}
+
+function cleanDraft(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const squareFeet = Number(raw.squareFeet);
+    return {
+        id: cleanText(raw.id, 80) || `draft_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        squareFeet: Number.isFinite(squareFeet) ? Math.round(squareFeet) : 0,
+        service: cleanText(raw.service, 200),
+        request: cleanText(raw.request, 500),
+        subtotal: cleanText(raw.subtotal, 40),
+        hst: cleanText(raw.hst, 40),
+        total: cleanText(raw.total, 40),
+        estimateNumber: cleanText(raw.estimateNumber, 40),
+        notes: cleanText(raw.notes, 500),
+        createdAt: cleanText(raw.createdAt, 40) || new Date().toISOString(),
+    };
+}
+
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
@@ -68,6 +89,7 @@ module.exports = async function handler(req, res) {
                 legal:          b.legal || {},
                 hasSignature:   b.hasSignature || false,
                 status:         b.status || 'New',
+                drafts:         Array.isArray(b.drafts) ? b.drafts.map(cleanDraft).filter(Boolean).slice(0, 20) : [],
                 createdAt:      new Date().toISOString(),
             };
 
@@ -99,6 +121,27 @@ module.exports = async function handler(req, res) {
                 if (tokenData.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
                 const results = await runFbLeadsSync();
                 return res.status(200).json({ success: true, ...results });
+            }
+
+            if (req.body.action === 'add-draft') {
+                const { id, draft } = req.body;
+                if (!id) return res.status(400).json({ error: 'ID required' });
+                const lead = await kv.get(`ql:${id}`);
+                if (!lead) return res.status(404).json({ error: 'Not found' });
+                if (tokenData.role !== 'admin' && lead.salesRep !== tokenData.repName) {
+                    return res.status(403).json({ error: 'Forbidden' });
+                }
+                const clean = cleanDraft(draft);
+                if (!clean) return res.status(400).json({ error: 'Draft required' });
+                lead.drafts = Array.isArray(lead.drafts) ? lead.drafts : [];
+                const already = clean.estimateNumber && lead.drafts.some((item) => item.estimateNumber === clean.estimateNumber);
+                if (!already) {
+                    lead.drafts.unshift(clean);
+                    lead.drafts = lead.drafts.slice(0, 20);
+                }
+                lead.updatedAt = new Date().toISOString();
+                await kv.set(`ql:${id}`, lead);
+                return res.status(200).json({ success: true, lead });
             }
 
             const { id, name, address, notes, phone, email, callStatus, salesRep } = req.body;

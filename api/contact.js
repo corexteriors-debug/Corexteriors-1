@@ -38,6 +38,7 @@ async function saveLeadToCrm({ name, email, phone, address, serviceLabel, messag
         legal: {},
         hasSignature: false,
         status: 'New',
+        drafts: [],
         createdAt: new Date().toISOString(),
     };
 
