@@ -20,6 +20,20 @@ function cleanBrochureUrl(value) {
     }
 }
 
+function cleanGmailUrl(value) {
+    const raw = cleanText(value, 2000);
+    if (!raw) return '';
+    try {
+        const url = new URL(raw);
+        if (url.protocol !== 'https:' || url.hostname !== 'mail.google.com') return '';
+        if (url.searchParams.get('authuser') !== 'corexteriors@gmail.com') return '';
+        if (!url.hash.includes('compose=')) return '';
+        return raw;
+    } catch {
+        return '';
+    }
+}
+
 function cleanDraft(raw) {
     if (!raw || typeof raw !== 'object') return null;
     const squareFeet = Number(raw.squareFeet);
@@ -34,6 +48,7 @@ function cleanDraft(raw) {
         estimateNumber: cleanText(raw.estimateNumber, 40),
         notes: cleanText(raw.notes, 500),
         brochureUrl: cleanBrochureUrl(raw.brochureUrl),
+        gmailUrl: cleanGmailUrl(raw.gmailUrl),
         createdAt: cleanText(raw.createdAt, 40) || new Date().toISOString(),
     };
 }
@@ -154,6 +169,7 @@ module.exports = async function handler(req, res) {
                 );
                 if (existing) {
                     if (clean.brochureUrl) existing.brochureUrl = clean.brochureUrl;
+                    if (clean.gmailUrl) existing.gmailUrl = clean.gmailUrl;
                     if (clean.service && !existing.service) existing.service = clean.service;
                 } else {
                     lead.drafts.unshift(clean);
