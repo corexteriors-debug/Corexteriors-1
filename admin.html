@@ -348,11 +348,30 @@
             font-weight: 700
         }
 
+        .ql-drafts-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            margin-top: .5rem
+        }
+
         .ql-drafts-mail {
-            font-size: .72rem;
+            display: inline-block;
+            background: rgba(201, 168, 76, .18);
+            border: 1px solid rgba(201, 168, 76, .7);
             color: #C9A84C;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: .75rem;
+            font-weight: 700;
             text-decoration: none;
-            font-weight: 600
+            cursor: pointer;
+            line-height: 1.2
+        }
+
+        .ql-drafts-mail:hover {
+            background: #C9A84C;
+            color: #1B3A6B
         }
 
         .ql-draft {
@@ -1181,7 +1200,7 @@
                             </select>
                             <button onclick="exportQLLeadsExcel()" style="background:#1a6b3a;border:none;color:#fff;font-weight:600;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">⬇ Excel</button>
                             <button onclick="loadQLLeads()" style="background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">🔄 Refresh</button>
-                            <a href="https://mail.google.com/mail/?authuser=corexteriors@gmail.com#drafts" target="_blank" rel="noopener" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.45);color:#C9A84C;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;text-decoration:none">✉ Gmail drafts</a>
+                            <a class="ql-drafts-mail" href="https://mail.google.com/mail/?authuser=corexteriors@gmail.com#drafts" target="_blank" rel="noopener">✉ Gmail drafts</a>
                             <button id="fbSyncBtn" onclick="syncFbLeadsNow()" style="background:rgba(24,119,242,.15);border:1px solid rgba(24,119,242,.3);color:#1877f2;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem">📘 Sync FB Leads Now</button>
                         </div>
                     </div>
@@ -2338,8 +2357,8 @@ Tasks:
                 const files = [
                     draft.brochureUrl ? '<a class="ql-drafts-mail" href="' + esc(draft.brochureUrl) + '" target="_blank" rel="noopener">View brochure</a>' : '',
                     draft.gmailUrl ? '<a class="ql-drafts-mail" href="' + esc(draft.gmailUrl) + '" target="_blank" rel="noopener">Open email draft</a>' : ''
-                ].filter(Boolean).join(' · ');
-                const brochure = files ? '<div style="margin-top:.35rem">' + files + '</div>' : '';
+                ].filter(Boolean).join('');
+                const brochure = files ? '<div class="ql-drafts-actions">' + files + '</div>' : '';
                 return '<div class="ql-draft">'
                     + (headline ? '<div style="font-size:.82rem;color:#fff;font-weight:600">' + esc(headline) + '</div>' : '')
                     + (draft.request ? '<div style="font-size:.75rem;color:rgba(255,255,255,.55);margin-top:2px">' + esc(draft.request) + '</div>' : '')
