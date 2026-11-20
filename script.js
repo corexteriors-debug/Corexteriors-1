@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: formData.get('email'),
                 address: formData.get('address'),
                 service: formData.get('service'),
-                message: formData.get('message'),
+                message: [formData.get('propertyType') ? 'Property type: ' + formData.get('propertyType') + '.' : '', formData.get('message') || ''].filter(Boolean).join(' '),
                 company: formData.get('company'),
                 source: window.location.pathname.split('/').pop() || 'index.html'
             };

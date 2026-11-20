@@ -30,11 +30,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=14">
     <style>
         /* ── Commercial page extras ── */
         .comm-area-strip {
-            background: #0a1628;
+            background: #002147;
             color: rgba(255,255,255,.75);
             text-align: center;
             padding: .6rem 1rem;
@@ -44,7 +44,7 @@
         .comm-area-strip strong { color: #c9a227; }
 
         /* Properties grid */
-        .comm-properties { padding: 5rem 1.5rem; background: #f4f6f9; }
+        .comm-properties { padding: 5rem 1.5rem; background: #F4F4F4; }
         .comm-properties-inner { max-width: 1100px; margin: 0 auto; }
         .comm-section-label {
             text-transform: uppercase;
@@ -58,7 +58,7 @@
             font-family: 'Barlow Condensed', 'Inter', sans-serif;
             font-size: clamp(2rem, 4vw, 2.8rem);
             font-weight: 700;
-            color: #0a1628;
+            color: #002147;
             margin-bottom: .75rem;
             line-height: 1.1;
             text-transform: uppercase;
@@ -66,7 +66,7 @@
         }
         .comm-section-sub {
             font-size: 1rem;
-            color: #4a5568;
+            color: #6C757D;
             margin-bottom: 2.5rem;
             max-width: 560px;
         }
@@ -79,7 +79,7 @@
         @media (max-width: 520px) { .prop-grid { grid-template-columns: 1fr; } }
         .prop-card {
             background: #fff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #E5E5E5;
             border-radius: 10px;
             padding: 1.1rem 1.25rem;
             display: flex;
@@ -114,34 +114,52 @@
             padding: .5rem 1.1rem;
             font-size: .85rem;
             font-weight: 600;
-            color: #4a5568;
+            color: #6C757D;
             cursor: pointer;
             transition: all .18s;
             font-family: inherit;
         }
-        .svc-tab:hover { border-color: #c9a227; color: #0a1628; }
-        .svc-tab.active { background: #0a1628; border-color: #0a1628; color: #fff; }
+        .svc-tab:hover { border-color: #c9a227; color: #002147; }
+        .svc-tab.active { background: #002147; border-color: #002147; color: #fff; }
         .svc-panel { display: none; }
+        .svc-panel.has-photo.active { display: grid; grid-template-columns: minmax(0, 1fr) 340px; column-gap: 2.5rem; align-items: start; }
+        .svc-panel.has-photo > :not(.svc-photo) { grid-column: 1; }
+        .svc-photo { grid-column: 2; grid-row: 1 / span 4; margin: 0; position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; background: #e9e6df; }
+        .svc-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .svc-photo.split { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #fff; }
+        .svc-photo figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 28px 12px 10px; font-size: .78rem; color: #fff; background: linear-gradient(transparent, rgba(0, 33, 71, .88)); }
+        .svc-photo .split-tag { position: absolute; top: 10px; font-size: .66rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; color: #fff; background: rgba(0, 33, 71, .85); }
+        .svc-photo .split-tag.b { left: 10px; } .svc-photo .split-tag.a { left: calc(50% + 11px); background: #C9A84C; color: #002147; }
+        .why-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 0 2.5rem; }
+        .why-photos figure { margin: 0; position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; background: #e9e6df; }
+        .why-photos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .why-photos figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 28px 12px 10px; font-size: .8rem; color: #fff; background: linear-gradient(transparent, rgba(0, 33, 71, .88)); }
+        @media (max-width: 860px) {
+            .svc-panel.has-photo.active { grid-template-columns: 1fr; row-gap: 1.25rem; }
+            .svc-photo { grid-column: 1; grid-row: auto; }
+            .why-photos { grid-template-columns: 1fr 1fr; }
+            .why-photos figure:last-child { display: none; }
+        }
         .svc-panel.active { display: block; }
         .svc-tags { display: flex; flex-wrap: wrap; gap: .6rem; }
         .svc-tag {
-            background: #f4f6f9;
-            border: 1px solid #e2e8f0;
+            background: #F4F4F4;
+            border: 1px solid #E5E5E5;
             border-radius: 20px;
             padding: .4rem .95rem;
             font-size: .83rem;
-            color: #2d3748;
+            color: #343A40;
             font-weight: 500;
         }
         .svc-panel-intro {
             font-size: .95rem;
-            color: #4a5568;
+            color: #6C757D;
             margin-bottom: 1.25rem;
             line-height: 1.65;
         }
 
         /* Two ways */
-        .comm-ways { padding: 5rem 1.5rem; background: #0a1628; }
+        .comm-ways { padding: 5rem 1.5rem; background: #002147; }
         .comm-ways-inner { max-width: 1100px; margin: 0 auto; }
         .comm-ways-inner .comm-section-title { color: #fff; text-transform: uppercase; }
         .comm-ways-inner .comm-section-sub { color: rgba(255,255,255,.6); }
@@ -162,7 +180,7 @@
         .way-badge {
             display: inline-block;
             background: #c9a227;
-            color: #0a1628;
+            color: #002147;
             font-size: .7rem;
             font-weight: 800;
             text-transform: uppercase;
@@ -210,12 +228,12 @@
         .billing-chip span { font-size: .78rem; color: rgba(255,255,255,.5); }
 
         /* Insurance table */
-        .comm-insurance { padding: 5rem 1.5rem; background: #f4f6f9; }
+        .comm-insurance { padding: 5rem 1.5rem; background: #F4F4F4; }
         .comm-insurance-inner { max-width: 1100px; margin: 0 auto; }
         .ins-table-wrap {
             overflow-x: auto;
             border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #E5E5E5;
             margin-top: 2rem;
         }
         .ins-table {
@@ -224,7 +242,7 @@
             background: #fff;
             font-size: .9rem;
         }
-        .ins-table thead tr { background: #0a1628; }
+        .ins-table thead tr { background: #002147; }
         .ins-table thead th {
             padding: .9rem 1.25rem;
             text-align: left;
@@ -234,10 +252,10 @@
             text-transform: uppercase;
             letter-spacing: .06em;
         }
-        .ins-table tbody tr { border-bottom: 1px solid #e2e8f0; }
+        .ins-table tbody tr { border-bottom: 1px solid #E5E5E5; }
         .ins-table tbody tr:last-child { border-bottom: none; }
-        .ins-table tbody td { padding: .85rem 1.25rem; color: #2d3748; }
-        .ins-table tbody td:first-child { font-weight: 600; color: #0a1628; }
+        .ins-table tbody td { padding: .85rem 1.25rem; color: #343A40; }
+        .ins-table tbody td:first-child { font-weight: 600; color: #002147; }
         .ins-badge {
             display: inline-flex;
             align-items: center;
@@ -258,7 +276,7 @@
             border-left: 4px solid #c9a227;
             border-radius: 0 8px 8px 0;
             font-size: .9rem;
-            color: #4a5568;
+            color: #6C757D;
             line-height: 1.65;
         }
 
@@ -272,11 +290,11 @@
             margin-top: 2.5rem;
         }
         .process-card {
-            background: #f4f6f9;
+            background: #F4F4F4;
             border-radius: 12px;
             padding: 1.5rem;
             position: relative;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #E5E5E5;
         }
         .process-num {
             font-size: 2.5rem;
@@ -286,11 +304,11 @@
             line-height: 1;
             margin-bottom: .5rem;
         }
-        .process-title { font-size: 1rem; font-weight: 700; color: #0a1628; margin-bottom: .5rem; }
-        .process-desc { font-size: .87rem; color: #4a5568; line-height: 1.6; }
+        .process-title { font-size: 1rem; font-weight: 700; color: #002147; margin-bottom: .5rem; }
+        .process-desc { font-size: .87rem; color: #6C757D; line-height: 1.6; }
 
         /* Who we work with */
-        .comm-clients { padding: 5rem 1.5rem; background: #0a1628; }
+        .comm-clients { padding: 5rem 1.5rem; background: #002147; }
         .comm-clients-inner { max-width: 1100px; margin: 0 auto; }
         .comm-clients-inner .comm-section-title { color: #fff; }
         .comm-clients-inner .comm-section-sub { color: rgba(255,255,255,.6); }
@@ -333,7 +351,7 @@
         }
 
         /* Why choose */
-        .comm-why { padding: 5rem 1.5rem; background: #f4f6f9; }
+        .comm-why { padding: 5rem 1.5rem; background: #F4F4F4; }
         .comm-why-inner { max-width: 1100px; margin: 0 auto; }
         .why-grid {
             display: grid;
@@ -345,7 +363,7 @@
         @media (max-width: 520px) { .why-grid { grid-template-columns: 1fr; } }
         .why-card {
             background: #fff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #E5E5E5;
             border-radius: 12px;
             padding: 1.75rem;
             transition: box-shadow .2s, border-color .2s;
@@ -353,19 +371,19 @@
         .why-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); border-color: #c9a227; }
         .why-icon {
             width: 44px; height: 44px;
-            background: #0a1628;
+            background: #002147;
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 1rem;
         }
         .why-icon svg { width: 22px; height: 22px; stroke: #c9a227; fill: none; stroke-width: 2; }
-        .why-title { font-size: 1rem; font-weight: 700; color: #0a1628; margin-bottom: .5rem; }
-        .why-desc { font-size: .87rem; color: #4a5568; line-height: 1.65; }
+        .why-title { font-size: 1rem; font-weight: 700; color: #002147; margin-bottom: .5rem; }
+        .why-desc { font-size: .87rem; color: #6C757D; line-height: 1.65; }
 
         /* Bottom CTA */
         .comm-bottom-cta {
             padding: 5rem 1.5rem;
-            background: linear-gradient(135deg, #0a1628 0%, #112240 100%);
+            background: linear-gradient(135deg, #002147 0%, #002147 100%);
             text-align: center;
         }
         .comm-bottom-cta h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; color: #fff; margin-bottom: .75rem; }
@@ -373,7 +391,7 @@
         .cta-pair { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         .cta-primary {
             background: #c9a227;
-            color: #0a1628;
+            color: #002147;
             font-weight: 800;
             padding: .9rem 2.2rem;
             border-radius: 8px;
@@ -416,7 +434,7 @@
         .comm-fleet-banner-bg {
             position: absolute;
             inset: 0;
-            background: url('https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/fleet-trucks.jpg') center 60% / cover no-repeat;
+            background: url('images/gallery/crew-fleet-trucks.jpg') center 60% / cover no-repeat;
             transform: scale(1.04);
             transition: transform 10s ease;
         }
@@ -424,7 +442,7 @@
         .comm-fleet-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(100deg, rgba(10,22,40,.93) 0%, rgba(10,22,40,.72) 55%, rgba(10,22,40,.35) 100%);
+            background: linear-gradient(100deg, rgba(0, 33, 71,.93) 0%, rgba(0, 33, 71,.72) 55%, rgba(0, 33, 71,.35) 100%);
             display: flex;
             align-items: center;
         }
@@ -481,7 +499,7 @@
         /* ── Photo Proof Section ── */
         .comm-proof {
             padding: 5.5rem 1.5rem;
-            background: #0c1e38;
+            background: #002147;
         }
         .comm-proof-inner {
             max-width: 1100px;
@@ -543,7 +561,7 @@
             display: block;
         }
         .proof-photo-cap {
-            background: rgba(10,22,40,.95);
+            background: rgba(0, 33, 71,.95);
             padding: .8rem 1.1rem;
             display: flex;
             align-items: center;
@@ -588,7 +606,7 @@
         }
         .proof-photo-card:hover img { transform: scale(1.03); }
         .proof-photo-card-cap {
-            background: rgba(10,22,40,.97);
+            background: rgba(0, 33, 71,.97);
             padding: .9rem 1.1rem;
             border-top: 1px solid rgba(255,255,255,.07);
         }
@@ -688,13 +706,10 @@
                     <span class="hamburger"></span>
                 </button>
                 <ul class="nav-links" id="navLinks">
-                    <li><a href="index.html#services">Services</a></li>
                     <li><a href="commercial.html" class="active">Commercial</a></li>
-                    <li><a href="index.html#why-us">Why Us</a></li>
-                    <li><a href="gallery.html">Gallery</a></li>
-                    <li><a href="index.html#testimonials">Testimonials</a></li>
+                    <li><a href="index.html#services">Services</a></li>
+                    <li><a href="index.html#gallery">Our Work</a></li>
                     <li><a href="index.html#faq">FAQ</a></li>
-                    <li><a href="blog.html">Blog</a></li>
                 </ul>
                 <a href="#quoteFormContainer" class="cta-button" onclick="document.getElementById('name').focus()">GET A COMMERCIAL BID</a>
             </div>
@@ -779,7 +794,7 @@
             <div class="trust-divider"></div>
             <div class="trust-item">
                 <svg class="trust-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                <span>6+ Fleet Trucks · 20+ Crew Daily</span>
+                <span>2 Fleet Trucks · 20+ Crew Daily</span>
             </div>
             <div class="trust-divider"></div>
             <div class="trust-item">
@@ -795,10 +810,10 @@
         <div class="comm-fleet-overlay">
             <div class="comm-fleet-content">
                 <p class="fleet-eyebrow">Our Fleet &amp; Presence</p>
-                <h2 class="fleet-headline">6+ Trucks.<br><span class="gold">Always Ready.</span></h2>
+                <h2 class="fleet-headline">2 Trucks.<br><span class="gold">Always Ready.</span></h2>
                 <p class="fleet-sub">Every vehicle is fully equipped, every driver is certified, and every job is backed by $5M in liability coverage. We look professional because we are.</p>
                 <div class="fleet-chips">
-                    <span class="fleet-chip">6+ Fleet Vehicles</span>
+                    <span class="fleet-chip">2 Fleet Trucks</span>
                     <span class="fleet-chip">Working at Heights Certified</span>
                     <span class="fleet-chip">$5M Insured</span>
                     <span class="fleet-chip">WSIB Compliant</span>
@@ -846,7 +861,7 @@
                 <button class="svc-tab" onclick="showTab('seasonal')">Seasonal</button>
             </div>
 
-            <div class="svc-panel active" id="tab-pressure">
+            <div class="svc-panel has-photo active" id="tab-pressure">
                 <p class="svc-panel-intro">High-powered cleaning for all exterior surfaces — parking lots to building facades.</p>
                 <div class="svc-tags">
                     <span class="svc-tag">Sidewalks &amp; walkways</span>
@@ -860,9 +875,10 @@
                     <span class="svc-tag">Dumpster pads &amp; waste areas</span>
                     <span class="svc-tag">Drive-thru lanes</span>
                 </div>
+                <figure class="svc-photo"><img src="images/gallery/commercial-rooftop-surface-cleaner.jpg" alt="Core Exteriors crew member in a safety harness cleaning a commercial flat roof with a surface cleaner" loading="lazy" decoding="async"><figcaption>Flat roof surface cleaning, commercial building</figcaption></figure>
             </div>
 
-            <div class="svc-panel" id="tab-windows">
+            <div class="svc-panel has-photo" id="tab-windows">
                 <p class="svc-panel-intro">Low-rise to high-rise window cleaning — our crew is Working at Heights certified for every elevated job.</p>
                 <div class="svc-tags">
                     <span class="svc-tag">Low-rise commercial windows</span>
@@ -872,9 +888,10 @@
                     <span class="svc-tag">Post-construction glass cleaning</span>
                     <span class="svc-tag">Frame &amp; sill detailing</span>
                 </div>
+                <figure class="svc-photo"><img src="images/work/window-cleaning-pole.jpg" alt="Crew cleaning windows on a four storey building with a water-fed pole" loading="lazy" decoding="async"><figcaption>Water-fed pole window cleaning, four storeys</figcaption></figure>
             </div>
 
-            <div class="svc-panel" id="tab-specialty">
+            <div class="svc-panel has-photo" id="tab-specialty">
                 <p class="svc-panel-intro">Specialized cleaning for situations standard pressure washing can't handle.</p>
                 <div class="svc-tags">
                     <span class="svc-tag">Graffiti removal</span>
@@ -888,9 +905,10 @@
                     <span class="svc-tag">Moss &amp; algae treatment</span>
                     <span class="svc-tag">Awning &amp; canopy cleaning</span>
                 </div>
+                <figure class="svc-photo split"><img src="images/work/graffiti-brick-before.jpg" alt="Spray paint tag on red brick before removal" loading="lazy" decoding="async"><img src="images/work/graffiti-brick-after.jpg" alt="The same brick wall after graffiti removal" loading="lazy" decoding="async"><span class="split-tag b">Before</span><span class="split-tag a">After</span><figcaption>Graffiti removal on brick, no ghosting</figcaption></figure>
             </div>
 
-            <div class="svc-panel" id="tab-maintenance">
+            <div class="svc-panel has-photo" id="tab-maintenance">
                 <p class="svc-panel-intro">Ongoing building and grounds maintenance to protect your property investment.</p>
                 <div class="svc-tags">
                     <span class="svc-tag">Exterior &amp; interior painting</span>
@@ -908,9 +926,10 @@
                     <span class="svc-tag">Fence repair &amp; replacement</span>
                     <span class="svc-tag">Patio furniture cleaning &amp; setup</span>
                 </div>
+                <figure class="svc-photo"><img src="images/work/deck-restored.jpg" alt="Restored and freshly stained wood deck" loading="lazy" decoding="async"><figcaption>Deck restoration</figcaption></figure>
             </div>
 
-            <div class="svc-panel" id="tab-landscape">
+            <div class="svc-panel has-photo" id="tab-landscape">
                 <p class="svc-panel-intro">Complete grounds and hardscape services to keep your property looking sharp year-round.</p>
                 <div class="svc-tags">
                     <span class="svc-tag">Lawn care &amp; grass cutting</span>
@@ -929,6 +948,7 @@
                     <span class="svc-tag">Driveway &amp; concrete sealing</span>
                     <span class="svc-tag">Curb repair &amp; painting</span>
                 </div>
+                <figure class="svc-photo"><img src="images/work/driveway-relay-during.jpg" alt="Interlock driveway lifted down to a fresh, levelled base during a re-lay" loading="lazy" decoding="async"><figcaption>Interlock re-lay, down to a new base</figcaption></figure>
             </div>
 
             <div class="svc-panel" id="tab-seasonal">
@@ -1035,7 +1055,7 @@
                         </tr>
                         <tr>
                             <td>Commercial Auto Insurance</td>
-                            <td>All vehicles in our 6+ truck fleet covered</td>
+                            <td>Both trucks in our fleet covered</td>
                             <td><span class="ins-badge">Active</span></td>
                         </tr>
                         <tr>
@@ -1116,7 +1136,7 @@
                     <span class="client-stat-label">Condo &amp; plaza properties maintained</span>
                 </div>
                 <div class="client-stat">
-                    <strong class="client-stat-num">6+</strong>
+                    <strong class="client-stat-num">2</strong>
                     <span class="client-stat-label">Fully equipped trucks in fleet</span>
                 </div>
                 <div class="client-stat">
@@ -1145,6 +1165,11 @@
             <p class="comm-section-label">Why Us</p>
             <h2 class="comm-section-title">Why Property Managers Choose Core Exteriors</h2>
             <p class="comm-section-sub">When you're comparing bids, here's what makes our submission the easy choice.</p>
+            <div class="why-photos">
+                <figure><img src="images/gallery/commercial-plaza-steps-wash.jpg" alt="Core Exteriors pressure washing the stone steps and plaza at the Harrison Pensa office in London Ontario" loading="lazy" decoding="async"><figcaption>Office plaza &amp; steps, Harrison Pensa</figcaption></figure>
+                <figure><img src="images/gallery/commercial-storefront-wash.jpg" alt="Core Exteriors crew member in a company shirt pressure washing a storefront sidewalk" loading="lazy" decoding="async" style="object-position:50% 25%"><figcaption>Storefront &amp; sidewalk washing</figcaption></figure>
+                <figure><img src="images/work/crew-harnesses.jpg" alt="Two Core Exteriors crew members on a commercial rooftop wearing full-body safety harnesses" loading="lazy" decoding="async"><figcaption>Harnessed up, working at heights</figcaption></figure>
+            </div>
             <div class="why-grid">
                 <div class="why-card">
                     <div class="why-icon">
@@ -1215,7 +1240,7 @@
                     <h2 class="comm-section-title">The Equipment Behind Every Job</h2>
                     <p class="proof-copy-body">We don't subcontract. We don't borrow equipment. Our dedicated facility houses professional-grade pressure washing rigs, pure water window cleaning systems, Tucker poles, ladders, and everything needed to handle a full commercial portfolio — in-house, any day of the week.</p>
                     <div class="proof-stats-mini">
-                        <div class="proof-stat-mini"><strong>6+</strong><span>Fully equipped fleet trucks</span></div>
+                        <div class="proof-stat-mini"><strong>2</strong><span>Fully equipped fleet trucks</span></div>
                         <div class="proof-stat-mini"><strong>20+</strong><span>Crew members on jobs daily</span></div>
                         <div class="proof-stat-mini"><strong>100%</strong><span>In-house — no subcontracting</span></div>
                         <div class="proof-stat-mini"><strong>24hr</strong><span>Same or next-day response</span></div>
@@ -1231,10 +1256,10 @@
 
             <div class="proof-photos-row">
                 <div class="proof-photo-card">
-                    <img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/fleet-trucks.jpg" alt="Core Exteriors branded fleet trucks — corexteriors.ca" loading="lazy">
+                    <img src="images/gallery/crew-fleet-trucks.jpg" alt="Core Exteriors branded fleet trucks — corexteriors.ca" loading="lazy">
                     <div class="proof-photo-card-cap">
                         <h4>Branded Fleet</h4>
-                        <p>6+ fully equipped trucks — power washing, window cleaning, and restoration services on every vehicle.</p>
+                        <p>2 fully equipped trucks — power washing, window cleaning, and restoration services on every vehicle.</p>
                     </div>
                 </div>
                 <div class="proof-photo-card">

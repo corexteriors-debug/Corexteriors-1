@@ -1,5 +1,9 @@
 # All images now served from Cloudflare R2 CDN
-images/
+images/*
+# ...except the job photos and client logos that live with the site (GPS stripped, web-sized)
+!images/work/
+!images/clients/
+!images/gallery/
 
 # Raw source photos/videos (not used on the site)
 photos and vids for website/
@@ -27,3 +31,7 @@ workers/
 .nojekyll
 CNAME
 README.md
+
+# scroll-film source videos (the site uses the extracted frames)
+images/scroll/*.mp4
+scripts/frames/

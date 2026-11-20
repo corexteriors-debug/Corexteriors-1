@@ -48,12 +48,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=14">
 
     <style>
         /* Gallery-specific styles */
         .gallery-hero {
-            background: linear-gradient(135deg, var(--sky-blue) 0%, #2980b9 100%);
+            background: linear-gradient(135deg, var(--sky-blue) 0%, #002147 100%);
             padding: 120px 20px 80px;
             text-align: center;
             color: white;
@@ -210,7 +210,7 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-            background: #0a1628;
+            background: #002147;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
         }
@@ -247,7 +247,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(10,22,40,0.92) 0%, rgba(10,22,40,0.0) 100%);
+            background: linear-gradient(to top, rgba(0, 33, 71,0.92) 0%, rgba(0, 33, 71,0.0) 100%);
             padding: 2rem 1.25rem 1.1rem;
             transition: opacity 0.3s;
         }
@@ -296,19 +296,19 @@
         .cta-button-large {
             display: inline-block;
             padding: 18px 48px;
-            background: linear-gradient(135deg, var(--sky-blue) 0%, #2980b9 100%);
+            background: linear-gradient(135deg, var(--sky-blue) 0%, #002147 100%);
             color: white;
             font-size: 1.1rem;
             font-weight: 700;
             text-decoration: none;
             border-radius: 50px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 33, 71, 0.4);
         }
 
         .cta-button-large:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(52, 152, 219, 0.5);
+            box-shadow: 0 8px 30px rgba(0, 33, 71, 0.5);
         }
 
         @media (max-width: 768px) {
@@ -576,13 +576,10 @@
                 </button>
 
                 <ul class="nav-links" id="navLinks">
-                    <li><a href="index.html#services">Services</a></li>
                     <li><a href="commercial.html">Commercial</a></li>
-                    <li><a href="index.html#why-us">Why Us</a></li>
-                    <li><a href="gallery.html" class="active">Gallery</a></li>
-                    <li><a href="index.html#testimonials">Testimonials</a></li>
+                    <li><a href="index.html#services">Services</a></li>
+                    <li><a href="index.html#gallery">Our Work</a></li>
                     <li><a href="index.html#faq">FAQ</a></li>
-                    <li><a href="blog.html">Blog</a></li>
                 </ul>
 
                 <a href="contact.html" class="cta-button">GET A FREE ESTIMATE</a>
@@ -594,7 +591,7 @@
     <section class="gallery-hero">
         <div class="gallery-hero-container">
             <h1>Our Work Gallery</h1>
-            <p>Browse our latest projects and videos.</p>
+            <p>Real jobs from our crew: commercial, interlock, decks, washing and graffiti removal.</p>
         </div>
     </section>
 
@@ -602,414 +599,325 @@
     <section class="filter-section" id="gallery-top">
         <div class="filter-container">
             <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="commercial">Commercial</button>
+            <button class="filter-btn" data-filter="interlock">Interlock</button>
             <button class="filter-btn" data-filter="decks">Decks</button>
             <button class="filter-btn" data-filter="powerwash">Power Wash</button>
-            <button class="filter-btn" data-filter="cleanup">Clean Up</button>
-            <button class="filter-btn" data-filter="hardscape">Hardscaping</button>
+            <button class="filter-btn" data-filter="graffiti">Graffiti</button>
+            <button class="filter-btn" data-filter="crew">Our Crew</button>
         </div>
     </section>
 
     <!-- Gallery Content -->
     <section class="gallery-content">
 
-        <!-- Section 1: Decks -->
+        <div class="photos-section" data-category="commercial">
+            <h2 class="gallery-section-title">Commercial Properties</h2>
+            <p class="gallery-section-subtitle" style="text-align:center;color:#6C757D;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Restaurants, plazas, offices and retail across Southwestern Ontario</p>
+            <div class="hardscape-grid">
+                <div class="hardscape-card wide">
+                    <img src="images/gallery/commercial-rooftop-surface-cleaner.jpg" loading="lazy" alt="Core Exteriors crew member in a safety harness cleaning a commercial flat roof with a surface cleaner" data-label="Flat Roof Surface Cleaning">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Commercial</div>
+                        <div class="hardscape-title">Flat Roof Surface Cleaning</div>
+                    </div>
+                </div>
+                <div class="hardscape-card">
+                    <img src="images/gallery/commercial-shake-shack-drive-thru.jpg" loading="lazy" alt="Core Exteriors crew member soft washing the Shake Shack drive-thru building" data-label="Shake Shack Drive-Thru Soft Wash">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Restaurant</div>
+                        <div class="hardscape-title">Shake Shack Drive-Thru Soft Wash</div>
+                    </div>
+                </div>
+                <div class="hardscape-card">
+                    <img src="images/gallery/commercial-storefront-wash.jpg" loading="lazy" alt="Core Exteriors crew member pressure washing a storefront sidewalk" data-label="Storefront &amp; Sidewalk Wash">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Retail</div>
+                        <div class="hardscape-title">Storefront &amp; Sidewalk Wash</div>
+                    </div>
+                </div>
+                <div class="hardscape-card wide">
+                    <img src="images/gallery/commercial-plaza-steps-wash.jpg" loading="lazy" alt="Pressure washing the stone steps and plaza at the Harrison Pensa office in London Ontario" data-label="Office Plaza &amp; Steps">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Harrison Pensa, London</div>
+                        <div class="hardscape-title">Office Plaza &amp; Steps</div>
+                    </div>
+                </div>
+                <div class="hardscape-card wide">
+                    <img src="images/gallery/commercial-window-cleaning.jpg" loading="lazy" alt="Core Exteriors crew cleaning windows on a four-storey building with water-fed poles" data-label="Multi-Storey Window Cleaning">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Commercial</div>
+                        <div class="hardscape-title">Multi-Storey Window Cleaning</div>
+                    </div>
+                </div>
+                <div class="hardscape-card">
+                    <img src="images/gallery/commercial-angelos-roof.jpg" loading="lazy" alt="Core Exteriors crew cleaning the roof at Angelo&#x27;s Italian Bakery and Market in London Ontario" data-label="Roof Cleaning at Angelo&#x27;s">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Angelo&#x27;s, London</div>
+                        <div class="hardscape-title">Roof Cleaning at Angelo&#x27;s</div>
+                    </div>
+                </div>
+            </div>
+            <div class="photos-grid" style="margin-top:30px;">
+                <div class="photo-card" data-category="commercial">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/commercial-dumpster-pad-before.jpg" loading="lazy" alt="Littered commercial dumpster pad before cleanup" data-label="Dumpster Pad Cleanup - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/commercial-dumpster-pad-after.jpg" loading="lazy" alt="Clean, washed commercial dumpster pad after cleanup by Core Exteriors" data-label="Dumpster Pad Cleanup - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Dumpster Pad Cleanup</div>
+                </div>
+                <div class="photo-card" data-category="commercial">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/commercial-walkway-before.jpg" loading="lazy" alt="Stained covered concrete walkway at a commercial building before washing" data-label="Covered Walkway Wash - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/commercial-walkway-after.jpg" loading="lazy" alt="Clean covered concrete walkway after pressure washing by Core Exteriors" data-label="Covered Walkway Wash - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Covered Walkway Wash</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="photos-section" data-category="interlock">
+            <h2 class="gallery-section-title">Interlock Restoration</h2>
+            <p class="gallery-section-subtitle" style="text-align:center;color:#6C757D;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Re-levelling, re-sanding and washing driveways, patios and walkways</p>
+            <div class="hardscape-grid">
+                <div class="hardscape-card">
+                    <img src="images/gallery/interlock-driveway-finished.jpg" loading="lazy" alt="Restored interlock driveway in front of a two-storey London Ontario home" data-label="Interlock Driveway Restoration">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Driveway</div>
+                        <div class="hardscape-title">Interlock Driveway Restoration</div>
+                    </div>
+                </div>
+                <div class="hardscape-card">
+                    <img src="images/gallery/interlock-patio-clean.jpg" loading="lazy" alt="Cleaned and re-sanded interlock backyard patio" data-label="Backyard Patio Refresh">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Patio</div>
+                        <div class="hardscape-title">Backyard Patio Refresh</div>
+                    </div>
+                </div>
+                <div class="hardscape-card">
+                    <img src="images/gallery/interlock-front-walkway.jpg" loading="lazy" alt="Clean interlock front walkway with fresh garden beds" data-label="Front Walkway Wash &amp; Re-Sand">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Walkway</div>
+                        <div class="hardscape-title">Front Walkway Wash &amp; Re-Sand</div>
+                    </div>
+                </div>
+            </div>
+            <div class="photos-grid" style="margin-top:30px;">
+                <div class="photo-card" data-category="interlock">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/interlock-driveway-relay-during.jpg" loading="lazy" alt="Interlock driveway lifted down to the base during a re-levelling job" data-label="Driveway Lift &amp; Relay - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/interlock-driveway-relay-after.jpg" loading="lazy" alt="The same driveway after the pavers were relaid and re-sanded" data-label="Driveway Lift &amp; Relay - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Driveway Lift &amp; Relay</div>
+                </div>
+                <div class="photo-card" data-category="interlock">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/interlock-garden-path-before.jpg" loading="lazy" alt="Weedy interlock garden path before cleaning" data-label="Garden Path Weed Removal &amp; Re-Sand - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/interlock-garden-path-after.jpg" loading="lazy" alt="Weed-free interlock garden path after cleaning and polymeric sand" data-label="Garden Path Weed Removal &amp; Re-Sand - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Garden Path Weed Removal &amp; Re-Sand</div>
+                </div>
+            </div>
+        </div>
+
         <div class="photos-section" data-category="decks">
             <h2 class="gallery-section-title">Deck Restorations</h2>
-            <div class="photos-grid">
-                <!-- Deck Restoration (4 stages) -->
-                <div class="photo-card photo-card-wide" data-category="decks">
-                    <div class="photo-card-grid" data-gallery-group="deck-transformation">
-                        <div class="image-slot">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-before.jpg" loading="lazy" alt="Grey weathered deck with mould and peeling stain before professional deck restoration in London Ontario"
-                                data-label="Deck Restoration - Stage 1: Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-stage-label">1. Before</span>
-                        </div>
-                        <div class="image-slot">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-step2.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-step2.jpg" loading="lazy" alt="London Ontario deck after pressure washing and stripping — mid-restoration stage by Core Exteriors"
-                                data-label="Deck Restoration - Stage 2: Power Washed"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-stage-label">2. Washed</span>
-                        </div>
-                        <div class="image-slot">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-step3.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-step3.jpg" loading="lazy" alt="Deck boards sanded and prepped for staining during professional deck restoration in London Ontario"
-                                data-label="Deck Restoration - Stage 3: Sanded"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-stage-label">3. Sanded</span>
-                        </div>
-                        <div class="image-slot">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/deck-after.jpg" loading="lazy" alt="Fully restored and stained deck in London Ontario after professional deck restoration by Core Exteriors"
-                                data-label="Deck Restoration - Stage 4: Stained"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-stage-label">4. Stained</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Deck Restoration - Full Transformation</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 2: Power Wash (Interlock, Siding) -->
-        <div class="photos-section" data-category="powerwash">
-            <h2 class="gallery-section-title">Power Wash Transformations</h2>
-            <div class="photos-grid">
-                <!-- Paver Power Wash - Westmount -->
-                <div class="photo-card" data-category="powerwash">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/paver-westmount-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/paver-westmount-before.jpg" loading="lazy"
-                                alt="Stained algae-covered interlocking paver walkway in Westmount London Ontario before professional pressure washing"
-                                data-label="Paver Power Wash - Westmount - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/paver-westmount-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/paver-westmount-after.jpg" loading="lazy"
-                                alt="Clean restored interlocking paver walkway in Westmount London Ontario after professional pressure washing"
-                                data-label="Paver Power Wash - Westmount - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Paver Power Wash - Westmount</div>
-                </div>
-
-                <!-- Siding Cleaning - Masonville -->
-                <div class="photo-card" data-category="powerwash">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-masonville-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-masonville-before.jpg" loading="lazy"
-                                alt="Algae-streaked vinyl siding on a Masonville London Ontario home before professional soft wash cleaning"
-                                data-label="Siding Power Wash - Masonville - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-masonville-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-masonville-after.jpg" loading="lazy"
-                                alt="Clean bright vinyl siding on a Masonville London Ontario home after professional soft wash by Core Exteriors"
-                                data-label="Siding Power Wash - Masonville - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Siding Power Wash - Masonville</div>
-                </div>
-
-                <!-- Patio Power Wash & Restoration -->
-                <div class="photo-card" data-category="powerwash">
-                    <div class="image-slot" style="aspect-ratio: 4/3;">
-                        <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/patio-powerwash.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/patio-powerwash.jpg" loading="lazy"
-                            alt="Clean restored interlock patio pavers in London Ontario after professional pressure washing and sealing by Core Exteriors" data-label="Patio Power Wash & Restoration"
-                            style="width:100%;height:100%;object-fit:cover;"></picture>
-                    </div>
-                    <div class="photo-card-label">Patio Power Wash & Restoration</div>
-                </div>
-
-                <!-- Siding Soft Wash Transformation -->
-                <div class="photo-card" data-category="powerwash">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-cleaning-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-cleaning-before.jpg" loading="lazy"
-                                alt="Vinyl siding covered in green algae and black mould on a London Ontario home before professional soft wash cleaning"
-                                data-label="Siding Soft Wash Transformation - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-cleaning-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-cleaning-after.jpg" loading="lazy"
-                                alt="Clean white vinyl siding on a London Ontario home after professional soft wash service by Core Exteriors"
-                                data-label="Siding Soft Wash Transformation - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Siding Soft Wash Transformation</div>
-                </div>
-
-                <!-- Patio Power Wash - Komoka -->
-                <div class="photo-card" data-category="powerwash">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/patio-komoka-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/patio-komoka-before.jpg" loading="lazy"
-                                alt="Weed-filled and stained interlock patio in Komoka Ontario before professional cleaning and relevelling by Core Exteriors"
-                                data-label="Patio Power Wash - Komoka - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/patio-komoka-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/patio-komoka-after.jpg" loading="lazy"
-                                alt="Restored clean interlock patio in Komoka Ontario after professional pressure washing and sealing by Core Exteriors"
-                                data-label="Patio Power Wash - Komoka - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Patio Power Wash - Komoka</div>
-                </div>
-
-                <!-- Driveway Power Wash - Oakridge -->
-                <div class="photo-card" data-category="powerwash">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/driveway-oakridge-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/driveway-oakridge-before.jpg" loading="lazy"
-                                alt="Oil-stained concrete driveway in Oakridge London Ontario before professional pressure washing by Core Exteriors"
-                                data-label="Driveway Power Wash - Oakridge - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/driveway-oakridge-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/driveway-oakridge-after.jpg" loading="lazy"
-                                alt="Clean concrete driveway in Oakridge London Ontario after professional pressure washing by Core Exteriors"
-                                data-label="Driveway Power Wash - Oakridge - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Driveway Power Wash - Oakridge</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 3: Clean Up (Gutter Cleaning) -->
-        <div class="photos-section" data-category="cleanup">
-            <h2 class="gallery-section-title">Clean Up Services</h2>
-            <div class="photos-grid">
-                <!-- Gutter Cleaning -->
-                <div class="photo-card" data-category="cleanup">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-before.jpg" loading="lazy"
-                                alt="Eavestrough packed with leaves and organic debris on a London Ontario home before professional gutter cleaning"
-                                data-label="Gutter Cleaning - London - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-after.jpg" loading="lazy"
-                                alt="Clear flowing eavestrough on a London Ontario home after professional gutter cleaning by Core Exteriors"
-                                data-label="Gutter Cleaning - London - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Gutter Cleaning - London</div>
-                </div>
-
-                <!-- Sidewalk Cleaning - Byron -->
-                <div class="photo-card" data-category="cleanup">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/sidewalk-byron-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/sidewalk-byron-before.jpg" loading="lazy"
-                                alt="Stained and algae-covered concrete sidewalk in Byron London Ontario before professional pressure washing" data-label="Sidewalk Cleaning - Byron - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/sidewalk-byron-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/sidewalk-byron-after.jpg" loading="lazy"
-                                alt="Clean concrete sidewalk in Byron London Ontario after professional pressure washing by Core Exteriors" data-label="Sidewalk Cleaning - Byron - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Sidewalk Cleaning - Byron</div>
-                </div>
-
-                <!-- Gutter Cleaning - Oakridge -->
-                <div class="photo-card" data-category="cleanup">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-oakridge-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-oakridge-before.jpg" loading="lazy"
-                                alt="Clogged eavestroughs packed with leaves in Oakridge London Ontario before professional gutter cleaning" data-label="Gutter Cleaning - Oakridge - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-oakridge-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-oakridge-after.jpg" loading="lazy"
-                                alt="Clear flowing eavestroughs in Oakridge London Ontario after professional gutter cleaning by Core Exteriors" data-label="Gutter Cleaning - Oakridge - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Gutter Cleaning - Oakridge</div>
-                </div>
-
-                <!-- Siding & Vine Clean Up - Hyde Park -->
-                <div class="photo-card" data-category="cleanup">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-hydepark-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-hydepark-before.jpg" loading="lazy"
-                                alt="Algae-covered vinyl siding with vine growth on a Hyde Park London Ontario home before soft wash cleaning"
-                                data-label="Siding & Vine Clean Up - Hyde Park - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-hydepark-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/siding-hydepark-after.jpg" loading="lazy"
-                                alt="Clean vinyl siding in Hyde Park London Ontario after professional soft wash and vine removal by Core Exteriors"
-                                data-label="Siding & Vine Clean Up - Hyde Park - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Siding & Vine Clean Up - Hyde Park</div>
-                </div>
-
-                <!-- Outdoor Rug Cleaning (Combined) -->
-                <div class="photo-card" data-category="cleanup">
-                    <div class="image-slot" style="aspect-ratio: 16/9; max-width: 500px; margin: 0 auto;">
-                        <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/rug-cleaning-combined.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/rug-cleaning-combined.jpg" loading="lazy"
-                            alt="Outdoor area rug before and after professional cleaning by Core Exteriors London Ontario"
-                            data-label="Outdoor Rug Cleaning - Before & After"
-                            style="width:100%;height:100%;object-fit:cover;"></picture>
-                    </div>
-                    <div class="photo-card-label">Outdoor Rug Cleaning</div>
-                </div>
-
-                <!-- Gutter Cleaning - Wortley -->
-                <div class="photo-card" data-category="cleanup">
-                    <div class="before-after">
-                        <div class="image-slot before">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-wortley-before.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-wortley-before.jpg" loading="lazy"
-                                alt="Clogged eavestroughs filled with debris in Wortley Village London Ontario before professional gutter cleaning"
-                                data-label="Gutter Cleaning - Wortley - Before"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">Before</span>
-                        </div>
-                        <div class="image-slot after">
-                            <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-wortley-after.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/gutter-wortley-after.jpg" loading="lazy"
-                                alt="Clear eavestroughs in Wortley Village London Ontario after professional gutter cleaning by Core Exteriors"
-                                data-label="Gutter Cleaning - Wortley - After"
-                                style="width:100%;height:100%;object-fit:cover;"></picture>
-                            <span class="image-label">After</span>
-                        </div>
-                    </div>
-                    <div class="photo-card-label">Gutter Cleaning - Wortley</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 4: Hardscaping -->
-        <div class="photos-section" data-category="hardscape">
-            <h2 class="gallery-section-title">Hardscaping & Landscape Design</h2>
-            <p class="gallery-section-subtitle" style="text-align:center;color:#4a5568;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Custom interlock, patios, outdoor kitchens, and landscape transformations across London and surrounding areas</p>
-
+            <p class="gallery-section-subtitle" style="text-align:center;color:#6C757D;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Washing, sanding and staining that brings tired wood back</p>
             <div class="hardscape-grid">
-
-                <!-- Wide: Front Interlock Walkway — Masonville -->
                 <div class="hardscape-card wide">
-                    <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CSVS8207-HDR-scaled.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CSVS8207-HDR-scaled.jpg" loading="lazy"
-                        alt="Newly installed interlock paver front walkway and driveway at a brick home in Masonville London Ontario"
-                        data-label="Interlock Front Walkway &amp; Driveway — Masonville, London"></picture>
+                    <img src="images/gallery/deck-wraparound-restored.jpg" loading="lazy" alt="Freshly restored wraparound wood deck" data-label="Wraparound Deck Restoration">
                     <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            Masonville, London
-                        </div>
-                        <div class="hardscape-title">Interlock Front Walkway &amp; Driveway</div>
+                        <div class="hardscape-location">Deck</div>
+                        <div class="hardscape-title">Wraparound Deck Restoration</div>
                     </div>
                 </div>
-
-                <!-- Interlock Patio & Steps — Westmount -->
                 <div class="hardscape-card">
-                    <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CSVS8191-scaled.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CSVS8191-scaled.jpg" loading="lazy"
-                        alt="Interlock paver patio with stone steps and Japanese maple at a Westmount London Ontario home"
-                        data-label="Interlock Patio &amp; Steps — Westmount, London"></picture>
+                    <img src="images/gallery/deck-patio-clean.jpg" loading="lazy" alt="Clean composite-look deck with patio furniture" data-label="Backyard Deck Clean">
                     <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            Westmount, London
-                        </div>
-                        <div class="hardscape-title">Interlock Patio &amp; Stone Steps</div>
+                        <div class="hardscape-location">Deck</div>
+                        <div class="hardscape-title">Backyard Deck Clean</div>
                     </div>
                 </div>
-
-                <!-- Flagstone Fire Pit Patio — Strathroy -->
-                <div class="hardscape-card">
-                    <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/Frankruyters_CSVS6972_resize.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/Frankruyters_CSVS6972_resize.jpg" loading="lazy"
-                        alt="Natural flagstone fire pit patio with seating area surrounded by ornamental grasses and gardens in Strathroy Ontario"
-                        data-label="Flagstone Fire Pit Patio — Strathroy, ON"></picture>
-                    <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            Strathroy, ON
+            </div>
+            <div class="photos-grid" style="margin-top:30px;">
+                <div class="photo-card" data-category="decks">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/deck-front-before.jpg" loading="lazy" alt="Grey weathered front deck before restoration" data-label="Front Deck Restoration - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
                         </div>
-                        <div class="hardscape-title">Flagstone Fire Pit &amp; Garden Patio</div>
-                    </div>
-                </div>
-
-                <!-- Outdoor Kitchen & Bar — Hyde Park -->
-                <div class="hardscape-card">
-                    <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/Frankruyters_CSVS7024_HDR_resize.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/Frankruyters_CSVS7024_HDR_resize.jpg" loading="lazy"
-                        alt="Custom outdoor kitchen and bar with concrete block construction and integrated lighting on a paver patio in Hyde Park London Ontario"
-                        data-label="Outdoor Kitchen &amp; Bar — Hyde Park, London"></picture>
-                    <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            Hyde Park, London
+                        <div class="image-slot after">
+                            <img src="images/gallery/deck-front-after.jpg" loading="lazy" alt="The same front deck after washing, sanding and staining" data-label="Front Deck Restoration - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
                         </div>
-                        <div class="hardscape-title">Custom Outdoor Kitchen &amp; Bar</div>
                     </div>
+                    <div class="photo-card-label">Front Deck Restoration</div>
                 </div>
-
-                <!-- Wide: Backyard Patio & Pergola — Dorchester -->
-                <div class="hardscape-card wide">
-                    <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CSVS8354-HDR-scaled.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CSVS8354-HDR-scaled.jpg" loading="lazy"
-                        alt="Backyard patio with timber pergola, flagstone path, fire pit and garden beds at a home in Dorchester Ontario"
-                        data-label="Backyard Patio &amp; Pergola — Dorchester, ON"></picture>
-                    <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            Dorchester, ON
+                <div class="photo-card" data-category="decks">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/deck-back-before.jpg" loading="lazy" alt="Dark weathered back deck before restoration" data-label="Back Deck Restoration - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
                         </div>
-                        <div class="hardscape-title">Backyard Patio, Pergola &amp; Landscape</div>
-                    </div>
-                </div>
-
-                <!-- Pool Deck & Cabana — St. Thomas -->
-                <div class="hardscape-card">
-                    <img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/Frankruyters_CSVS7045_HDR-scaled.webp" loading="lazy"
-                        alt="Large format paver pool deck with modern timber cabana and outdoor lounge area in St. Thomas Ontario"
-                        data-label="Pool Deck &amp; Cabana — St. Thomas, ON">
-                    <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            St. Thomas, ON
+                        <div class="image-slot after">
+                            <img src="images/gallery/deck-back-after.jpg" loading="lazy" alt="The same back deck after restoration by Core Exteriors" data-label="Back Deck Restoration - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
                         </div>
-                        <div class="hardscape-title">Pool Deck &amp; Timber Cabana</div>
                     </div>
+                    <div class="photo-card-label">Back Deck Restoration</div>
                 </div>
-
-                <!-- Pool Deck & Outdoor Kitchen — South London -->
-                <div class="hardscape-card">
-                    <img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/Ovcjak_CSVS6776_HDR-scaled.webp" loading="lazy"
-                        alt="Large paver pool deck with custom outdoor kitchen island and BBQ station in South London Ontario"
-                        data-label="Pool Deck &amp; Outdoor Kitchen — South London">
-                    <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            South London
-                        </div>
-                        <div class="hardscape-title">Pool Deck &amp; Outdoor Kitchen</div>
-                    </div>
-                </div>
-
-                <!-- Wide: Natural Stone Garden Path — Byron -->
-                <div class="hardscape-card wide">
-                    <picture><source srcset="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CC-Contrest-edits.-44-scaled.webp" type="image/webp"><img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/hardscape/CC-Contrest-edits.-44-scaled.jpg" loading="lazy"
-                        alt="Natural stone step garden path with lavender and ornamental plantings in Byron London Ontario"
-                        data-label="Natural Stone Garden Path — Byron, London"></picture>
-                    <div class="hardscape-overlay">
-                        <div class="hardscape-location">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                            Byron, London
-                        </div>
-                        <div class="hardscape-title">Natural Stone Garden Path &amp; Planting Design</div>
-                    </div>
-                </div>
-
             </div>
         </div>
 
+        <div class="photos-section" data-category="powerwash">
+            <h2 class="gallery-section-title">Power &amp; Soft Wash</h2>
+            <p class="gallery-section-subtitle" style="text-align:center;color:#6C757D;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Siding, gutters, concrete and more, with the right pressure for each surface</p>
+            <div class="photos-grid">
+                <div class="photo-card" data-category="powerwash">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/siding-gable-before.jpg" loading="lazy" alt="Vinyl siding streaked with algae before soft washing" data-label="Siding Soft Wash - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/siding-gable-after.jpg" loading="lazy" alt="Bright clean vinyl siding after soft washing by Core Exteriors" data-label="Siding Soft Wash - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Siding Soft Wash</div>
+                </div>
+                <div class="photo-card" data-category="powerwash">
+                    <div class="image-slot" style="aspect-ratio: 2/1;">
+                        <img src="images/gallery/sidewalk-split.jpg" loading="lazy" alt="Concrete sidewalk half cleaned, showing the dirty and pressure-washed sections side by side" data-label="Sidewalk Pressure Wash, Mid-Job" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="photo-card-label">Sidewalk Pressure Wash, Mid-Job</div>
+                </div>
+                <div class="photo-card" data-category="powerwash">
+                    <div class="image-slot" style="aspect-ratio: 2/1;">
+                        <img src="images/gallery/gutter-split.jpg" loading="lazy" alt="Gutter face half cleaned, showing black streaks next to the brightened section" data-label="Gutter Face Whitening, Mid-Job" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="photo-card-label">Gutter Face Whitening, Mid-Job</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="photos-section" data-category="graffiti">
+            <h2 class="gallery-section-title">Graffiti Removal</h2>
+            <p class="gallery-section-subtitle" style="text-align:center;color:#6C757D;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Same or next day removal from doors, brick, metal and utility boxes</p>
+            <div class="photos-grid">
+                <div class="photo-card" data-category="graffiti">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/graffiti-door-before.jpg" loading="lazy" alt="Steel service door covered in a large graffiti drawing" data-label="Service Door - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/graffiti-door-after.jpg" loading="lazy" alt="The same door with the graffiti fully removed" data-label="Service Door - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Service Door</div>
+                </div>
+                <div class="photo-card" data-category="graffiti">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/graffiti-door-2-before.jpg" loading="lazy" alt="White steel door tagged with purple spray paint" data-label="Tagged Steel Door - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/graffiti-door-2-after.jpg" loading="lazy" alt="The same door after graffiti removal" data-label="Tagged Steel Door - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Tagged Steel Door</div>
+                </div>
+                <div class="photo-card" data-category="graffiti">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/graffiti-utility-box-before.jpg" loading="lazy" alt="Green utility box tagged with orange spray paint" data-label="Utility Box - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/graffiti-utility-box-after.jpg" loading="lazy" alt="The same utility box after graffiti removal" data-label="Utility Box - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Utility Box</div>
+                </div>
+                <div class="photo-card" data-category="graffiti">
+                    <div class="before-after">
+                        <div class="image-slot before">
+                            <img src="images/gallery/graffiti-brick-before.jpg" loading="lazy" alt="Spray paint tag on red brick" data-label="Brick Wall - Before" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">Before</span>
+                        </div>
+                        <div class="image-slot after">
+                            <img src="images/gallery/graffiti-brick-after.jpg" loading="lazy" alt="The same brick wall after graffiti removal" data-label="Brick Wall - After" style="width:100%;height:100%;object-fit:cover;">
+                            <span class="image-label">After</span>
+                        </div>
+                    </div>
+                    <div class="photo-card-label">Brick Wall</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="photos-section" data-category="crew">
+            <h2 class="gallery-section-title">Our Crew</h2>
+            <p class="gallery-section-subtitle" style="text-align:center;color:#6C757D;margin-top:-18px;margin-bottom:30px;font-size:.97rem;">Insured, WSIB-cleared and in branded trucks on every job</p>
+            <div class="hardscape-grid">
+                <div class="hardscape-card wide">
+                    <img src="images/gallery/crew-fleet-trucks.jpg" loading="lazy" alt="Two Core Exteriors trucks with company branding and ladder racks" data-label="Core Exteriors Fleet">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Crew</div>
+                        <div class="hardscape-title">Core Exteriors Fleet</div>
+                    </div>
+                </div>
+                <div class="hardscape-card">
+                    <img src="images/gallery/crew-team.jpg" loading="lazy" alt="Four Core Exteriors crew members in matching navy company polos" data-label="The Core Exteriors Team" style="object-position:50% 45%">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Crew</div>
+                        <div class="hardscape-title">The Core Exteriors Team</div>
+                    </div>
+                </div>
+                <div class="hardscape-card wide">
+                    <img src="images/gallery/crew-safety-harnesses.jpg" loading="lazy" alt="Two Core Exteriors crew members wearing full-body safety harnesses on a rooftop" data-label="Harnessed Up for Roof Work">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Safety</div>
+                        <div class="hardscape-title">Harnessed Up for Roof Work</div>
+                    </div>
+                </div>
+                <div class="hardscape-card">
+                    <img src="images/gallery/crew-roof-ladder.jpg" loading="lazy" alt="Core Exteriors crew on a residential roof with a ladder" data-label="Residential Roof Work">
+                    <div class="hardscape-overlay">
+                        <div class="hardscape-location">Crew</div>
+                        <div class="hardscape-title">Residential Roof Work</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Call to Action -->
         <div class="gallery-cta">

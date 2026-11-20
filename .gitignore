@@ -55,3 +55,6 @@ crm/scripts/setup-google-env.js
 .env*.local
 scripts/upload-to-r2.js
 .env.r2
+
+# full-size Drive photos (some contain GPS locations of client homes) - never commit
+images/drive-picks/
