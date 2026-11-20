@@ -1,9 +1,117 @@
-# All images now served from Cloudflare R2 CDN
-images/*
-# ...except the job photos and client logos that live with the site (GPS stripped, web-sized)
-!images/work/
-!images/clients/
-!images/gallery/
+# Images are served from Cloudflare R2, except images/work, images/clients and images/gallery,
+# which deploy with the site. Vercel does not honour '!' re-includes, so list what to skip.
+images/Landscaping in Burlington, Oakville, Hamilton _ Creative Concepts.html
+images/deck-after-homepage.jpg
+images/deck-after-homepage.webp
+images/deck-after.jpg
+images/deck-after.webp
+images/deck-before-homepage.jpg
+images/deck-before-homepage.webp
+images/deck-before.jpg
+images/deck-before.webp
+images/deck-step2.jpg
+images/deck-step2.webp
+images/deck-step3.jpg
+images/deck-step3.webp
+images/deck_after.jpeg
+images/deck_after.webp
+images/deck_before.jpeg
+images/deck_before.webp
+images/drive-picks/
+images/driveway-oakridge-after.jpg
+images/driveway-oakridge-after.webp
+images/driveway-oakridge-before.jpg
+images/driveway-oakridge-before.webp
+images/equipment-storage.jpg
+images/fleet-trucks.jpg
+images/graffiti after.jpeg
+images/graffiti after.webp
+images/graffiti before-nohuman.jpeg
+images/graffiti before-nohuman.webp
+images/graffiti before.jpeg
+images/graffiti before.webp
+images/gutter-after.jpg
+images/gutter-after.webp
+images/gutter-before.jpg
+images/gutter-before.webp
+images/gutter-oakridge-after.jpg
+images/gutter-oakridge-after.webp
+images/gutter-oakridge-before.jpg
+images/gutter-oakridge-before.webp
+images/gutter-wortley-after.jpg
+images/gutter-wortley-after.webp
+images/gutter-wortley-before.jpg
+images/gutter-wortley-before.webp
+images/hardscape/
+images/hero.png
+images/hero.webp
+images/logo-emblem.png
+images/logo-emblem.webp
+images/logo-letter.png
+images/logo-letter.webp
+images/logo-letterform.png
+images/logo-letterform.webp
+images/logo-mark.png
+images/logo-mark.webp
+images/logo-wordmark-new.png
+images/logo-wordmark-new.webp
+images/logo-wordmark-v2.png
+images/logo-wordmark-v2.webp
+images/logo-wordmark.png
+images/logo-wordmark.webp
+images/logo.png
+images/logo.webp
+images/oil_after.jpeg
+images/oil_after.webp
+images/oil_after2.jpeg
+images/oil_after2.webp
+images/oil_before.jpeg
+images/oil_before.webp
+images/oil_before2.jpeg
+images/oil_before2.webp
+images/patio-komoka-after.jpg
+images/patio-komoka-after.webp
+images/patio-komoka-before.jpg
+images/patio-komoka-before.webp
+images/patio-levelling-after.jpg
+images/patio-levelling-after.webp
+images/patio-levelling-before.jpg
+images/patio-levelling-before.webp
+images/patio-powerwash.jpg
+images/patio-powerwash.webp
+images/paver-westmount-after.jpg
+images/paver-westmount-after.webp
+images/paver-westmount-before.jpg
+images/paver-westmount-before.webp
+images/pipeline after.jpg
+images/pipeline after.webp
+images/pipeline before.jpeg
+images/pipeline before.webp
+images/relevel after.webp
+images/relevel before.webp
+images/rug-cleaning-combined.jpg
+images/rug-cleaning-combined.webp
+images/scroll/
+images/sidewalk-byron-after.jpg
+images/sidewalk-byron-after.webp
+images/sidewalk-byron-before.jpg
+images/sidewalk-byron-before.webp
+images/siding-cleaning-after.jpg
+images/siding-cleaning-after.webp
+images/siding-cleaning-before.jpg
+images/siding-cleaning-before.webp
+images/siding-hydepark-after.jpg
+images/siding-hydepark-after.webp
+images/siding-hydepark-before.jpg
+images/siding-hydepark-before.webp
+images/siding-masonville-after.jpg
+images/siding-masonville-after.webp
+images/siding-masonville-before.jpg
+images/siding-masonville-before.webp
+images/video1.mp4
+images/video2.mp4
+images/video3.mp4
+images/video4.mp4
 
 # Raw source photos/videos (not used on the site)
 photos and vids for website/
