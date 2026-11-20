@@ -3632,3 +3632,12 @@ body.page-exit {
         margin: 0;
     }
 }
+
+/* Service cards are visible by default; the fade-in is only an extra where motion is allowed */
+.service-card {
+    opacity: 1;
+    animation: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .service-card { animation: fadeInUp 0.6s ease both; }
+}
