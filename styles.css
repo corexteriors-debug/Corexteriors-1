@@ -3563,7 +3563,7 @@ body.page-exit {
     }
 }
 
-/* Hero logo: live Montserrat wordmark (sharp at any size) with a subtle extruded 3D look */
+/* Hero logo: live Montserrat wordmark — crisp vector text, metallic fills, slow light sweep */
 .hero-wordmark {
     display: inline-flex;
     flex-direction: column;
@@ -3572,42 +3572,82 @@ body.page-exit {
     mix-blend-mode: normal;
     filter: none;
     font-family: 'Montserrat', 'Inter', sans-serif;
-    font-size: 118px;              /* sets the scale; children use em */
+    /* sized so the wordmark fills the hero column (it is ~2.95em wide) */
+    font-size: min(172px, calc((100vw - 110px) / 5.9));
     line-height: .86;
-    margin-bottom: 28px;
+    margin-bottom: 30px;
     user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+}
+.hero-wordmark .wm-core,
+.hero-wordmark .wm-ext {
+    display: block;
+    white-space: nowrap;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    /* layer 1 = moving sheen, layer 2 = metallic base */
+    background-size: 250% 100%, 100% 100%;
+    background-repeat: no-repeat;
+    background-position: 160% 0, 0 0;
+    animation: wm-sheen 7s cubic-bezier(.45, 0, .2, 1) 1.2s infinite;
 }
 .hero-wordmark .wm-core {
     font-weight: 800;
     font-size: 1em;
-    letter-spacing: -.01em;
-    color: #002147;
-    text-shadow:
-        1px 1px 0 #00142e,
-        2px 2px 0 rgba(0, 20, 46, .55),
-        3px 3px 0 rgba(0, 20, 46, .25),
-        0 10px 18px rgba(0, 33, 71, .25);
+    letter-spacing: -.015em;
+    background-image:
+        linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .55) 48%, rgba(255, 255, 255, .85) 50%, rgba(255, 255, 255, .55) 52%, transparent 62%),
+        linear-gradient(180deg, #0d3a6e 0%, #002147 46%, #00142e 100%);
+    /* one crisp extrusion step + soft ambient shadow (no smeared offsets) */
+    filter: drop-shadow(0 2px 0 #000c1c) drop-shadow(0 14px 22px rgba(0, 33, 71, .22));
 }
 .hero-wordmark .wm-ext {
     font-weight: 700;
     font-size: .49em;
-    letter-spacing: .005em;
-    margin-top: .12em;
-    color: #C9A84C;
-    text-shadow:
-        1px 1px 0 #9c7f33,
-        2px 2px 0 rgba(120, 95, 30, .45),
-        0 6px 12px rgba(0, 33, 71, .2);
+    letter-spacing: .012em;
+    margin-top: .14em;
+    background-image:
+        linear-gradient(105deg, transparent 38%, rgba(255, 250, 230, .7) 48%, #fffdf2 50%, rgba(255, 250, 230, .7) 52%, transparent 62%),
+        linear-gradient(180deg, #f6e3a1 0%, #dcbf6a 28%, #C9A84C 50%, #a8862f 72%, #e2c879 100%);
+    filter: drop-shadow(0 1.5px 0 #7d6220) drop-shadow(0 8px 14px rgba(0, 33, 71, .18));
+    animation-delay: 1.55s;
 }
 .hero-wordmark .wm-x {
+    /* keep the hollow X: hide the glyph from the metallic fill, draw an outlined copy on top */
+    position: relative;
+    display: inline-block;
+    visibility: hidden;
+}
+.hero-wordmark .wm-x::after {
+    content: 'X';
+    visibility: visible;
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: inherit;
     color: transparent;
     -webkit-text-fill-color: transparent;
-    -webkit-text-stroke: .085em #C9A84C;
-    text-shadow: none;
-    filter: drop-shadow(1px 1px 0 #9c7f33);
+    -webkit-text-stroke: .085em #d4b45c;
+}
+@keyframes wm-sheen {
+    0%   { background-position: 160% 0, 0 0; }
+    32%  { background-position: -60% 0, 0 0; }
+    100% { background-position: -60% 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-wordmark .wm-core,
+    .hero-wordmark .wm-ext { animation: none; }
+}
+@media (max-width: 900px) {
+    .hero-wordmark { font-size: min(150px, 17vw); }
 }
 @media (max-width: 600px) {
-    .hero-wordmark { font-size: 58px; margin: 0 auto 20px; display: flex; width: max-content; }
+    .hero-wordmark { font-size: min(96px, 24vw); margin: 0 auto 22px; display: flex; width: max-content; }
 }
 
 /* Phones: photo service cards stack (photo, title, text) instead of the old icon-row layout */
