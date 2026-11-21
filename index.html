@@ -344,9 +344,9 @@
     <style>
         .clients-bar { background: #fff; border-top: 1px solid #e7e3d9; border-bottom: 1px solid #e7e3d9; padding: 34px 0 38px; overflow: hidden; }
         .clients-label { text-align: center; margin: 0 0 16px; color: #8C6E22; font-weight: 700; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; }
-        .clients-viewport { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-        .clients-track { display: flex; width: max-content; animation: clients-scroll 55s linear infinite; }
-        .clients-bar:hover .clients-track { animation-play-state: paused; }
+        .clients-viewport { overflow: hidden; transform: translateZ(0); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+        .clients-track { display: flex; width: max-content; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; animation: clients-scroll 55s linear infinite; }
+        @media (hover: hover) and (pointer: fine) { .clients-bar:hover .clients-track { animation-play-state: paused; } }
         .clients-list { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; }
         .clients-list li { display: flex; align-items: center; justify-content: center; height: 88px; padding: 0 40px; }
         .client-logo { display: block; height: 46px; width: auto; max-width: 200px; object-fit: contain; }
@@ -354,7 +354,7 @@
         .client-logo.square { height: 78px; }
         .client-name { white-space: nowrap; color: #002147; font-weight: 800; font-size: 1.45rem; letter-spacing: -.01em; }
         @media (max-width: 860px) { .clients-list li { padding: 0 26px; height: 70px; } .client-logo { height: 36px; max-width: 150px; } .client-logo.tall { height: 48px; } .client-logo.square { height: 60px; } .client-name { font-size: 1.2rem; } }
-        @keyframes clients-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes clients-scroll { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
         @media (prefers-reduced-motion: reduce) {
             .clients-track { animation: none; width: auto; }
             .clients-list[aria-hidden="true"] { display: none; }
@@ -600,36 +600,36 @@
         <div class="clients-viewport">
             <div class="clients-track">
                 <ul class="clients-list">
-                    <li><img class="client-logo" src="images/clients/lcbo.svg?v=2" alt="LCBO" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo" src="images/clients/southside-group.png?v=2" alt="The Southside Group" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo tall" src="images/clients/dairy-queen.svg?v=2" alt="Dairy Queen" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo" src="images/clients/winners.svg?v=2" alt="Winners" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo tall" src="images/clients/beer-store.png?v=2" alt="The Beer Store" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo square" src="images/clients/holiday-inn.svg?v=2" alt="Holiday Inn" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo square" src="images/clients/angelos.png?v=2" alt="Angelo's Italian Bakery &amp; Market" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo tall" src="images/clients/damian-warner.png?v=2" alt="Damian Warner Fitness Centre" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo" src="images/clients/freshco.svg?v=2" alt="FreshCo" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo" src="images/clients/petsmart.svg?v=2" alt="PetSmart" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo" src="images/clients/sport-chek.svg?v=2" alt="Sport Chek" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo" src="images/clients/dollarama.svg?v=2" alt="Dollarama" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo" src="images/clients/midland.svg?v=2" alt="Midland Transport" loading="lazy" decoding="async"></li>
-                    <li><img class="client-logo tall" src="images/clients/bluestone.png?v=2" alt="BlueStone Properties" loading="lazy" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/lcbo.svg?v=2" alt="LCBO" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/southside-group.png?v=2" alt="The Southside Group" decoding="async"></li>
+                    <li><img class="client-logo tall" src="images/clients/dairy-queen.svg?v=2" alt="Dairy Queen" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/winners.svg?v=2" alt="Winners" decoding="async"></li>
+                    <li><img class="client-logo tall" src="images/clients/beer-store.png?v=2" alt="The Beer Store" decoding="async"></li>
+                    <li><img class="client-logo square" src="images/clients/holiday-inn.svg?v=2" alt="Holiday Inn" decoding="async"></li>
+                    <li><img class="client-logo square" src="images/clients/angelos.png?v=2" alt="Angelo's Italian Bakery &amp; Market" decoding="async"></li>
+                    <li><img class="client-logo tall" src="images/clients/damian-warner.png?v=2" alt="Damian Warner Fitness Centre" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/freshco.svg?v=2" alt="FreshCo" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/petsmart.svg?v=2" alt="PetSmart" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/sport-chek.svg?v=2" alt="Sport Chek" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/dollarama.svg?v=2" alt="Dollarama" decoding="async"></li>
+                    <li><img class="client-logo" src="images/clients/midland.svg?v=2" alt="Midland Transport" decoding="async"></li>
+                    <li><img class="client-logo tall" src="images/clients/bluestone.png?v=2" alt="BlueStone Properties" decoding="async"></li>
                 </ul>
                 <ul class="clients-list" aria-hidden="true">
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/lcbo.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/southside-group.png?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/dairy-queen.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/winners.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/beer-store.png?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo square" src="images/clients/holiday-inn.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo square" src="images/clients/angelos.png?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/damian-warner.png?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/freshco.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/petsmart.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/sport-chek.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/dollarama.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo" src="images/clients/midland.svg?v=2" alt="" loading="lazy" decoding="async"></li>
-                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/bluestone.png?v=2" alt="" loading="lazy" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/lcbo.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/southside-group.png?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/dairy-queen.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/winners.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/beer-store.png?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo square" src="images/clients/holiday-inn.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo square" src="images/clients/angelos.png?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/damian-warner.png?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/freshco.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/petsmart.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/sport-chek.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/dollarama.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo" src="images/clients/midland.svg?v=2" alt="" decoding="async"></li>
+                    <li aria-hidden="true"><img class="client-logo tall" src="images/clients/bluestone.png?v=2" alt="" decoding="async"></li>
                 </ul>
             </div>
         </div>
