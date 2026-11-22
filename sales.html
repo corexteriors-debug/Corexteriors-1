@@ -1527,7 +1527,7 @@
         }
 
         function calcGutterTotal() {
-            const baseRates = { '1': { interior: 125, exterior: 160 }, '2': { interior: 200, exterior: 250 } };
+            const baseRates = { '1': { interior: 125, exterior: 160 }, '2': { interior: 375, exterior: 425 } };
             let total = 0;
             document.querySelectorAll('[id^="gutterEntry_"]').forEach(entry => {
                 const type = entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value || 'interior';
