@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
             'deck-building': 'Deck Building',
             'fence': 'Fence Building',
             'hardscaping': 'Hardscaping',
-            'interlock': 'Interlock Restoration',
+            'interlock': 'Interlock & Driveways',
             'driveway-sealing': 'Driveway Sealing',
             'deck-restoration': 'Deck Restoration',
             'exterior-painting': 'Exterior Painting',
@@ -87,7 +87,11 @@ module.exports = async (req, res) => {
             'leaf-removal': 'Leaf Removal and Fall Cleanup',
             'spring-refresh': 'Spring Property Refresh',
             'snow': 'Snow Clearing and Salting',
-            'other': 'Other'
+            'washing': 'Pressure & Soft Washing',
+            'windows-gutters': 'Windows & Gutters',
+            'decks-fences': 'Decks & Fences',
+            'lawn-seasonal': 'Lawn Care & Yard Cleanups',
+            'other': 'Other / Not sure'
         };
         const serviceLabel = serviceLabels[service] || service || 'Not specified';
         const now = new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' });

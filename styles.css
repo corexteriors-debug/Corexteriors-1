@@ -3681,3 +3681,106 @@ body.page-exit {
 @media (prefers-reduced-motion: no-preference) {
     .service-card { animation: fadeInUp 0.6s ease both; }
 }
+
+/* Service picker tiles (quote forms) */
+.service-tiles {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.service-tiles legend {
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.service-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.service-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 76px;
+    padding: 10px 6px;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--sky-blue);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.service-tile:hover {
+    border-color: rgba(0, 33, 71, 0.35);
+    box-shadow: var(--shadow-sm);
+}
+
+.service-tile:active {
+    transform: scale(0.97);
+}
+
+.form-group .service-tile input,
+.service-tile input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.service-tile svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+}
+
+.service-tile span {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--dark-gray);
+}
+
+.service-tile:has(input:checked) {
+    background: var(--sky-blue);
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 4px 12px rgba(0, 33, 71, 0.25);
+}
+
+.service-tile:has(input:checked) span {
+    color: var(--white);
+}
+
+.service-tile:has(input:focus-visible) {
+    outline: 3px solid rgba(201, 168, 76, 0.6);
+    outline-offset: 2px;
+}
+
+@media (max-width: 360px) {
+    .service-tile span {
+        font-size: 11px;
+    }
+}

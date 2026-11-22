@@ -323,7 +323,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=18">
+    <link rel="stylesheet" href="styles.css?v=19">
   <!-- Nextdoor Pixel Code -->
   <script type='text/javascript'>
     !function(e,n){var t,p;e.ndp||((t=e.ndp=function(){
@@ -546,38 +546,20 @@
                                 <option value="Residential">Home</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <select id="service" name="service" required>
-                                <option value="">Select a Service</option>
-                                <optgroup label="Build and Install">
-                                    <option value="deck-building">Deck Building</option>
-                                    <option value="fence">Fence Building</option>
-                                    <option value="hardscaping">Hardscaping</option>
-                                    <option value="interlock">Interlock Restoration</option>
-                                    <option value="driveway-sealing">Driveway Sealing</option>
-                                </optgroup>
-                                <optgroup label="Restore and Repair">
-                                    <option value="deck-restoration">Deck Restoration</option>
-                                    <option value="exterior-painting">Exterior Painting</option>
-                                    <option value="graffiti">Graffiti Removal</option>
-                                    <option value="roof-cleaning">Roof Cleaning</option>
-                                </optgroup>
-                                <optgroup label="Clean and Maintain">
-                                    <option value="pressure-washing">Pressure Washing</option>
-                                    <option value="siding">Siding Wash</option>
-                                    <option value="window">Window Cleaning</option>
-                                    <option value="gutters">Gutter Cleaning</option>
-                                    <option value="gutter-guards">Gutter Guards</option>
-                                    <option value="lawn">Lawn Care and Landscaping</option>
-                                </optgroup>
-                                <optgroup label="Fall and Winter">
-                                    <option value="leaf-removal">Leaf Removal and Fall Cleanup</option>
-                                    <option value="spring-refresh">Spring Property Refresh</option>
-                                    <option value="snow">Snow Clearing and Salting</option>
-                                </optgroup>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
+                        <fieldset class="service-tiles">
+                            <legend>What do you need?</legend>
+                            <div class="service-tiles-grid">
+                                <label class="service-tile"><input type="radio" name="service" value="washing" required><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5s-6 6.6-6 10.6a6 6 0 0 0 12 0c0-4-6-10.6-6-10.6z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/></svg><span>Pressure &amp; Soft Washing</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="windows-gutters"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M12 4v16M4 12h16"/></svg><span>Windows &amp; Gutters</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="interlock"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 9.7h18M3 14.3h18M9 5v4.7M15 5v4.7M6 9.7v4.6M12 9.7v4.6M18 9.7v4.6M9 14.3V19M15 14.3V19"/></svg><span>Interlock &amp; Driveways</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="decks-fences"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V7l2-2.5L9 7v13M15 20V7l2-2.5L19 7v13M3 10.5h18M3 16h18"/></svg><span>Decks &amp; Fences</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="exterior-painting"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="14" height="5" rx="1.2"/><path d="M18 6h2v4.5h-8V14"/><rect x="10.5" y="14" width="3" height="6.5" rx="1"/></svg><span>Exterior Painting</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="lawn-seasonal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 20 4c0 9-5 15-13 15"/><path d="M5 19l8-8"/></svg><span>Lawn &amp; Yard Cleanups</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="snow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="M9.5 4.5 12 6l2.5-1.5M9.5 19.5 12 18l2.5 1.5"/></svg><span>Snow &amp; Salting</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="graffiti"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="8" width="8" height="13" rx="2"/><path d="M9 8V5.5h4V8M11 5.5V3.5h3"/><path d="M17.5 4h.01M19.5 6h.01M17.5 8h.01"/></svg><span>Graffiti Removal</span></label>
+                                <label class="service-tile"><input type="radio" name="service" value="other"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6M12 17h.01"/></svg><span>Not sure / Other</span></label>
+                            </div>
+                        </fieldset>
                         <div class="form-group">
                             <textarea id="message" name="message" rows="3" placeholder="Project Details (optional)"></textarea>
                         </div>
