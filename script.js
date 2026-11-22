@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 phone: formData.get('phone'),
                 email: formData.get('email'),
                 address: formData.get('address'),
-                service: formData.get('service'),
+                service: formData.getAll('service'),
                 message: [formData.get('propertyType') ? 'Property type: ' + formData.get('propertyType') + '.' : '', formData.get('message') || ''].filter(Boolean).join(' '),
                 company: formData.get('company'),
                 source: window.location.pathname.split('/').pop() || 'index.html'
@@ -668,3 +668,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Service tiles: multi-select, at least one required
+(function () {
+    document.querySelectorAll('.service-tiles').forEach(function (group) {
+        var boxes = group.querySelectorAll('input[name="service"]');
+        if (!boxes.length) return;
+        var form = group.closest('form');
+        function check() {
+            var any = Array.prototype.some.call(boxes, function (b) { return b.checked; });
+            boxes[0].setCustomValidity(any ? '' : 'Please pick at least one service.');
+        }
+        boxes.forEach(function (b) { b.addEventListener('change', check); });
+        if (form) form.addEventListener('reset', function () { setTimeout(check, 0); });
+        check();
+    });
+})();

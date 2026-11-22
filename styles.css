@@ -3784,3 +3784,20 @@ body.page-exit {
         font-size: 11px;
     }
 }
+
+.service-tiles legend small {
+    font-weight: 500;
+    color: var(--medium-gray);
+    margin-left: 4px;
+}
+
+.service-tile:has(input:checked)::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23002147' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 10px no-repeat;
+}

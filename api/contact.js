@@ -93,7 +93,9 @@ module.exports = async (req, res) => {
             'lawn-seasonal': 'Lawn Care & Yard Cleanups',
             'other': 'Other / Not sure'
         };
-        const serviceLabel = serviceLabels[service] || service || 'Not specified';
+        const serviceList = (Array.isArray(service) ? service : String(service || '').split(','))
+            .map(s => String(s).trim()).filter(Boolean);
+        const serviceLabel = serviceList.map(s => serviceLabels[s] || s).join(', ') || 'Not specified';
         const now = new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' });
 
         // Save to CRM first so the inquiry isn't lost even if email fails
