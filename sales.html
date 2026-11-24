@@ -982,7 +982,7 @@
                     </div>
                     <div id="deckAreasList"></div>
                     <button type="button" onclick="addDeckArea()" style="margin-top:.75rem;background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit;font-weight:600">+ Add Area</button>
-                    <p style="font-size:.74rem;color:rgba(255,255,255,.3);margin-top:.6rem">Power Washing $1.00/sqft &nbsp;·&nbsp; Sanding $3.50/sqft &nbsp;·&nbsp; Staining $1.80/sqft</p>
+                    <p style="font-size:.74rem;color:rgba(255,255,255,.3);margin-top:.6rem">Power Washing $1.00/sqft &nbsp;·&nbsp; Sanding $3.50/sqft &nbsp;·&nbsp; Staining $1.80/sqft &nbsp;·&nbsp; $400 minimum</p>
                 </div>
             </div>
 
@@ -994,7 +994,7 @@
                     </div>
                     <div id="gutterEntriesList"></div>
                     <button type="button" onclick="addGutterEntry()" style="margin-top:.75rem;background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.3);color:#3498db;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit;font-weight:600">+ Add Gutter</button>
-                    <p style="font-size:.74rem;color:rgba(255,255,255,.3);margin-top:.6rem">1 Story: Int $125 / Ext $160 &nbsp;·&nbsp; 2 Story: Int $200 / Ext $250 &nbsp;·&nbsp; Extra story: Int +$125 / Ext +$150</p>
+                    <p style="font-size:.74rem;color:rgba(255,255,255,.3);margin-top:.6rem">Per foot of gutter (roofline perimeter): 1 Story $1.50 &nbsp;·&nbsp; 2 Story $2.60 &nbsp;·&nbsp; Face wash +$1.00 &nbsp;·&nbsp; $200 minimum &nbsp;·&nbsp; 3+ stories: site visit</p>
                 </div>
             </div>
 
@@ -1030,7 +1030,7 @@
                             </div>
                         </div>
                     </div>
-                    <p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:.5rem">Minimum fee: $100</p>
+                    <p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:.5rem">Minimum fee: $200</p>
                 </div>
             </div>
 
@@ -1045,16 +1045,21 @@
                             <label>Stories <span class="req">*</span></label>
                             <div class="radio-group">
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_1"
-                                        value="1" onchange="calcAll()" checked><label for="siding_1">1 Story ($175)</label></div>
+                                        value="1" onchange="calcAll()" checked><label for="siding_1">1 Story</label></div>
+                                <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_15"
+                                        value="1.5" onchange="calcAll()"><label for="siding_15">1½ Story</label></div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_2"
-                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story ($325)</label>
+                                        value="2" onchange="calcAll()"><label for="siding_2">2 Story</label>
                                 </div>
                                 <div class="radio-pill"><input type="radio" name="siding_stories" id="siding_3"
-                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story ($500)</label>
+                                        value="3" onchange="calcAll()"><label for="siding_3">3 Story</label>
                                 </div>
                             </div>
                         </div>
+                        <div class="field"><label>Roof Footprint (sqft) <span class="req">*</span></label><input
+                                type="number" id="siding_footprint" min="0" placeholder="e.g. 1100" oninput="calcAll()"></div>
                     </div>
+                    <p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:.5rem">$0.28 per sqft of floor area (footprint × stories) · $400 minimum</p>
                 </div>
             </div>
 
@@ -1496,8 +1501,8 @@
                     <div>
                         <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Type</label>
                         <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gtype_${id}" value="interior" onchange="calcAll()" checked style="accent-color:#3498db"> Interior</label>
-                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gtype_${id}" value="exterior" onchange="calcAll()" style="accent-color:#3498db"> Exterior</label>
+                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gtype_${id}" value="interior" onchange="calcAll()" checked style="accent-color:#3498db"> Clean-out</label>
+                            <label style="display:flex;align-items:center;gap:.35rem;padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;font-size:.82rem;background:rgba(255,255,255,.04)"><input type="radio" name="gtype_${id}" value="exterior" onchange="calcAll()" style="accent-color:#3498db"> + Face wash</label>
                         </div>
                     </div>
                     <div>
@@ -1508,8 +1513,8 @@
                         </div>
                     </div>
                     <div>
-                        <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Extra Stories</label>
-                        <input type="number" class="gutter-extra" min="0" value="0" oninput="calcAll()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none">
+                        <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Gutter Length (ft)</label>
+                        <input type="number" class="gutter-lf" min="0" placeholder="e.g. 160" oninput="calcAll()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none">
                     </div>
                     <div style="display:flex;align-items:flex-end">
                         <div class="gutter-entry-price" style="font-size:.88rem;font-weight:700;color:#2ecc71;padding-bottom:4px"></div>
@@ -1526,20 +1531,24 @@
             calcAll();
         }
 
+        // Price book (Luke, 2026-11-24) — mirrors core-exteriors-agents service_catalog.py:
+        // per foot of gutter, $1.50 (1 storey) / $2.60 (2 storey), face wash +$1.00/ft, $200 job minimum.
+        const GUTTER_RATE = { '1': 1.50, '2': 2.60 }, GUTTER_FACE_WASH = 1.00, GUTTER_MIN = 200;
+        function gutterEntryPrice(entry) {
+            const type = entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value || 'interior';
+            const stories = entry.querySelector('input[type="radio"][name^="gstories_"]:checked')?.value || '1';
+            const lf = parseFloat(entry.querySelector('.gutter-lf').value) || 0;
+            return lf * (GUTTER_RATE[stories] || GUTTER_RATE['1']) + (type === 'exterior' ? lf * GUTTER_FACE_WASH : 0);
+        }
         function calcGutterTotal() {
-            const baseRates = { '1': { interior: 125, exterior: 160 }, '2': { interior: 425, exterior: 475 } };
             let total = 0;
             document.querySelectorAll('[id^="gutterEntry_"]').forEach(entry => {
-                const type = entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value || 'interior';
-                const stories = entry.querySelector('input[type="radio"][name^="gstories_"]:checked')?.value || '1';
-                const extra = parseInt(entry.querySelector('.gutter-extra').value) || 0;
-                let price = (baseRates[stories] || baseRates['1'])[type];
-                price += extra * (type === 'interior' ? 125 : 150);
+                const price = gutterEntryPrice(entry);
                 const priceEl = entry.querySelector('.gutter-entry-price');
-                if (priceEl) priceEl.textContent = '$' + price.toFixed(2);
+                if (priceEl) priceEl.textContent = price > 0 ? '$' + price.toFixed(2) : '';
                 total += price;
             });
-            return total;
+            return total > 0 ? Math.max(total, GUTTER_MIN) : 0;
         }
 
         // DECK MULTI-AREA
@@ -1624,7 +1633,13 @@
                 if (priceEl) priceEl.textContent = areaTotal > 0 ? 'Area total: $' + areaTotal.toFixed(2) : '';
                 total += areaTotal;
             });
-            return total;
+            return total > 0 ? Math.max(total, DECK_MIN) : 0;
+        }
+        const DECK_MIN = 400;
+        function deckMinimumTopUp() {
+            let raw = 0;
+            document.querySelectorAll('[id^="deckArea_"]').forEach(area => { raw += calcDeckAreaTotal(area); });
+            return raw > 0 ? Math.max(0, DECK_MIN - raw) : 0;
         }
 
         // INTERLOCK MULTI-AREA
@@ -1665,8 +1680,13 @@
                         <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Releveling Sqft</label>
                         <input type="number" class="interlock-relevel-sqft" min="0" placeholder="0" oninput="calcAll()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none">
                     </div>
-                    <div style="display:flex;align-items:flex-end;padding-bottom:4px">
-                        <span style="font-size:.76rem;color:rgba(255,255,255,.35)">$8.60/sqft</span>
+                    <div>
+                        <label style="font-size:.76rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.3rem">Relevel Package</label>
+                        <select class="interlock-relevel-tier" onchange="calcAll()" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none">
+                            <option value="8.60" style="background:#1a2a4a;color:#fff">Relevel ($8.60/sqft)</option>
+                            <option value="9.00" style="background:#1a2a4a;color:#fff">Relevel + Seal ($9.00/sqft)</option>
+                            <option value="10.25" style="background:#1a2a4a;color:#fff">Relevel Premium ($10.25/sqft)</option>
+                        </select>
                     </div>
                 </div>
                 <div class="interlock-area-price" style="text-align:right;font-size:.85rem;color:#2ecc71;margin-top:.5rem;font-weight:600"></div>
@@ -1689,8 +1709,26 @@
             let areaTotal = 0;
             if (stone !== 'none') areaTotal += polySqft * parseFloat(stone);
             if (hasSealer) areaTotal += polySqft * 0.40;
-            areaTotal += relevelSqft * 8.60;
+            areaTotal += relevelSqft * relevelRate(area);
             return areaTotal;
+        }
+        // Relevel $8.60 / +seal $9.00 / Premium $10.25 per sqft, $1,500 minimum; poly-only jobs $1,200 minimum.
+        const RELEVEL_MIN = 1500, POLY_MIN = 1200;
+        const RELEVEL_TIERS = { '8.60': 'Relevel', '9.00': 'Relevel + Seal', '10.25': 'Relevel Premium' };
+        function relevelRate(area) {
+            return parseFloat(area.querySelector('.interlock-relevel-tier')?.value || '8.60') || 8.60;
+        }
+        function interlockMinimumTopUp() {
+            let relevel = 0, poly = 0;
+            document.querySelectorAll('[id^="interlockArea_"]').forEach(area => {
+                const relevelSqft = parseFloat(area.querySelector('.interlock-relevel-sqft').value) || 0;
+                const r = relevelSqft * relevelRate(area);
+                relevel += r;
+                poly += calcInterlockAreaTotal(area) - r;
+            });
+            if (relevel > 0) return Math.max(0, RELEVEL_MIN - relevel);
+            if (poly > 0) return Math.max(0, POLY_MIN - poly);
+            return 0;
         }
 
         function calcInterlockTotal() {
@@ -1701,7 +1739,7 @@
                 if (priceEl) priceEl.textContent = areaTotal > 0 ? 'Area total: $' + areaTotal.toFixed(2) : '';
                 total += areaTotal;
             });
-            return total;
+            return total > 0 ? total + interlockMinimumTopUp() : 0;
         }
 
         // PRICING ENGINE
@@ -1733,15 +1771,17 @@
                 const count = parseInt(document.getElementById('window_count').value) || 0;
                 const type = document.querySelector('input[name="window_type"]:checked').value;
                 const rate = type === 'full' ? 9.50 : 7.50;
-                let winPrice = Math.max(count * rate, count > 0 ? 100 : 0);
+                let winPrice = Math.max(count * rate, count > 0 ? 200 : 0);
                 document.getElementById('price_window').textContent = '$' + winPrice.toFixed(2);
                 subtotal += winPrice;
             } else { document.getElementById('price_window').textContent = '$0.00' }
 
             // SIDING
             if (document.getElementById('svc_siding').checked) {
-                const stories = document.querySelector('input[name="siding_stories"]:checked').value;
-                let sidPrice = { 1: 175, 2: 325, 3: 500 }[stories] || 175;
+                // $0.28 per sqft of floor area (roof footprint x stories), $400 minimum.
+                const stories = parseFloat(document.querySelector('input[name="siding_stories"]:checked').value) || 1;
+                const footprint = parseFloat(document.getElementById('siding_footprint').value) || 0;
+                let sidPrice = footprint > 0 ? Math.max(footprint * stories * 0.28, 400) : 0;
                 document.getElementById('price_siding').textContent = '$' + sidPrice.toFixed(2);
                 subtotal += sidPrice;
             } else { document.getElementById('price_siding').textContent = '$0.00' }
@@ -2322,6 +2362,8 @@
                     }
                 });
                 if (!anyDeckArea) services.push({ name: 'Deck Restoration – No details', price: '$0.00' });
+                const deckTopUp = deckMinimumTopUp();
+                if (deckTopUp > 0) services.push({ name: 'Deck Restoration – $400 minimum charge', price: '$' + deckTopUp.toFixed(2) });
             }
 
             // GUTTER
@@ -2331,8 +2373,8 @@
                     const label = entry.querySelector('.gutter-label').value.trim();
                     const type = entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value || 'interior';
                     const stories = entry.querySelector('input[type="radio"][name^="gstories_"]:checked')?.value || '1';
-                    const extra = parseInt(entry.querySelector('.gutter-extra').value) || 0;
-                    const desc = (label ? label + ': ' : '') + stories + ' Story' + (extra > 0 ? '+' + extra : '') + ' ' + (type === 'interior' ? 'Int' : 'Ext');
+                    const lf = parseFloat(entry.querySelector('.gutter-lf').value) || 0;
+                    const desc = (label ? label + ': ' : '') + lf + ' ft, ' + stories + ' Story ' + (type === 'interior' ? 'Clean-out' : 'Clean-out + Face Wash');
                     gutterLines.push(desc);
                 });
                 services.push({ name: 'Gutter Cleaning – ' + (gutterLines.join(' | ') || 'No entries'), price: document.getElementById('price_gutter').textContent });
@@ -2352,13 +2394,15 @@
                     const parts = [];
                     if (stone !== 'none' && polySqft > 0) parts.push(polySqft + 'sqft Poly (' + stoneName + ')');
                     if (hasSealer) parts.push('Sealer');
-                    if (relevelSqft > 0) parts.push(relevelSqft + 'sqft Relevel');
+                    if (relevelSqft > 0) parts.push(relevelSqft + 'sqft ' + (RELEVEL_TIERS[area.querySelector('.interlock-relevel-tier')?.value] || 'Relevel'));
                     if (parts.length) {
                         anyInterlockArea = true;
                         services.push({ name: 'Interlock – ' + name + ': ' + parts.join(', '), price: '$' + calcInterlockAreaTotal(area).toFixed(2) });
                     }
                 });
                 if (!anyInterlockArea) services.push({ name: 'Interlock – No areas', price: '$0.00' });
+                const intTopUp = interlockMinimumTopUp();
+                if (intTopUp > 0) services.push({ name: 'Interlock – job minimum charge', price: '$' + intTopUp.toFixed(2) });
             }
 
             // WINDOW
@@ -2372,8 +2416,9 @@
             // SIDING
             if (document.getElementById('svc_siding').checked) {
                 const stories = document.querySelector('input[name="siding_stories"]:checked').value;
-                const storyLabel = { 1: '1 Story', 2: '2 Story', 3: '3 Story' }[stories] || '1 Story';
-                services.push({ name: 'Siding Soft Wash – ' + storyLabel, price: document.getElementById('price_siding').textContent });
+                const storyLabel = { '1': '1 Story', '1.5': '1½ Story', '2': '2 Story', '3': '3 Story' }[stories] || '1 Story';
+                const footprint = document.getElementById('siding_footprint').value || '0';
+                services.push({ name: 'Siding Soft Wash – ' + storyLabel + ', ' + footprint + ' sqft footprint', price: document.getElementById('price_siding').textContent });
             }
 
             // GARDEN
@@ -2429,7 +2474,7 @@
                                 label: entry.querySelector('.gutter-label').value.trim(),
                                 type: entry.querySelector('input[type="radio"][name^="gtype_"]:checked')?.value,
                                 stories: entry.querySelector('input[type="radio"][name^="gstories_"]:checked')?.value,
-                                extra: parseInt(entry.querySelector('.gutter-extra').value) || 0
+                                linearFt: parseFloat(entry.querySelector('.gutter-lf').value) || 0
                             });
                         });
                         return entries;
@@ -2442,7 +2487,8 @@
                                 stone: area.querySelector('.interlock-stone').value,
                                 polySqft: parseFloat(area.querySelector('.interlock-poly-sqft').value) || 0,
                                 sealer: area.querySelector('.interlock-sealer').checked,
-                                relevelSqft: parseFloat(area.querySelector('.interlock-relevel-sqft').value) || 0
+                                relevelSqft: parseFloat(area.querySelector('.interlock-relevel-sqft').value) || 0,
+                                relevelRate: relevelRate(area)
                             });
                         });
                         return areas;
@@ -2452,7 +2498,8 @@
                         type: document.querySelector('input[name="window_type"]:checked')?.value
                     } : null,
                     siding: document.getElementById('svc_siding').checked ? {
-                        stories: document.querySelector('input[name="siding_stories"]:checked')?.value
+                        stories: document.querySelector('input[name="siding_stories"]:checked')?.value,
+                        footprint: parseFloat(document.getElementById('siding_footprint').value) || null
                     } : null,
                     garden: document.getElementById('svc_garden').checked ? {
                         mulch: parseFloat(document.getElementById('garden_mulch').value) || null,
