@@ -61,6 +61,39 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Review page (review.html): star rating + private feedback for Luke. Lives here because the
+    // project is at the 12-function limit. The agents' watcher reads this email into the CRM.
+    if (req.body && req.body.kind === 'feedback') {
+        try {
+            const stars = Math.round(Number(req.body.stars));
+            if (!(stars >= 1 && stars <= 5)) return res.status(400).json({ error: 'stars must be 1-5' });
+            const ref = String(req.body.ref || '').replace(/[^\w-]/g, '').slice(0, 40);
+            const fbName = String(req.body.name || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 120);
+            const fbMessage = String(req.body.message || '').trim().slice(0, 3000);
+            const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
+            const gmailPass = process.env.GMAIL_APP_PASSWORD;
+            if (!gmailPass) return res.status(500).json({ error: 'Email service not configured' });
+            const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
+            await transporter.sendMail({
+                from: `"Core Exteriors Reviews" <${gmailUser}>`,
+                to: gmailUser,
+                subject: `Customer feedback — ${stars} star${stars === 1 ? '' : 's'}${ref ? ` — ${ref}` : ''}`,
+                text: [
+                    `Stars: ${stars}`,
+                    `Ref: ${ref || '(none)'}`,
+                    `Name: ${fbName || '(not given)'}`,
+                    `When: ${new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' })}`,
+                    stars === 5 ? 'Was shown the Google review link.' : 'Feedback:',
+                    fbMessage,
+                ].join('\n'),
+            });
+            return res.status(200).json({ success: true });
+        } catch (err) {
+            console.error('Feedback email failed:', err);
+            return res.status(500).json({ error: 'Could not send feedback' });
+        }
+    }
+
     try {
         const { name, email, phone, address, service, message, company, source } = req.body;
 

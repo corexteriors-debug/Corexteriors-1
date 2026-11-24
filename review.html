@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How did we do? | Core Exteriors</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/logo-mark.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --navy: #002147; --gold: #C9A84C; --ink: #1a1f2b; --muted: #5d6577; --line: #e3e6ec; --bg: #f5f6f8; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font: 16px/1.5 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+               display: flex; flex-direction: column; align-items: center; }
+        header { width: 100%; background: var(--navy); border-bottom: 3px solid var(--gold); padding: 16px; text-align: center; }
+        header img { height: 40px; vertical-align: middle; }
+        header span { color: #fff; font-weight: 700; font-size: 18px; margin-left: 8px; vertical-align: middle; }
+        main { width: 100%; max-width: 520px; padding: 32px 16px 48px; }
+        .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 28px 24px; text-align: center; box-shadow: 0 4px 24px rgba(0, 33, 71, .06); }
+        h1 { font-size: 24px; margin: 0 0 6px; color: var(--navy); }
+        p { margin: 0 0 16px; color: var(--muted); }
+        .stars { display: flex; justify-content: center; gap: 6px; margin: 18px 0 6px; }
+        .stars button { background: none; border: 0; cursor: pointer; font-size: 44px; line-height: 1; color: #d4d8e0; padding: 4px; border-radius: 8px; transition: transform .1s, color .1s; }
+        .stars button.on { color: var(--gold); }
+        .stars button:hover { transform: scale(1.08); }
+        .stars button:focus-visible { outline: 3px solid var(--navy); }
+        .hint { font-size: 13px; min-height: 20px; color: var(--muted); }
+        textarea, input { width: 100%; font: inherit; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 0 0 12px; color: var(--ink); background: #fff; }
+        textarea { min-height: 120px; resize: vertical; }
+        textarea:focus, input:focus { outline: 2px solid var(--gold); outline-offset: -1px; }
+        .btn { display: inline-block; width: 100%; background: var(--navy); color: #fff; border: 0; border-radius: 10px; padding: 14px 18px; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
+        .btn.gold { background: var(--gold); color: var(--navy); }
+        .btn:disabled { opacity: .6; cursor: default; }
+        .alt { display: block; margin-top: 18px; font-size: 14px; color: var(--muted); }
+        .alt a { color: var(--navy); font-weight: 600; }
+        [hidden] { display: none !important; }
+        .err { color: #b3261e; font-size: 14px; }
+        footer { color: var(--muted); font-size: 13px; padding-bottom: 24px; text-align: center; }
+    </style>
+</head>
+<body>
+<header>
+    <img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/logo-mark.png" alt="Core Exteriors">
+</header>
+<main>
+    <!-- Step 1: rating -->
+    <section class="card" id="step-rate">
+        <h1>How did we do?</h1>
+        <p>Thanks for choosing Core Exteriors. Tap a star to rate your service.</p>
+        <div class="stars" role="radiogroup" aria-label="Rating">
+            <button type="button" role="radio" aria-checked="false" data-v="1" aria-label="1 star">★</button>
+            <button type="button" role="radio" aria-checked="false" data-v="2" aria-label="2 stars">★</button>
+            <button type="button" role="radio" aria-checked="false" data-v="3" aria-label="3 stars">★</button>
+            <button type="button" role="radio" aria-checked="false" data-v="4" aria-label="4 stars">★</button>
+            <button type="button" role="radio" aria-checked="false" data-v="5" aria-label="5 stars">★</button>
+        </div>
+        <div class="hint" id="hint" aria-live="polite"></div>
+    </section>
+
+    <!-- 5 stars: straight to Google -->
+    <section class="card" id="step-google" hidden>
+        <h1>Thank you!</h1>
+        <p>That means a lot to a small local business. Would you take 30 seconds to share it on Google? It's the best way to help your neighbours find us.</p>
+        <a class="btn gold" id="google-btn" href="https://g.page/r/Cd4lmTyS9JZ7EAI/review" target="_blank" rel="noopener">Leave a Google review</a>
+        <span class="alt">— Luke, Core Exteriors</span>
+    </section>
+
+    <!-- 1-4 stars: tell Luke first; the Google link is still offered (no review gating) -->
+    <section class="card" id="step-feedback" hidden>
+        <h1>Thanks for being honest</h1>
+        <p>What could we have done better? This goes straight to Luke, the owner, and he'll reach out to make it right.</p>
+        <form id="fb-form">
+            <label class="sr" for="fb-msg" hidden>Your feedback</label>
+            <textarea id="fb-msg" placeholder="Tell us what happened…" required maxlength="3000"></textarea>
+            <input id="fb-name" placeholder="Your name (optional)" maxlength="120" autocomplete="name">
+            <div class="err" id="fb-err" hidden></div>
+            <button class="btn" type="submit" id="fb-send">Send to Luke</button>
+        </form>
+        <span class="alt">Prefer to post publicly? You can also <a href="https://g.page/r/Cd4lmTyS9JZ7EAI/review" target="_blank" rel="noopener">leave a Google review</a>.</span>
+    </section>
+
+    <section class="card" id="step-done" hidden>
+        <h1>Got it — thank you</h1>
+        <p>Luke will be in touch personally, usually within a day.</p>
+        <span class="alt">You can still <a href="https://g.page/r/Cd4lmTyS9JZ7EAI/review" target="_blank" rel="noopener">leave a Google review</a> if you'd like.</span>
+    </section>
+</main>
+<footer>Core Exteriors Ltd. · London, Ontario · 519-712-1431</footer>
+<script>
+(function () {
+    var ref = (new URLSearchParams(location.search).get('c') || '').replace(/[^\w-]/g, '').slice(0, 40);
+    var rating = 0;
+    var labels = ['', 'Poor', 'Not great', 'Okay', 'Good', 'Excellent!'];
+    var stars = Array.prototype.slice.call(document.querySelectorAll('.stars button'));
+
+    function paint(n) {
+        stars.forEach(function (b, i) { b.classList.toggle('on', i < n); });
+        document.getElementById('hint').textContent = labels[n] || '';
+    }
+    function show(id) {
+        ['step-rate', 'step-google', 'step-feedback', 'step-done'].forEach(function (s) {
+            document.getElementById(s).hidden = s !== id;
+        });
+    }
+    function post(body) {
+        return fetch('/api/contact', {
+            method: 'POST', keepalive: true,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.assign({ kind: 'feedback', ref: ref, stars: rating }, body || {}))
+        });
+    }
+
+    stars.forEach(function (b) {
+        var v = Number(b.dataset.v);
+        b.addEventListener('mouseenter', function () { paint(v); });
+        b.addEventListener('mouseleave', function () { paint(rating); });
+        b.addEventListener('click', function () {
+            rating = v;
+            stars.forEach(function (x) { x.setAttribute('aria-checked', String(Number(x.dataset.v) === v)); });
+            paint(v);
+            setTimeout(function () {
+                if (v === 5) {
+                    post().catch(function () {});
+                    show('step-google');
+                } else {
+                    show('step-feedback');
+                    document.getElementById('fb-msg').focus();
+                }
+            }, 250);
+        });
+    });
+
+    document.getElementById('fb-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('fb-send');
+        var err = document.getElementById('fb-err');
+        btn.disabled = true; err.hidden = true;
+        post({ message: document.getElementById('fb-msg').value, name: document.getElementById('fb-name').value })
+            .then(function (r) { if (!r.ok) throw new Error(); show('step-done'); })
+            .catch(function () {
+                err.textContent = "That didn't send. Please call or text Luke at 519-712-1431.";
+                err.hidden = false; btn.disabled = false;
+            });
+    });
+})();
+</script>
+</body>
+</html>
