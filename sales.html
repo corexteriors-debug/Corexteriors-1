@@ -974,6 +974,21 @@
                 </div>
             </div>
 
+            <!-- MEASURE FROM ADDRESS -->
+            <div class="section" id="measureSection">
+                <h2><span class="icon">📐</span> Measure from Address</h2>
+                <p style="font-size:.85rem;color:rgba(255,255,255,.55);margin:-.25rem 0 .9rem">Enter the property address above, tick the services, then measure. We trace the roof, deck or pavers from the aerial photo and check Street View for storeys and windows. Takes about 2–4 minutes. You check the numbers before they go on the estimate.</p>
+                <button type="button" id="measureBtn" onclick="startMeasure()" style="background:linear-gradient(135deg,#C9A84C,#b8963d);border:none;color:#0b1a33;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:.92rem;font-family:inherit;font-weight:700">📐 Measure Property</button>
+                <div id="measureStatus" style="font-size:.86rem;color:rgba(255,255,255,.7);margin-top:.75rem"></div>
+                <div id="measureResult" style="display:none;margin-top:1rem">
+                    <div id="measurePhotos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem;margin-bottom:.9rem"></div>
+                    <div id="measureNumbers" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.5rem;margin-bottom:.9rem"></div>
+                    <div id="measureTiers" style="margin-bottom:.9rem"></div>
+                    <ul id="measureNotes" style="font-size:.82rem;color:rgba(255,255,255,.6);margin:0 0 .9rem 1.1rem;padding:0"></ul>
+                    <button type="button" onclick="applyMeasure()" style="background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.4);color:#2ecc71;padding:9px 18px;border-radius:10px;cursor:pointer;font-size:.9rem;font-family:inherit;font-weight:700">✓ Looks right: fill the estimate</button>
+                </div>
+            </div>
+
             <!-- DECK RESTORATION CARD -->
             <div class="service-card" id="card_deck">
                 <div class="section">
@@ -1376,6 +1391,184 @@
                 }
             } catch (e) { err.textContent = 'Connection error.'; err.style.display = 'block' }
         });
+
+
+        // ---------------------------------------------------------------- MEASURE FROM ADDRESS
+        // Queues a job; Luke's Mac (core-exteriors-agents watcher) measures and posts back.
+        const MEASURABLE = ['gutter', 'window', 'siding', 'deck', 'interlock'];
+        let measureJob = null, measureTimer = null, measurePolls = 0;
+
+        function measureSay(text, colour) {
+            const el = document.getElementById('measureStatus');
+            el.textContent = text;
+            el.style.color = colour || 'rgba(255,255,255,.7)';
+        }
+
+        async function startMeasure() {
+            const address = document.getElementById('clientAddress').value.trim();
+            const services = MEASURABLE.filter(s => document.getElementById('svc_' + s).checked);
+            if (!address) return measureSay('Enter the property address first.', '#e74c3c');
+            if (!services.length) return measureSay('Tick at least one of: Gutters, Windows, Siding, Deck, Interlock.', '#e74c3c');
+            document.getElementById('measureBtn').disabled = true;
+            document.getElementById('measureResult').style.display = 'none';
+            measureSay('Sending…');
+            try {
+                const r = await fetch('/api/leads?action=measure', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + authToken },
+                    body: JSON.stringify({ address, services }),
+                });
+                const d = await r.json();
+                if (!r.ok || !d.job) throw new Error(d.error || 'Could not queue the measurement.');
+                measureJob = d.job;
+                measurePolls = 0;
+                measureSay('⏳ Queued. Measuring ' + services.join(', ') + ' at ' + address + '. Usually 2–4 minutes; you can keep filling in the estimate.');
+                clearInterval(measureTimer);
+                measureTimer = setInterval(pollMeasure, 10000);
+            } catch (e) {
+                measureSay(e.message, '#e74c3c');
+                document.getElementById('measureBtn').disabled = false;
+            }
+        }
+
+        async function pollMeasure() {
+            if (!measureJob) return;
+            measurePolls++;
+            try {
+                const r = await fetch('/api/leads?action=measure&id=' + encodeURIComponent(measureJob.id), {
+                    headers: { Authorization: 'Bearer ' + authToken },
+                });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.error || 'Lost the measurement job.');
+                const job = d.job;
+                if (job.status === 'queued' && measurePolls >= 12) {
+                    measureSay('⏳ Still waiting for the office computer to pick this up. It needs to be on and awake.');
+                } else if (job.status === 'measuring') {
+                    measureSay('📐 Measuring now: tracing the aerial and checking Street View…');
+                }
+                if (job.status === 'done' || job.status === 'failed' || measurePolls > 120) {
+                    clearInterval(measureTimer);
+                    document.getElementById('measureBtn').disabled = false;
+                    if (job.status === 'done') showMeasure(job);
+                    else measureSay('Measuring didn\'t finish: ' + (job.error || 'timed out.') + ' Enter the numbers by hand or try again.', '#e74c3c');
+                }
+            } catch (e) {
+                measureSay(e.message, '#e74c3c');
+            }
+        }
+
+        function measureTile(label, value) {
+            const div = document.createElement('div');
+            div.style.cssText = 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.6rem .75rem';
+            const l = document.createElement('div');
+            l.style.cssText = 'font-size:.72rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.04em';
+            l.textContent = label;
+            const v = document.createElement('div');
+            v.style.cssText = 'font-size:1.05rem;font-weight:700;color:#fff;margin-top:.15rem';
+            v.textContent = value;
+            div.append(l, v);
+            return div;
+        }
+
+        function showMeasure(job) {
+            measureJob = job;
+            const res = job.result || {};
+            const m = res.measurements || {}, fill = res.fill || {};
+            measureSay('✅ Measured. Check the photos and numbers, then fill the estimate.', '#2ecc71');
+            const photos = document.getElementById('measurePhotos');
+            photos.replaceChildren();
+            [['aerial1', 'Aerial trace'], ['aerial2', 'Aerial trace 2'], ['street', 'Street View']].forEach(([k, label]) => {
+                const src = (job.photos || {})[k];
+                if (!src || !src.startsWith('data:image/jpeg;base64,')) return;
+                const fig = document.createElement('figure');
+                fig.style.cssText = 'margin:0';
+                const img = document.createElement('img');
+                img.src = src; img.alt = label;
+                img.style.cssText = 'width:100%;border-radius:8px;border:1px solid rgba(255,255,255,.12);cursor:zoom-in';
+                img.onclick = () => {
+                    const w = window.open();
+                    if (!w) return;
+                    const big = w.document.createElement('img');
+                    big.src = src; big.style.maxWidth = '100%';
+                    w.document.body.append(big);
+                };
+                const cap = document.createElement('figcaption');
+                cap.style.cssText = 'font-size:.72rem;color:rgba(255,255,255,.45);margin-top:.25rem';
+                cap.textContent = label;
+                fig.append(img, cap);
+                photos.append(fig);
+            });
+            const nums = document.getElementById('measureNumbers');
+            nums.replaceChildren();
+            const storeyText = { 1: '1', 1.5: '1½', 2: '2', 3: '3' }[m.storeys];
+            if (m.footprintSqft) nums.append(measureTile('Roof footprint', Math.round(m.footprintSqft).toLocaleString() + ' sq ft'));
+            if (m.gutterFt) nums.append(measureTile('Gutter run', Math.round(m.gutterFt) + ' ft'));
+            if (storeyText) nums.append(measureTile('Storeys', storeyText));
+            if (fill.window) nums.append(measureTile('Windows (est.)', '~' + fill.window.count + (m.frontWindows ? ' (' + m.frontWindows + ' in front)' : '')));
+            if (m.deckSqft) nums.append(measureTile('Deck', Math.round(m.deckSqft) + ' sq ft'));
+            if (m.interlockSqft) nums.append(measureTile(m.interlockName || 'Interlock', Math.round(m.interlockSqft) + ' sq ft'));
+            const tiers = document.getElementById('measureTiers');
+            tiers.replaceChildren();
+            const pricing = res.pricing || {};
+            (pricing.tiers || []).forEach(t => {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;justify-content:space-between;gap:1rem;padding:.45rem .7rem;border-radius:8px;margin-bottom:.3rem;background:' + (t.mostPopular ? 'rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.45)' : 'rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)');
+                const left = document.createElement('div');
+                left.style.cssText = 'font-size:.85rem;color:#fff';
+                left.textContent = t.name + (t.mostPopular ? ' ★' : '') + ': ' + (t.items || []).join(' · ');
+                const right = document.createElement('div');
+                right.style.cssText = 'font-size:.85rem;font-weight:700;color:#2ecc71;white-space:nowrap';
+                right.textContent = t.headline;
+                row.append(left, right);
+                tiers.append(row);
+            });
+            const notes = document.getElementById('measureNotes');
+            notes.replaceChildren();
+            [...(res.notes || []), ...(pricing.error ? ['Pricing: ' + pricing.error] : [])].forEach(n => {
+                const li = document.createElement('li'); li.textContent = n; notes.append(li);
+            });
+            document.getElementById('measureResult').style.display = 'block';
+        }
+
+        function setVal(el, v) { if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); } }
+        function ensureService(svc) {
+            const box = document.getElementById('svc_' + svc);
+            if (!box.checked) { box.checked = true; toggleService(svc); }
+        }
+
+        // Puts the measured numbers into the calculator fields (first entry of each card).
+        function applyMeasure() {
+            const fill = measureJob?.result?.fill || {};
+            if (fill.gutter) {
+                ensureService('gutter');
+                const g = document.querySelector('[id^="gutterEntry_"]');
+                g.querySelector('input[name^="gstories_"][value="' + fill.gutter.stories + '"]').checked = true;
+                setVal(g.querySelector('.gutter-lf'), fill.gutter.linearFt);
+            }
+            if (fill.siding) {
+                ensureService('siding');
+                const radio = document.querySelector('input[name="siding_stories"][value="' + fill.siding.stories + '"]');
+                if (radio) radio.checked = true;
+                setVal(document.getElementById('siding_footprint'), fill.siding.footprint);
+            }
+            if (fill.window) {
+                ensureService('window');
+                setVal(document.getElementById('window_count'), fill.window.count);
+            }
+            if (fill.deck) {
+                ensureService('deck');
+                const d = document.querySelector('[id^="deckArea_"]');
+                setVal(d.querySelector('.deck-pw-sqft'), fill.deck.sqft);
+            }
+            if (fill.interlock) {
+                ensureService('interlock');
+                const a = document.querySelector('[id^="interlockArea_"]');
+                if (!a.querySelector('.interlock-area-name').value) setVal(a.querySelector('.interlock-area-name'), fill.interlock.name);
+                setVal(a.querySelector('.interlock-relevel-sqft'), fill.interlock.sqft);
+            }
+            calcAll();
+            measureSay('✅ Filled in. Adjust anything that looks off (face wash, staining, relevel package).', '#2ecc71');
+        }
 
         function showEstimator() {
             document.getElementById('loginScreen').style.display = 'none';

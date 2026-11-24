@@ -1,5 +1,6 @@
 const { kv } = require('@vercel/kv');
 const { google } = require('googleapis');
+const { handleMeasure, isWorker } = require('./_measure');
 
 function getCalendarClient() {
     const email = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim();
@@ -105,6 +106,20 @@ module.exports = async function handler(req, res) {
     }
 
     const token = authHeader.split(' ')[1];
+
+    // "Measure from address" jobs (?action=measure…): portal reps queue, Luke's Mac works them.
+    if (String(req.query.action || '').startsWith('measure')) {
+        const worker = isWorker(req);
+        const tokenData = worker ? null : await kv.get(`token:${token}`);
+        try {
+            if (await handleMeasure(req, res, { kv, tokenData, worker })) return;
+        } catch (err) {
+            console.error('Measure job error:', err);
+            return res.status(500).json({ error: 'Measure queue error' });
+        }
+        return res.status(400).json({ error: 'Unknown measure action' });
+    }
+
     const tokenData = await kv.get(`token:${token}`);
 
     if (!tokenData) {
