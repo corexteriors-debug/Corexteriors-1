@@ -577,6 +577,30 @@
             margin-left: 4px
         }
 
+        /* RELEVEL MAILER TAB */
+        .relevel-source-badge { background: rgba(201,168,76,.15); border: 1px solid rgba(201,168,76,.35); color: #C9A84C; border-radius: 20px; padding: 1px 8px; font-size: .68rem; display: inline-block; margin-top: 2px; margin-left: 4px }
+        .rv-input { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: .45rem .75rem; color: #fff; font-size: .85rem; outline: none; font-family: inherit }
+        .rv-input option { color: #000 }
+        .rv-btn { background: rgba(52,152,219,.15); border: 1px solid rgba(52,152,219,.3); color: #3498db; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: .8rem; font-family: inherit; font-weight: 600 }
+        .rv-btn-gold { background: rgba(201,168,76,.15); border-color: rgba(201,168,76,.35); color: #C9A84C }
+        .rv-btn-sm { padding: 4px 10px; font-size: .74rem }
+        .rv-summary { display: flex; gap: .5rem; flex-wrap: wrap; padding: .75rem .75rem 0 }
+        .rv-stat { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: .5rem .8rem; font-size: .75rem; color: rgba(255,255,255,.5) }
+        .rv-stat b { display: block; color: #fff; font-size: 1.05rem }
+        .rv-empty { color: rgba(255,255,255,.3); text-align: center; padding: 2rem }
+        .rv-street { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09); border-radius: 12px; margin-top: .5rem }
+        .rv-street > summary { list-style: none; cursor: pointer; padding: .8rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: .75rem; flex-wrap: wrap }
+        .rv-street > summary::-webkit-details-marker { display: none }
+        .rv-street-name { font-weight: 700; color: #fff; font-size: .95rem }
+        .rv-street-meta { font-size: .74rem; color: rgba(255,255,255,.4); margin-top: 2px }
+        .rv-bar { width: 120px; height: 6px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; margin-top: 4px }
+        .rv-bar span { display: block; height: 100%; background: #C9A84C }
+        .rv-houses { padding: 0 1rem .8rem; display: flex; flex-direction: column; gap: .3rem }
+        .rv-house { display: grid; grid-template-columns: 1fr auto auto; gap: .5rem; align-items: center; padding: .4rem 0; border-top: 1px solid rgba(255,255,255,.06); font-size: .82rem; color: #fff }
+        .rv-house small { color: rgba(255,255,255,.35); font-size: .72rem }
+        .rv-st-Mailed { color: #3498db } .rv-st-DoorKnocked { color: #e67e22 } .rv-st-Responded { color: #2ecc71 } .rv-st-NotInterested { color: #e74c3c } .rv-st-LeadCreated { color: #C9A84C }
+        @media (max-width: 600px) { .rv-house { grid-template-columns: 1fr auto } .rv-house .rv-lead { grid-column: 1 / -1 } }
+
         /* PAYMENT BADGE */
         .pay-badge {
             padding: 3px 10px;
@@ -1052,6 +1076,7 @@
                 <button class="tab-btn active" data-tab="overview">📊 Overview</button>
                 <button class="tab-btn" data-tab="leads">💰 Sales</button>
                 <button class="tab-btn" data-tab="salesleads">📋 Leads</button>
+                <button class="tab-btn" data-tab="relevel">🧱 Relevel</button>
                 <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
                 <button class="tab-btn" data-tab="materials">🧮 Materials</button>
                 <button class="tab-btn" data-tab="labour">👷 Labour</button>
@@ -1206,6 +1231,25 @@
                     </div>
                     <div id="qlLeadsList" style="padding:.5rem 0">
                         <div style="color:rgba(255,255,255,.3);text-align:center;padding:2rem">Click Refresh or switch to this tab to load</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== TAB: RELEVEL MAILER ========== -->
+            <div class="tab-content" id="tab-relevel">
+                <div class="table-card" style="margin-bottom:1.5rem">
+                    <div class="table-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                        <h2>🧱 Interlock Relevel Targets <span id="rvCount" style="font-size:.9rem;color:rgba(255,255,255,.4);font-weight:400"></span></h2>
+                        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                            <input type="text" id="rvSearch" placeholder="🔍 Street or address..." oninput="renderRelevel()" class="rv-input" style="min-width:200px">
+                            <select id="rvStatusFilter" onchange="renderRelevel()" class="rv-input"><option value="all">All statuses</option></select>
+                            <label class="rv-btn rv-btn-gold" title="Upload addresses.csv from the lead scout">⬆ Import CSV<input type="file" id="rvImport" accept=".csv,text/csv" hidden></label>
+                            <button onclick="loadRelevel()" class="rv-btn">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div id="rvSummary" class="rv-summary"></div>
+                    <div id="rvList" style="padding:.5rem .75rem .75rem">
+                        <div class="rv-empty">Switch to this tab to load</div>
                     </div>
                 </div>
             </div>
@@ -1772,6 +1816,7 @@ Tasks:
                 btn.classList.add('active');
                 document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
                 if (btn.dataset.tab === 'salesleads') loadQLLeads();
+                if (btn.dataset.tab === 'relevel') loadRelevel();
             });
         });
 
@@ -2301,6 +2346,209 @@ Tasks:
         }
         // ── END NEW SALE ───────────────────────────────────────────
 
+        // ── RELEVEL MAILER TARGETS ─────────────────────────────────
+        // Streets from the lead scout's addresses.csv; each house tracks mailer status.
+        let rvStreets = [], rvStatuses = [], rvOpen = new Set();
+        const rvKey = (s) => String(s || '').replace(/\s+/g, '');
+
+        async function loadRelevel() {
+            const list = document.getElementById('rvList');
+            list.innerHTML = '<div class="rv-empty">Loading...</div>';
+            try {
+                const r = await fetch(`${API_BASE}/quick-leads?kind=relevel`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error);
+                rvStreets = (d.streets || []).sort((a, b) => a.rank - b.rank);
+                rvStatuses = d.statuses || [];
+                const sel = document.getElementById('rvStatusFilter');
+                const cur = sel.value;
+                sel.innerHTML = '<option value="all">All statuses</option>' + rvStatuses.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+                if (rvStatuses.includes(cur)) sel.value = cur;
+                renderRelevel();
+            } catch (e) {
+                list.innerHTML = '<div class="rv-empty" style="color:#e74c3c">Failed to load.</div>';
+            }
+        }
+
+        function renderRelevel() {
+            const q = (document.getElementById('rvSearch').value || '').toLowerCase();
+            const status = document.getElementById('rvStatusFilter').value;
+            const all = rvStreets.flatMap(s => s.houses);
+            const count = (st) => all.filter(h => h.status === st).length;
+            document.getElementById('rvCount').textContent = all.length ? `(${all.length} houses · ${rvStreets.length} streets)` : '';
+            document.getElementById('rvSummary').innerHTML = all.length ? [
+                ['Mailed', all.filter(h => h.status !== 'Not Mailed').length],
+                ['Door knocked', count('Door Knocked')],
+                ['Responded', count('Responded') + count('Lead Created')],
+                ['Leads', count('Lead Created')],
+            ].map(([k, v]) => `<div class="rv-stat"><b>${v}</b>${k}</div>`).join('') : '';
+            const list = document.getElementById('rvList');
+            if (!rvStreets.length) {
+                list.innerHTML = '<div class="rv-empty">No relevel targets yet. Use ⬆ Import CSV with the lead scout\'s addresses.csv.</div>';
+                return;
+            }
+            const html = rvStreets.map(st => {
+                const streetHit = !q || st.street.toLowerCase().includes(q);
+                const houses = st.houses.filter(h => (status === 'all' || h.status === status) && (streetHit || h.address.toLowerCase().includes(q)));
+                if (!houses.length) return '';
+                const mailed = st.houses.filter(h => h.status !== 'Not Mailed').length;
+                const pct = Math.round(100 * mailed / st.houses.length);
+                const open = rvOpen.has(st.slug) || (q && !streetHit) || status !== 'all';
+                return `<details class="rv-street" data-slug="${esc(st.slug)}"${open ? ' open' : ''}>
+                    <summary>
+                        <div>
+                            <div class="rv-street-name">#${st.rank} ${esc(st.street)}</div>
+                            <div class="rv-street-meta">${st.houses.length} houses${st.plan ? ' · plan ' + esc(st.plan) : ''}${st.postal ? ' · ' + esc(st.postal) : ''}</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.75rem">
+                            <div style="font-size:.74rem;color:rgba(255,255,255,.5);text-align:right">${mailed}/${st.houses.length} mailed<div class="rv-bar"><span style="width:${pct}%"></span></div></div>
+                            ${mailed < st.houses.length ? '<button class="rv-btn rv-btn-sm" data-rv="mail-street">Mark street mailed</button>' : ''}
+                        </div>
+                    </summary>
+                    <div class="rv-houses">${houses.map(h => `
+                        <div class="rv-house" data-address="${esc(h.address)}">
+                            <div>${esc(h.address)} <small>${h.lotSqft ? h.lotSqft.toLocaleString('en-CA') + ' sq ft lot' : ''}${h.updatedAt ? ' · ' + new Date(h.updatedAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) : ''}</small></div>
+                            <select class="rv-input rv-st-${rvKey(h.status)}" data-rv="status" style="padding:.3rem .5rem;font-size:.78rem">${rvStatuses.map(s => `<option${s === h.status ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select>
+                            <div class="rv-lead">${h.leadId ? '<button class="rv-btn rv-btn-sm rv-btn-gold" data-rv="open-lead">Open lead</button>' : '<button class="rv-btn rv-btn-sm" data-rv="create-lead">+ Lead</button>'}</div>
+                        </div>`).join('')}
+                    </div>
+                </details>`;
+            }).join('');
+            list.innerHTML = html || '<div class="rv-empty">No houses match.</div>';
+        }
+
+        async function rvPatch(body) {
+            const r = await fetch(`${API_BASE}/quick-leads`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ action: 'relevel-status', ...body })
+            });
+            const d = await r.json();
+            if (!r.ok || !d.success) throw new Error(d.error || 'Failed');
+            const i = rvStreets.findIndex(s => s.slug === d.street.slug);
+            if (i !== -1) rvStreets[i] = d.street;
+            renderRelevel();
+        }
+
+        async function rvCreateLead(st, h) {
+            const name = prompt(`Who responded from ${h.address}?`, 'Homeowner');
+            if (name === null) return;
+            const phone = prompt('Phone or email (optional):', '') || '';
+            const isEmail = phone.includes('@');
+            const r = await fetch(`${API_BASE}/quick-leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({
+                    name: name.trim() || 'Homeowner',
+                    address: `${h.address}, London, ON ${h.postal || ''}`.trim(),
+                    phone: isEmail ? '' : phone.trim(),
+                    email: isEmail ? phone.trim() : '',
+                    source: 'Relevel mailer',
+                    campaign: `Relevel mailer · ${st.street}`,
+                    serviceType: 'Interlock relevel',
+                    notes: `Relevel mailer response (street #${st.rank} ${st.street}${h.lotSqft ? ', ' + h.lotSqft.toLocaleString('en-CA') + ' sq ft lot' : ''}).`
+                })
+            });
+            const d = await r.json();
+            if (!r.ok || !d.success) throw new Error(d.error || 'Failed');
+            await rvPatch({ slug: st.slug, address: h.address, status: 'Lead Created', leadId: d.lead.id });
+            toast('Lead created in 📋 Leads', 'success');
+        }
+
+        document.getElementById('rvList').addEventListener('toggle', (e) => {
+            const slug = e.target.dataset?.slug;
+            if (slug) e.target.open ? rvOpen.add(slug) : rvOpen.delete(slug);
+        }, true);
+
+        document.getElementById('rvList').addEventListener('change', async (e) => {
+            if (e.target.dataset.rv !== 'status') return;
+            const slug = e.target.closest('.rv-street').dataset.slug;
+            const address = e.target.closest('.rv-house').dataset.address;
+            try { await rvPatch({ slug, address, status: e.target.value }); }
+            catch (err) { toast('Failed to update status', 'error'); renderRelevel(); }
+        });
+
+        document.getElementById('rvList').addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-rv]');
+            if (!btn || btn.tagName === 'SELECT') return;
+            e.preventDefault();
+            const slug = btn.closest('.rv-street').dataset.slug;
+            const st = rvStreets.find(s => s.slug === slug);
+            if (!st) return;
+            try {
+                if (btn.dataset.rv === 'mail-street') {
+                    if (!confirm(`Mark every house on ${st.street} as Mailed? Houses with a later status are left alone.`)) return;
+                    btn.disabled = true;
+                    await rvPatch({ slug, status: 'Mailed', onlyFrom: 'Not Mailed' });
+                    toast(`${st.street} marked mailed`, 'success');
+                    return;
+                }
+                const h = st.houses.find(x => x.address === btn.closest('.rv-house').dataset.address);
+                if (btn.dataset.rv === 'create-lead') await rvCreateLead(st, h);
+                if (btn.dataset.rv === 'open-lead') {
+                    document.querySelector('[data-tab="salesleads"]').click();
+                    document.getElementById('qlSearch').value = h.address;
+                    setTimeout(filterQLLeads, 600);
+                }
+            } catch (err) { toast(err.message || 'Failed', 'error'); btn.disabled = false; }
+        });
+
+        function rvParseCsv(text) {
+            const rows = [];
+            let row = [], cell = '', quoted = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (quoted) {
+                    if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+                    else if (c === '"') quoted = false;
+                    else cell += c;
+                } else if (c === '"') quoted = true;
+                else if (c === ',') { row.push(cell); cell = ''; }
+                else if (c === '\n' || c === '\r') {
+                    if (c === '\r' && text[i + 1] === '\n') i++;
+                    row.push(cell); cell = '';
+                    if (row.some(v => v !== '')) rows.push(row);
+                    row = [];
+                } else cell += c;
+            }
+            row.push(cell);
+            if (row.some(v => v !== '')) rows.push(row);
+            const head = (rows.shift() || []).map(h => h.trim());
+            return rows.map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] || '').trim()])));
+        }
+
+        document.getElementById('rvImport').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            e.target.value = '';
+            if (!file) return;
+            try {
+                const rows = rvParseCsv(await file.text());
+                if (!rows.length || !('address' in rows[0]) || !('street_rank' in rows[0])) {
+                    throw new Error('Expected the lead scout addresses.csv (address, street_rank, lot_sqft…)');
+                }
+                const byStreet = new Map();
+                for (const r of rows) {
+                    const street = r.address.replace(/^\S+\s+/, '');
+                    if (!byStreet.has(street)) byStreet.set(street, { street, rank: Number(r.street_rank), plan: r.plan, postals: new Set(), houses: [] });
+                    const s = byStreet.get(street);
+                    if (r.postal_code) s.postals.add(r.postal_code);
+                    s.houses.push({ address: r.address, postal: r.postal_code, lotSqft: Number(r.lot_sqft) });
+                }
+                const streets = [...byStreet.values()].map(s => ({ ...s, postal: [...s.postals].join(' '), postals: undefined }));
+                const houses = streets.reduce((n, s) => n + s.houses.length, 0);
+                if (!confirm(`Import ${houses} houses on ${streets.length} streets? Statuses already set are kept; streets not in this file are removed.`)) return;
+                const r = await fetch(`${API_BASE}/quick-leads`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ action: 'relevel-import', streets })
+                });
+                const d = await r.json();
+                if (!r.ok || !d.success) throw new Error(d.error || 'Import failed');
+                toast(`Imported ${d.houses} houses on ${d.streets} streets`, 'success');
+                loadRelevel();
+            } catch (err) { toast(err.message || 'Import failed', 'error'); }
+        });
+
         // ── SALES LEADS (QUICK LEADS) ──────────────────────────────
         let allQLLeads = [];
 
@@ -2391,7 +2639,7 @@ Tasks:
                     return `<div id="qlrow-${lead.id}" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.9rem 1rem">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:.5rem">
                             <div>
-                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}${lead.source === 'Facebook Ads' ? '<span class="fb-source-badge">📘 Facebook Ads</span>' : ''}${(lead.source || '').startsWith('Website') ? '<span class="web-source-badge">🌐 ' + esc(lead.source) + '</span>' : ''}</div>
+                                <div style="font-weight:700;color:#fff;font-size:.95rem">${esc(lead.name)}${lead.estimateNumber ? '<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:.5rem">' + esc(lead.estimateNumber) + '</span>' : ''}${lead.source === 'Facebook Ads' ? '<span class="fb-source-badge">📘 Facebook Ads</span>' : ''}${(lead.source || '').startsWith('Website') ? '<span class="web-source-badge">🌐 ' + esc(lead.source) + '</span>' : ''}${lead.source === 'Relevel mailer' ? '<span class="relevel-source-badge">🧱 Relevel mailer</span>' : ''}</div>
                                 <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px">${esc(lead.address)}${lead.company ? ' &middot; ' + esc(lead.company) : ''}</div>
                                 ${lead.phone || lead.email ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px">' + esc(lead.phone||'') + (lead.phone&&lead.email?' &middot; ':'') + esc(lead.email||'') + '</div>' : ''}
                                 ${lead.campaign ? '<div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:2px">Campaign: ' + esc(lead.campaign) + '</div>' : ''}

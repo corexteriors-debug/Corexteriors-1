@@ -53,6 +53,97 @@ function cleanDraft(raw) {
     };
 }
 
+// ── Relevel mailer prospects ────────────────────────────────────
+// Street list from the lead scout (City of London open data, no owner names).
+// rv_streets = [slug, ...] in rank order; rv:<slug> = { street, rank, plan, postal, houses: [...] }.
+const RELEVEL_STATUSES = ['Not Mailed', 'Mailed', 'Door Knocked', 'Responded', 'Not Interested', 'Lead Created'];
+const streetSlug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+
+function cleanHouse(raw, prev) {
+    const address = cleanText(raw.address, 120).trim();
+    if (!address) return null;
+    return {
+        address,
+        postal: cleanText(raw.postal, 10),
+        lotSqft: Math.round(Number(raw.lotSqft)) || 0,
+        status: prev?.status || 'Not Mailed',
+        note: prev?.note || '',
+        leadId: prev?.leadId || '',
+        updatedAt: prev?.updatedAt || '',
+    };
+}
+
+async function handleRelevel(req, res, tokenData) {
+    if (req.method === 'GET') {
+        const slugs = (await kv.get('rv_streets')) || [];
+        const rows = slugs.length ? await kv.mget(...slugs.map((s) => `rv:${s}`)) : [];
+        return res.status(200).json({ success: true, statuses: RELEVEL_STATUSES, streets: rows.filter(Boolean) });
+    }
+
+    const { action } = req.body || {};
+
+    // Import (or re-import) the street list. Keeps each house's status and note.
+    if (req.method === 'POST' && action === 'relevel-import') {
+        if (tokenData.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+        const incoming = Array.isArray(req.body.streets) ? req.body.streets.slice(0, 300) : [];
+        if (!incoming.length) return res.status(400).json({ error: 'No streets in the import' });
+        const slugs = [];
+        let houses = 0;
+        for (const raw of incoming) {
+            const street = cleanText(raw.street, 80).trim();
+            const slug = streetSlug(street);
+            if (!slug || slugs.includes(slug)) continue;
+            const prev = (await kv.get(`rv:${slug}`)) || { houses: [] };
+            const byAddr = new Map((prev.houses || []).map((h) => [h.address.toLowerCase(), h]));
+            const list = (Array.isArray(raw.houses) ? raw.houses : []).slice(0, 400)
+                .map((h) => cleanHouse(h, byAddr.get(String(h.address || '').trim().toLowerCase())))
+                .filter(Boolean);
+            if (!list.length) continue;
+            await kv.set(`rv:${slug}`, {
+                slug, street,
+                rank: Math.round(Number(raw.rank)) || slugs.length + 1,
+                plan: cleanText(raw.plan, 40),
+                postal: cleanText(raw.postal, 60),
+                houses: list,
+                importedAt: new Date().toISOString(),
+            });
+            slugs.push(slug);
+            houses += list.length;
+        }
+        const old = (await kv.get('rv_streets')) || [];
+        for (const s of old) if (!slugs.includes(s)) await kv.del(`rv:${s}`);
+        await kv.set('rv_streets', slugs);
+        return res.status(200).json({ success: true, streets: slugs.length, houses });
+    }
+
+    // Set one house's status (address given) or every house on the street
+    // (onlyFrom limits a street-wide change to houses currently in that status).
+    if (req.method === 'PATCH' && action === 'relevel-status') {
+        const { slug, address, status, note, leadId, onlyFrom } = req.body;
+        if (status !== undefined && !RELEVEL_STATUSES.includes(status)) {
+            return res.status(400).json({ error: `Invalid status. Must be one of: ${RELEVEL_STATUSES.join(', ')}` });
+        }
+        const row = await kv.get(`rv:${streetSlug(slug)}`);
+        if (!row) return res.status(404).json({ error: 'Street not found' });
+        const targets = address
+            ? row.houses.filter((h) => h.address.toLowerCase() === String(address).toLowerCase())
+            : row.houses.filter((h) => !onlyFrom || h.status === onlyFrom);
+        if (!targets.length) return res.status(404).json({ error: 'House not found' });
+        const now = new Date().toISOString();
+        for (const h of targets) {
+            if (status !== undefined) h.status = status;
+            if (note !== undefined && address) h.note = cleanText(note, 500);
+            if (leadId !== undefined && address) h.leadId = cleanText(leadId, 80);
+            h.updatedAt = now;
+            h.updatedBy = tokenData.repName || tokenData.role;
+        }
+        await kv.set(`rv:${row.slug}`, row);
+        return res.status(200).json({ success: true, street: row });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+}
+
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
@@ -70,6 +161,12 @@ module.exports = async function handler(req, res) {
     if (!tokenData) return res.status(401).json({ error: 'Invalid or expired token' });
 
     try {
+        // Relevel mailer prospects live beside the leads (one KV key per street) so
+        // the Vercel function count stays put.
+        if (req.query?.kind === 'relevel' || String(req.body?.action || '').startsWith('relevel-')) {
+            return await handleRelevel(req, res, tokenData);
+        }
+
         // POST — create lead (from sales portal estimate or manual entry)
         if (req.method === 'POST') {
             const b = req.body;
