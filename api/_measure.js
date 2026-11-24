@@ -1,8 +1,9 @@
 // "Measure from address" job queue for the sales portal.
 //
-// The portal queues a job (address + services). Luke's Mac runs the always-on watcher
-// (core-exteriors-agents/scripts/watcher), which claims the job, measures the property from the
-// aerial photo and Street View, prices the Good/Better/Best options, and posts the result back here.
+// The portal queues a job (address + services) and starts the cloud worker (a GitHub Actions run in
+// core-exteriors-agents, .github/workflows/measure.yml). Luke's Mac watcher also polls the queue when
+// it is on. Whichever worker claims the job measures the property from the aerial photo and Street
+// View, prices the Good/Better/Best options, and posts the result back here.
 // The portal polls the job and shows the numbers + photos to check before filling the estimate.
 //
 // Lives inside api/leads.js (?action=measure…) because the Hobby plan caps us at 12 functions.
@@ -15,6 +16,36 @@ const MAX_PHOTO_CHARS = 450000; // per photo (data URL); KV values must stay wel
 
 function newId() {
     return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+const DISPATCH_CAP_PER_HOUR = 20;
+
+// Starts one cloud worker run. Needs GITHUB_DISPATCH_TOKEN (fine-grained, Actions: write on the
+// agents repo). Without it, jobs wait for the Mac. Never throws.
+async function startCloudWorker(kv) {
+    const token = (process.env.GITHUB_DISPATCH_TOKEN || '').trim();
+    if (!token) return 'off';
+    try {
+        const hourKey = `measure_dispatch:${new Date().toISOString().slice(0, 13)}`;
+        const used = Number(await kv.get(hourKey)) || 0;
+        if (used >= DISPATCH_CAP_PER_HOUR) return 'capped';
+        await kv.set(hourKey, used + 1, { ex: 3600 });
+        const repo = process.env.MEASURE_WORKFLOW_REPO || 'corexteriors-debug/core-exteriors-agents';
+        const ref = process.env.MEASURE_WORKFLOW_REF || 'main';
+        const r = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/measure.yml/dispatches`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28',
+                'User-Agent': 'corexteriors-portal',
+            },
+            body: JSON.stringify({ ref }),
+        });
+        return r.status === 204 ? 'started' : `HTTP ${r.status}`;
+    } catch (err) {
+        return 'error: ' + String(err.message || err).slice(0, 100);
+    }
 }
 
 function isWorker(req) {
@@ -40,6 +71,9 @@ async function handleMeasure(req, res, { kv, tokenData, worker }) {
         };
         await kv.set(`measure:${job.id}`, job, { ex: JOB_TTL });
         await kv.rpush(QUEUE, job.id);
+        job.cloud = await startCloudWorker(kv);
+        if (job.cloud !== 'started') console.warn('Measure cloud worker not started:', job.cloud);
+        await kv.set(`measure:${job.id}`, job, { ex: JOB_TTL });
         return res.status(201).json({ success: true, job }), true;
     }
     if (action === 'measure' && req.method === 'GET') {

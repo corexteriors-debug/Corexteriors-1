@@ -977,7 +977,7 @@
             <!-- MEASURE FROM ADDRESS -->
             <div class="section" id="measureSection">
                 <h2><span class="icon">📐</span> Measure from Address</h2>
-                <p style="font-size:.85rem;color:rgba(255,255,255,.55);margin:-.25rem 0 .9rem">Enter the property address above, tick the services, then measure. We trace the roof, deck or pavers from the aerial photo and check Street View for storeys and windows. Takes about 2–4 minutes. You check the numbers before they go on the estimate.</p>
+                <p style="font-size:.85rem;color:rgba(255,255,255,.55);margin:-.25rem 0 .9rem">Enter the property address above, tick the services, then measure. We trace the roof, deck or pavers from the aerial photo and check Street View for storeys and windows. Takes about 3–5 minutes. You check the numbers before they go on the estimate.</p>
                 <button type="button" id="measureBtn" onclick="startMeasure()" style="background:linear-gradient(135deg,#C9A84C,#b8963d);border:none;color:#0b1a33;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:.92rem;font-family:inherit;font-weight:700">📐 Measure Property</button>
                 <div id="measureStatus" style="font-size:.86rem;color:rgba(255,255,255,.7);margin-top:.75rem"></div>
                 <div id="measureResult" style="display:none;margin-top:1rem">
@@ -1422,7 +1422,7 @@
                 if (!r.ok || !d.job) throw new Error(d.error || 'Could not queue the measurement.');
                 measureJob = d.job;
                 measurePolls = 0;
-                measureSay('⏳ Queued. Measuring ' + services.join(', ') + ' at ' + address + '. Usually 2–4 minutes; you can keep filling in the estimate.');
+                measureSay('⏳ Queued. Measuring ' + services.join(', ') + ' at ' + address + '. Usually 3–5 minutes; you can keep filling in the estimate.');
                 clearInterval(measureTimer);
                 measureTimer = setInterval(pollMeasure, 10000);
             } catch (e) {
@@ -1441,8 +1441,8 @@
                 const d = await r.json();
                 if (!r.ok) throw new Error(d.error || 'Lost the measurement job.');
                 const job = d.job;
-                if (job.status === 'queued' && measurePolls >= 12) {
-                    measureSay('⏳ Still waiting for the office computer to pick this up. It needs to be on and awake.');
+                if (job.status === 'queued' && measurePolls >= 30) {
+                    measureSay('⏳ Still waiting to start. If nothing changes in a few minutes, enter the numbers by hand.');
                 } else if (job.status === 'measuring') {
                     measureSay('📐 Measuring now: tracing the aerial and checking Street View…');
                 }
