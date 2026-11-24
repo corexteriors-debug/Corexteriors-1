@@ -163,7 +163,13 @@ module.exports = async function handler(req, res) {
     try {
         // Relevel mailer prospects live beside the leads (one KV key per street) so
         // the Vercel function count stays put.
-        if (req.query?.kind === 'relevel' || String(req.body?.action || '').startsWith('relevel-')) {
+        // Review page ratings (written by api/contact.js), newest first.
+        if (req.method === 'GET' && req.query?.kind === 'feedback') {
+            if (tokenData.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+            return res.status(200).json({ success: true, feedback: (await kv.get('review_feedback')) || [] });
+        }
+
+        if (req.query?.kind === 'relevel' ||String(req.body?.action || '').startsWith('relevel-')) {
             return await handleRelevel(req, res, tokenData);
         }
 

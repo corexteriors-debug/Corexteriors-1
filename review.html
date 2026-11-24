@@ -90,7 +90,9 @@
 <footer>Core Exteriors Ltd. · London, Ontario · 519-712-1431</footer>
 <script>
 (function () {
-    var ref = (new URLSearchParams(location.search).get('c') || '').replace(/[^\w-]/g, '').slice(0, 40);
+    var qs = new URLSearchParams(location.search);
+    var ref = (qs.get('c') || '').replace(/[^\w-]/g, '').slice(0, 40);
+    var quote = (qs.get('q') || '').replace(/[^\w -]/g, '').slice(0, 40);
     var rating = 0;
     var labels = ['', 'Poor', 'Not great', 'Okay', 'Good', 'Excellent!'];
     var stars = Array.prototype.slice.call(document.querySelectorAll('.stars button'));
@@ -108,7 +110,7 @@
         return fetch('/api/contact', {
             method: 'POST', keepalive: true,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(Object.assign({ kind: 'feedback', ref: ref, stars: rating }, body || {}))
+            body: JSON.stringify(Object.assign({ kind: 'feedback', ref: ref, quote: quote, stars: rating }, body || {}))
         });
     }
 

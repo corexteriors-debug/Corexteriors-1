@@ -50,6 +50,48 @@ async function saveLeadToCrm({ name, email, phone, address, serviceLabel, messag
     return lead;
 }
 
+// Review page feedback → the lead it belongs to. The review link carries the quote number
+// (?q=CE 20261124 123), which both Sales (lead:) and Leads (ql:, incl. agent drafts) records keep.
+const sameQuote = (a, b) => String(a || '').replace(/\s+/g, ' ').trim().toUpperCase() === b;
+
+async function findLeadByQuote(quote) {
+    const q = String(quote || '').replace(/\s+/g, ' ').trim().toUpperCase();
+    if (!q) return null;
+    for (const [prefix, idsKey] of [['lead', 'lead_ids'], ['ql', 'ql_ids']]) {
+        const ids = (await kv.get(idsKey)) || [];
+        for (let i = 0; i < ids.length; i += 100) {
+            const keys = ids.slice(i, i + 100).map((id) => `${prefix}:${id}`);
+            const rows = await kv.mget(...keys);
+            const hit = rows.findIndex((r) => r && (sameQuote(r.estimateNumber, q)
+                || (Array.isArray(r.drafts) && r.drafts.some((d) => d && sameQuote(d.estimateNumber, q)))));
+            if (hit >= 0) return { key: keys[hit], record: rows[hit] };
+        }
+    }
+    return null;
+}
+
+async function saveFeedbackToCrm(fb) {
+    const entry = {
+        id: `fb_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        stars: fb.stars, message: fb.message, name: fb.name, ref: fb.ref, quote: fb.quote,
+        at: new Date().toISOString(),
+    };
+    const match = await findLeadByQuote(fb.quote);
+    let client = '';
+    if (match) {
+        const rec = match.record;
+        client = rec.clientName || rec.name || '';
+        rec.reviews = [entry, ...(Array.isArray(rec.reviews) ? rec.reviews : [])].slice(0, 10);
+        rec.updatedAt = entry.at;
+        await kv.set(match.key, rec);
+    }
+    // Every rating, matched or not, for the admin Overview list.
+    const all = (await kv.get('review_feedback')) || [];
+    all.unshift({ ...entry, leadKey: match ? match.key : '', client });
+    await kv.set('review_feedback', all.slice(0, 300));
+    return match ? { key: match.key, client } : null;
+}
+
 module.exports = async (req, res) => {
     // CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -70,6 +112,15 @@ module.exports = async (req, res) => {
             const ref = String(req.body.ref || '').replace(/[^\w-]/g, '').slice(0, 40);
             const fbName = String(req.body.name || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 120);
             const fbMessage = String(req.body.message || '').trim().slice(0, 3000);
+            const quote = String(req.body.quote || '').replace(/[^\w -]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+            // Save to the CRM first so the rating isn't lost even if email fails.
+            let saved = null, saveFailed = false;
+            try {
+                saved = await saveFeedbackToCrm({ stars, ref, quote, name: fbName, message: fbMessage });
+            } catch (crmError) {
+                saveFailed = true;
+                console.error('Failed to save feedback to CRM:', crmError);
+            }
             const gmailUser = process.env.GMAIL_USER || 'corexteriors@gmail.com';
             const gmailPass = process.env.GMAIL_APP_PASSWORD;
             if (!gmailPass) return res.status(500).json({ error: 'Email service not configured' });
@@ -82,6 +133,8 @@ module.exports = async (req, res) => {
                     `Stars: ${stars}`,
                     `Ref: ${ref || '(none)'}`,
                     `Name: ${fbName || '(not given)'}`,
+                    `Quote: ${quote || '(none)'}`,
+                    `Website CRM: ${saved ? `saved on ${saved.client || 'the lead'} (${saved.key.startsWith('lead:') ? 'Sales' : 'Leads'} tab)` : saveFailed ? 'save failed' : 'no matching lead (listed on the Overview tab)'}`,
                     `When: ${new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' })}`,
                     stars === 5 ? 'Was shown the Google review link.' : 'Feedback:',
                     fbMessage,

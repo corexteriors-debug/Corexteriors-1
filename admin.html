@@ -1135,6 +1135,14 @@
                     <div id="funnelContainer"
                         style="display:flex;gap:.5rem;align-items:flex-end;height:160px;padding-top:1rem"></div>
                 </div>
+
+                <!-- Review page ratings (corexteriors.ca/review) -->
+                <div class="chart-card" style="margin-bottom:1.5rem">
+                    <h3>⭐ Customer Feedback <span id="fbSummary" style="color:rgba(255,255,255,.4);font-weight:400;font-size:.85rem"></span></h3>
+                    <div id="feedbackList" style="display:flex;flex-direction:column;gap:.5rem;padding-top:.5rem">
+                        <div style="color:rgba(255,255,255,.3);font-size:.85rem">Loading...</div>
+                    </div>
+                </div>
             </div>
 
             <!-- ========== TAB: LEADS ========== -->
@@ -1800,6 +1808,7 @@ Tasks:
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboardScreen').style.display = 'block';
             loadLeads();
+            loadFeedback();
         }
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -1819,6 +1828,39 @@ Tasks:
                 if (btn.dataset.tab === 'relevel') loadRelevel();
             });
         });
+
+        // CUSTOMER FEEDBACK (review page ratings; saved on the lead by api/contact.js)
+        function starText(n) { n = Math.max(0, Math.min(5, Math.round(Number(n) || 0))); return '★'.repeat(n) + '☆'.repeat(5 - n); }
+        function feedbackWhen(at) { return at ? new Date(at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }) : ''; }
+        function feedbackLine(r, who) {
+            const happy = Number(r.stars) >= 5;
+            const text = r.message ? '“' + esc(r.message) + '”' : (happy ? 'Sent to the Google review page' : 'No comment');
+            return '<div style="font-size:.8rem;line-height:1.45">'
+                + '<span style="color:' + (happy ? '#C9A84C' : '#e67e22') + ';letter-spacing:1px">' + starText(r.stars) + '</span> '
+                + (who ? '<strong style="color:#fff">' + esc(who) + '</strong> ' : '')
+                + '<span style="color:rgba(255,255,255,.6)">' + text + '</span>'
+                + ' <span style="color:rgba(255,255,255,.3);font-size:.72rem">' + esc(feedbackWhen(r.at)) + '</span></div>';
+        }
+        function leadReviewsHtml(lead) {
+            const rs = Array.isArray(lead.reviews) ? lead.reviews : [];
+            return rs.map(r => feedbackLine(r, '')).join('');
+        }
+        async function loadFeedback() {
+            const box = document.getElementById('feedbackList');
+            try {
+                const r = await fetch(`${API_BASE}/quick-leads?kind=feedback`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error);
+                const fb = d.feedback || [];
+                if (!fb.length) { box.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:.85rem">No ratings yet.</div>'; return; }
+                const avg = fb.reduce((s, x) => s + (Number(x.stars) || 0), 0) / fb.length;
+                document.getElementById('fbSummary').textContent = `(${fb.length} · avg ${avg.toFixed(1)}★ · ${fb.filter(x => Number(x.stars) === 5).length} five-star)`;
+                box.innerHTML = fb.slice(0, 25).map(x => feedbackLine(x, x.client || x.name || (x.quote ? 'Quote ' + x.quote : 'Unmatched'))
+                    + (x.leadKey ? '' : '<div style="font-size:.7rem;color:rgba(255,255,255,.3);margin:-2px 0 2px">Not matched to a lead</div>')).join('');
+            } catch (e) {
+                box.innerHTML = '<div style="color:#e74c3c;font-size:.85rem">Failed to load feedback.</div>';
+            }
+        }
 
         // LOAD LEADS
         async function loadLeads() {
@@ -1983,6 +2025,7 @@ Tasks:
                         </td>
                     </tr>
                     ${lead.notes ? `<tr><td colspan="11" style="padding:.2rem 1rem .5rem;color:rgba(255,255,255,.35);font-size:.75rem;border-bottom:none">📝 ${esc(lead.notes)}</td></tr>` : ''}
+                    ${(lead.reviews || []).length ? `<tr><td colspan="11" style="padding:.2rem 1rem .5rem;border-bottom:none">${leadReviewsHtml(lead)}</td></tr>` : ''}
                     ${buildJobDetailsRow(lead)}
                 `;
             }).join('');
@@ -2110,6 +2153,7 @@ Tasks:
                     </div>
                     ${chips.length ? '<div class="lead-card-chips">' + chips.map(c => `<span class="lead-card-chip">${c}</span>`).join('') + '</div>' : ''}
                     ${lead.notes ? `<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-top:.4rem">📝 ${esc(lead.notes)}</div>` : ''}
+                    ${(lead.reviews || []).length ? `<div style="margin-top:.4rem">${leadReviewsHtml(lead)}</div>` : ''}
                     <div class="lead-card-actions">
                         <button class="card-btn card-btn-status" onclick="openActionSheet('status','${lead.id}','${esc(lead.clientName)}')">⚡ Status</button>
                         <button class="card-btn card-btn-pay"    onclick="openActionSheet('payment','${lead.id}','${esc(lead.clientName)}')">💳 Payment</button>
@@ -2653,6 +2697,7 @@ Tasks:
                         ${svcList ? '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.4rem">' + esc(svcList) + '</div>' : ''}
                         ${visitStr ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:.4rem">Service date: ' + visitStr + '</div>' : ''}
                         ${lead.notes ? '<div style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.6rem">' + esc(lead.notes) + '</div>' : ''}
+                        ${(lead.reviews || []).length ? '<div style="margin-bottom:.6rem">' + leadReviewsHtml(lead) + '</div>' : ''}
                         ${renderAgentDrafts(lead)}
                         <div class="dropdown" style="margin-bottom:.6rem">
                             <button class="badge callbadge-${callStatusKey}" onclick="toggleDrop('callstatus-${lead.id}')">📞 ${esc(callStatus)}</button>
