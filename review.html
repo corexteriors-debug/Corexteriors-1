@@ -114,25 +114,31 @@
         });
     }
 
+    function choose(v, delay) {
+        rating = v;
+        stars.forEach(function (x) { x.setAttribute('aria-checked', String(Number(x.dataset.v) === v)); });
+        paint(v);
+        setTimeout(function () {
+            if (v === 5) {
+                post().catch(function () {});
+                show('step-google');
+            } else {
+                show('step-feedback');
+                document.getElementById('fb-msg').focus();
+            }
+        }, delay);
+    }
+
     stars.forEach(function (b) {
         var v = Number(b.dataset.v);
         b.addEventListener('mouseenter', function () { paint(v); });
         b.addEventListener('mouseleave', function () { paint(rating); });
-        b.addEventListener('click', function () {
-            rating = v;
-            stars.forEach(function (x) { x.setAttribute('aria-checked', String(Number(x.dataset.v) === v)); });
-            paint(v);
-            setTimeout(function () {
-                if (v === 5) {
-                    post().catch(function () {});
-                    show('step-google');
-                } else {
-                    show('step-feedback');
-                    document.getElementById('fb-msg').focus();
-                }
-            }, 250);
-        });
+        b.addEventListener('click', function () { choose(v, 250); });
     });
+
+    // The "Rate us" stars in our emails link here with ?s=1..5, so the tap in the email is the rating.
+    var preset = Number(qs.get('s'));
+    if (preset >= 1 && preset <= 5 && Math.round(preset) === preset) choose(preset, 0);
 
     document.getElementById('fb-form').addEventListener('submit', function (e) {
         e.preventDefault();
