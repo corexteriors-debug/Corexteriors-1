@@ -116,6 +116,30 @@
             ],
             "destination": "https://corexteriors.ca/:path",
             "permanent": true
+        },
+        {
+            "source": "/review",
+            "missing": [
+                {
+                    "type": "query",
+                    "key": "s",
+                    "value": "^[1-5]$"
+                }
+            ],
+            "destination": "/",
+            "permanent": false
+        },
+        {
+            "source": "/review.html",
+            "missing": [
+                {
+                    "type": "query",
+                    "key": "s",
+                    "value": "^[1-5]$"
+                }
+            ],
+            "destination": "/",
+            "permanent": false
         }
     ]
 }
