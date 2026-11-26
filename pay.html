@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment | Core Exteriors</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/logo-mark.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #002147;
+            --gold: #C9A84C;
+            --gold-hover: #B8973D;
+            --ink: #1A1A1A;
+            --muted: #6C757D;
+            --line: #E6E8EC;
+            --bg: #F4F5F7;
+            --card: #FFFFFF;
+            --ok: #1E7F4F;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+        header {
+            background: var(--navy);
+            padding: 18px 16px;
+        }
+        .brand {
+            max-width: 520px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            text-decoration: none;
+        }
+        .brand img { width: 36px; height: 36px; border-radius: 8px; background: #fff; }
+        .brand b { font-family: 'Montserrat', sans-serif; font-size: 18px; letter-spacing: .3px; }
+        .brand small { display: block; color: #AEB9C8; font-size: 12px; font-weight: 500; margin-top: 2px; }
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 28px 16px 40px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 33, 71, .06);
+            overflow: hidden;
+        }
+        .card-top { padding: 26px 24px 8px; }
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--gold-hover);
+        }
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            line-height: 1.25;
+            color: var(--navy);
+            margin: 8px 0 6px;
+        }
+        .sub { color: var(--muted); font-size: 15px; line-height: 1.5; }
+        .lines { margin: 18px 24px 0; border-top: 1px solid var(--line); }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 12px 0;
+            font-size: 15px;
+            border-bottom: 1px solid var(--line);
+        }
+        .row span:first-child { color: var(--muted); }
+        .row span:last-child { font-variant-numeric: tabular-nums; font-weight: 500; text-align: right; }
+        .row.total { border-bottom: none; padding-top: 14px; }
+        .row.total span { color: var(--navy); font-weight: 700; font-size: 18px; }
+        .actions { padding: 18px 24px 24px; }
+        button.pay {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: var(--gold);
+            color: var(--ink);
+            font: 700 17px 'Inter', sans-serif;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background .15s ease, transform .15s ease;
+        }
+        button.pay:hover { background: var(--gold-hover); }
+        button.pay:active { transform: scale(.99); }
+        button.pay:disabled { opacity: .65; cursor: wait; }
+        .secure {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 12.5px;
+        }
+        .alt {
+            margin: 0 24px 24px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: #F8F6EF;
+            border: 1px solid #ECE3C8;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #5B4B1E;
+        }
+        .alt b { color: var(--ink); }
+        .state { padding: 34px 24px; text-align: center; }
+        .state .icon {
+            width: 56px; height: 56px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #E7F4EC;
+            color: var(--ok);
+        }
+        .state.warn .icon { background: #FBEFE2; color: #A4570E; }
+        .state h1 { margin-top: 0; }
+        .state p { color: var(--muted); font-size: 15px; line-height: 1.55; margin-top: 6px; }
+        .error { color: #B3261E; font-size: 14px; margin-top: 10px; text-align: center; min-height: 1em; }
+        .skeleton { height: 220px; display: grid; place-items: center; color: var(--muted); font-size: 14px; }
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+            padding: 0 16px 28px;
+            line-height: 1.6;
+        }
+        footer a { color: var(--navy); }
+    </style>
+</head>
+<body>
+    <header>
+        <a class="brand" href="https://corexteriors.ca">
+            <img src="https://pub-0c3adb3379354c6ca30653364ff800d8.r2.dev/logo-mark.png" alt="">
+            <span><b>Core Exteriors</b><small>Exterior care · London, Ontario</small></span>
+        </a>
+    </header>
+
+    <main>
+        <div class="card" id="card">
+            <div class="skeleton">Loading your payment…</div>
+        </div>
+    </main>
+
+    <footer>
+        Core Exteriors Ltd. · 203 Cambridge St, London, ON N6H 1N6<br>
+        Questions? <a href="tel:+15197121431">519-712-1431</a> · <a href="mailto:corexteriors@gmail.com">corexteriors@gmail.com</a>
+    </footer>
+
+    <script>
+    (function () {
+        var card = document.getElementById('card');
+        var code = (location.pathname.split('/pay/')[1] || '').replace(/[^a-z2-9]/g, '');
+        var justPaid = new URLSearchParams(location.search).get('paid') === '1';
+        var LABEL = { deposit: 'Deposit', balance: 'Balance due', full: 'Payment' };
+        var money = function (n) {
+            return '$' + Number(n).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+        var esc = function (s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        };
+        var check = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+        var bang = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 8v5M12 16.5v.5"/></svg>';
+        var lock = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+
+        function state(kind, title, body) {
+            card.innerHTML = '<div class="state' + (kind === 'warn' ? ' warn' : '') + '"><div class="icon">' +
+                (kind === 'warn' ? bang : check) + '</div><h1>' + title + '</h1><p>' + body + '</p></div>';
+        }
+
+        function showPaid(link) {
+            var name = link.firstName ? ', ' + esc(link.firstName) : '';
+            var amt = link.amountPaid != null ? link.amountPaid : link.total;
+            state('ok', 'Thank you' + name + '!',
+                'We received your ' + esc((LABEL[link.type] || 'payment').toLowerCase()) + ' of <b>' + money(amt) + '</b>' +
+                (link.estimateNumber ? ' for ' + esc(link.estimateNumber) : '') + '. ' +
+                'A receipt is on its way to your email. We’ll be in touch to confirm the next step.');
+        }
+
+        function showOpen(link) {
+            var hi = link.firstName ? 'Hi ' + esc(link.firstName) + ',' : 'Hello,';
+            card.innerHTML =
+                '<div class="card-top">' +
+                    '<div class="eyebrow">' + esc(LABEL[link.type] || 'Payment') + (link.estimateNumber ? ' · ' + esc(link.estimateNumber) : '') + '</div>' +
+                    '<h1>' + hi + ' here’s your secure card payment</h1>' +
+                    '<p class="sub">' + esc(link.description) + '</p>' +
+                '</div>' +
+                '<div class="lines">' +
+                    '<div class="row"><span>' + esc(LABEL[link.type] || 'Payment') + '</span><span>' + money(link.amount) + '</span></div>' +
+                    '<div class="row"><span>Card processing fee (5%)</span><span>' + money(link.fee) + '</span></div>' +
+                    '<div class="row total"><span>Total</span><span>' + money(link.total) + ' CAD</span></div>' +
+                '</div>' +
+                '<div class="actions">' +
+                    '<button class="pay" id="pay">Pay ' + money(link.total) + ' by card</button>' +
+                    '<div class="secure">' + lock + ' Secured by Stripe · Apple Pay & Google Pay accepted</div>' +
+                    '<div class="error" id="err"></div>' +
+                '</div>' +
+                '<div class="alt">Prefer to skip the card fee? Send an Interac e-Transfer of <b>' + money(link.amount) +
+                    '</b> to <b>corexteriors@gmail.com</b>' + (link.estimateNumber ? ' with <b>' + esc(link.estimateNumber) + '</b> in the message' : '') + '.</div>';
+
+            var btn = document.getElementById('pay');
+            btn.addEventListener('click', function () {
+                btn.disabled = true;
+                btn.textContent = 'Opening secure checkout…';
+                fetch('/api/payment?action=checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                }).then(function (r) { return r.json(); }).then(function (d) {
+                    if (d.success && d.url) { location.href = d.url; return; }
+                    if (/already been paid/i.test(d.error || '')) { load(); return; }
+                    throw new Error(d.error || 'Could not open checkout.');
+                }).catch(function (e) {
+                    btn.disabled = false;
+                    btn.textContent = 'Pay ' + money(link.total) + ' by card';
+                    document.getElementById('err').textContent = e.message + ' Please try again or call 519-712-1431.';
+                });
+            });
+        }
+
+        var tries = 0;
+        function load() {
+            if (!code) { state('warn', 'Link not found', 'This payment link looks incomplete. Please use the link from your email, or call 519-712-1431.'); return; }
+            fetch('/api/payment?action=link&code=' + encodeURIComponent(code), { cache: 'no-store' })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (!d.success) { state('warn', 'Link not found', 'We couldn’t find this payment. Please use the link from your email, or call 519-712-1431.'); return; }
+                    var link = d.link;
+                    if (link.status === 'paid') { showPaid(link); return; }
+                    if (link.status === 'void') { state('warn', 'This link is no longer active', 'Nothing is owing on this link. If you think that’s wrong, call us at 519-712-1431.'); return; }
+                    if (justPaid) {
+                        // Stripe sent the client back before the webhook landed: wait a moment.
+                        if (tries++ < 8) {
+                            card.innerHTML = '<div class="skeleton">Confirming your payment…</div>';
+                            setTimeout(load, 1500);
+                            return;
+                        }
+                        state('ok', 'Payment received', 'Thank you! Stripe is confirming your payment and a receipt is on its way to your email.');
+                        return;
+                    }
+                    showOpen(link);
+                })
+                .catch(function () {
+                    state('warn', 'Something went wrong', 'We couldn’t load this payment. Please refresh, or call 519-712-1431.');
+                });
+        }
+        load();
+    })();
+    </script>
+</body>
+</html>

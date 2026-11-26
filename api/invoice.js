@@ -1,7 +1,7 @@
 const { kv } = require('@vercel/kv');
 const { put } = require('@vercel/blob');
 const nodemailer = require('nodemailer');
-const Stripe = require('stripe');
+const { createPayLink } = require('./_paylink');
 const { generateEstimatePDF } = require('./_estimatePdf');
 const { buildBrochureAttachments } = require('./_brochures');
 
@@ -32,61 +32,26 @@ module.exports = async function handler(req, res) {
         const docType   = isInvoice ? 'INVOICE' : 'ESTIMATE';
         const pdfBytes  = await generateEstimatePDF(estimate, { docType, signatureData: signatureData || null });
 
-        // Optionally create a Stripe checkout session and embed the link in the email
+        // Optionally create a branded pay link (corexteriors.ca/pay/<code>) and embed it in the email.
+        // It never expires; each click opens a fresh Stripe Checkout (see api/_paylink.js).
         let checkoutUrl = null;
         let cardFeeAmount = 0;
-        if (paymentRequest && paymentRequest.amount >= 0.50) {
-            const stripeKey = (process.env.STRIPE_SECRET_KEY || '').trim();
-            if (stripeKey) {
-                try {
-                    const stripe = new Stripe(stripeKey);
-                    const amountCents = Math.round(parseFloat(paymentRequest.amount) * 100);
-                    // Credit card payments carry a 5% processing fee, itemized as its
-                    // own line so it's disclosed at checkout rather than folded silently
-                    // into the total.
-                    const feeCents = Math.round(amountCents * 0.05);
-                    cardFeeAmount = feeCents / 100;
-                    const isDeposit = paymentRequest.type === 'deposit';
-                    const session = await stripe.checkout.sessions.create({
-                        payment_method_types: ['card'],
-                        customer_email: estimate.email,
-                        line_items: [
-                            {
-                                price_data: {
-                                    currency: 'cad',
-                                    product_data: {
-                                        name: isDeposit ? 'Deposit — Core Exteriors' : 'Payment — Core Exteriors',
-                                        description: paymentRequest.description || `Services for ${estimate.clientName}`,
-                                    },
-                                    unit_amount: amountCents,
-                                },
-                                quantity: 1,
-                            },
-                            {
-                                price_data: {
-                                    currency: 'cad',
-                                    product_data: {
-                                        name: 'Card Processing Fee (5%)',
-                                        description: 'Applies to credit card payments only',
-                                    },
-                                    unit_amount: feeCents,
-                                },
-                                quantity: 1,
-                            },
-                        ],
-                        mode: 'payment',
-                        success_url: `https://corexteriors.ca/sales?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-                        cancel_url: `https://corexteriors.ca/sales?payment=cancelled`,
-                        metadata: {
-                            clientName: estimate.clientName || '',
-                            estimateNumber: estimate.estimateNumber || '',
-                            paymentType: paymentRequest.type || 'deposit',
-                        },
-                    });
-                    checkoutUrl = session.url;
-                } catch (stripeErr) {
-                    console.error('Stripe session error in invoice:', stripeErr.message);
-                }
+        if (paymentRequest && paymentRequest.amount >= 0.50 && (process.env.STRIPE_SECRET_KEY || '').trim()) {
+            try {
+                const type = ['deposit', 'balance'].includes(paymentRequest.type) ? paymentRequest.type : 'full';
+                const { url, link } = await createPayLink(kv, {
+                    clientName: estimate.clientName,
+                    clientEmail: estimate.email,
+                    amount: paymentRequest.amount,
+                    type,
+                    description: paymentRequest.description || `Services for ${estimate.clientName}`,
+                    estimateNumber: estimate.estimateNumber,
+                    leadId: estimate.leadId,
+                }, tokenData.repName || '');
+                checkoutUrl = url;
+                cardFeeAmount = link.feeCents / 100;
+            } catch (payErr) {
+                console.error('Pay link error in invoice:', payErr.message);
             }
         }
 
@@ -179,7 +144,7 @@ async function sendDocEmail(est, pdfBytes, docType, checkoutUrl, paymentRequest,
                 style="display:inline-block;background:#F5B800;color:#1A1A1A;font-size:16px;font-weight:700;padding:14px 36px;border-radius:50px;text-decoration:none;letter-spacing:.3px">
                &#128179; Pay ${payLabel} &mdash; ${amountStr}
              </a>
-             <p style="font-size:11px;color:#999;margin-top:10px">&#128274; Powered by Stripe &mdash; your card details are never shared with us. Link expires in 24 hours.</p>
+             <p style="font-size:11px;color:#999;margin-top:10px">&#128274; Powered by Stripe &mdash; your card details are never shared with us.</p>
              <p style="font-size:12px;color:#7a5500;margin-top:6px">Includes a 5% credit card processing fee (${feeStr}). E-transfer, cash, and cheque have no fee.</p>
            </div>`;
     })() : '';

@@ -1,5 +1,6 @@
 const { kv } = require('@vercel/kv');
 const Stripe = require('stripe');
+const { markPaid } = require('./_paylink');
 
 // Disable body parsing so we can verify Stripe signature
 module.exports.config = { api: { bodyParser: false } };
@@ -35,6 +36,12 @@ module.exports = async function handler(req, res) {
 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
+        try {
+            const link = await markPaid(kv, session);
+            if (link) console.log(`Pay link ${link.code} paid ($${link.amountPaidCents / 100})`);
+        } catch (err) {
+            console.error('Stripe webhook pay link error:', err);
+        }
         const leadId = session.metadata?.leadId;
         const amountPaid = session.amount_total ? session.amount_total / 100 : null;
         const paymentType = session.metadata?.paymentType || 'full';

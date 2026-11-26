@@ -105,6 +105,12 @@
             "schedule": "0 12 * * *"
         }
     ],
+    "rewrites": [
+        {
+            "source": "/pay/:code",
+            "destination": "/pay.html"
+        }
+    ],
     "redirects": [
         {
             "source": "/:path(.*)",

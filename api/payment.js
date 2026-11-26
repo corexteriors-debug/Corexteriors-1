@@ -1,13 +1,41 @@
 const { kv } = require('@vercel/kv');
-const Stripe = require('stripe');
 const nodemailer = require('nodemailer');
 const { generateEstimatePDF } = require('./_estimatePdf');
 
+const { createPayLink, publicView, getLink, startCheckout, voidLink } = require('./_paylink');
+
+// Routes (one function — the Hobby plan caps us at 12):
+//   GET  /api/payment?action=link&code=…      public: what the /pay/<code> page shows
+//   POST /api/payment?action=checkout {code}  public: open a fresh Stripe Checkout for that link
+//   POST /api/payment?action=link             signed in: create a pay link, return its URL (no email)
+//   POST /api/payment?action=void {code}      signed in: switch a link off
+//   POST /api/payment                         signed in: portal flow — create a link and email it with the invoice
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', 'https://corexteriors.ca');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') return res.status(200).end();
+    const action = String((req.query && req.query.action) || '');
+    const fail = (err) => {
+        if (!err.status) console.error('Payment API error:', err);
+        return res.status(err.status || 500).json({ success: false, error: err.message || 'Internal server error' });
+    };
+
+    try {
+        if (action === 'link' && req.method === 'GET') {
+            res.setHeader('Cache-Control', 'no-store');
+            const link = await getLink(kv, req.query.code);
+            if (!link) return res.status(404).json({ success: false, error: 'This payment link was not found.' });
+            return res.status(200).json({ success: true, link: publicView(link) });
+        }
+        if (action === 'checkout' && req.method === 'POST') {
+            const url = await startCheckout(kv, (req.body || {}).code);
+            return res.status(200).json({ success: true, url });
+        }
+    } catch (err) {
+        return fail(err);
+    }
+
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
@@ -15,74 +43,35 @@ module.exports = async (req, res) => {
         if (!token) return res.status(401).json({ error: 'No token provided' });
         const tokenData = await kv.get(`token:${token}`);
         if (!tokenData) return res.status(401).json({ error: 'Invalid token' });
+        const repName = tokenData.repName || 'Core Exteriors Team';
+        const body = req.body || {};
 
-        const stripeKey = (process.env.STRIPE_SECRET_KEY || '').trim();
-        if (!stripeKey) {
-            return res.status(500).json({ success: false, error: 'Stripe not configured.' });
+        if (action === 'link') {
+            const { code, url, link } = await createPayLink(kv, body, repName);
+            return res.status(200).json({ success: true, code, url, link: publicView(link) });
+        }
+        if (action === 'void') {
+            const link = await voidLink(kv, body.code);
+            if (!link) return res.status(404).json({ success: false, error: 'Link not found.' });
+            return res.status(200).json({ success: true, link: publicView(link) });
         }
 
-        const stripe = new Stripe(stripeKey);
-        const { clientName, clientEmail, clientPhone, amount, description, leadId, paymentType, estimate, signatureData } = req.body;
-
+        const { clientName, clientEmail, amount, description, leadId, paymentType, estimate, signatureData } = body;
         if (!clientEmail || !amount) {
             return res.status(400).json({ error: 'Client email and amount are required' });
         }
-
-        const amountCents = Math.round(parseFloat(amount) * 100);
-        if (amountCents < 50) {
-            return res.status(400).json({ error: 'Amount must be at least $0.50' });
-        }
-        // Credit card payments carry a 5% processing fee, itemized as its own line
-        // so it's disclosed at checkout rather than folded silently into the total.
-        const CARD_FEE_RATE = 0.05;
-        const feeCents = Math.round(amountCents * CARD_FEE_RATE);
-
         const isDeposit = paymentType === 'deposit';
-        const productName = isDeposit ? 'Deposit — Core Exteriors' : 'Payment — Core Exteriors';
-
-        // Create Stripe Checkout session
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            customer_email: clientEmail,
-            line_items: [
-                {
-                    price_data: {
-                        currency: 'cad',
-                        product_data: {
-                            name: productName,
-                            description: description || `Service payment for ${clientName || 'Client'}`,
-                        },
-                        unit_amount: amountCents,
-                    },
-                    quantity: 1,
-                },
-                {
-                    price_data: {
-                        currency: 'cad',
-                        product_data: {
-                            name: 'Card Processing Fee (5%)',
-                            description: 'Applies to credit card payments only',
-                        },
-                        unit_amount: feeCents,
-                    },
-                    quantity: 1,
-                },
-            ],
-            mode: 'payment',
-            success_url: `https://corexteriors.ca/sales?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `https://corexteriors.ca/sales?payment=cancelled`,
-            metadata: {
-                leadId: leadId || '',
-                clientName: clientName || '',
-                paymentType: paymentType || 'full',
-            },
-        });
+        const { code, url: payUrl, link } = await createPayLink(kv, {
+            clientName, clientEmail, amount, description, leadId,
+            type: isDeposit ? 'deposit' : 'full',
+            estimateNumber: estimate && estimate.estimateNumber,
+        }, repName);
 
         // Update lead with pending payment info
         if (leadId) {
             const lead = await kv.get(`lead:${leadId}`);
             if (lead) {
-                lead.stripeSessionId = session.id;
+                lead.payCode = code;
                 lead.paymentStatus = 'Pending';
                 lead.paymentMethod = 'Credit Card';
                 lead.paymentAmount = parseFloat(amount);
@@ -91,9 +80,6 @@ module.exports = async (req, res) => {
                 await kv.set(`lead:${leadId}`, lead);
             }
         }
-
-        const repName = tokenData.repName || 'Core Exteriors Team';
-        const checkoutUrl = session.url; // kept server-side only — never returned to the sales rep
 
         const estData = estimate || { clientName, email: clientEmail };
 
@@ -111,9 +97,9 @@ module.exports = async (req, res) => {
             emailSent = await sendPaymentEmail({
                 clientName: clientName || 'Valued Customer',
                 clientEmail,
-                amount: parseFloat(amount),
-                feeAmount: feeCents / 100,
-                checkoutUrl,
+                amount: link.amountCents / 100,
+                feeAmount: link.feeCents / 100,
+                checkoutUrl: payUrl,
                 isDeposit,
                 description: description || 'Exterior Services',
                 repName,
@@ -124,16 +110,9 @@ module.exports = async (req, res) => {
             console.error('Payment email error:', err.message);
         }
 
-        return res.status(200).json({
-            success: true,
-            emailSent,
-            sessionId: session.id,
-            // checkoutUrl intentionally omitted
-        });
-
+        return res.status(200).json({ success: true, emailSent, payCode: code });
     } catch (error) {
-        console.error('Payment API error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return fail(error);
     }
 };
 
@@ -194,7 +173,7 @@ async function sendPaymentEmail({ clientName, clientEmail, amount, feeAmount, ch
       <strong>&#128274; Secure Payment</strong><br>
       Powered by Stripe &mdash; your card details are never shared with us.
     </div>
-    <p style="margin-top:16px;font-size:13px;color:#888">This link expires in 24 hours. Questions? Call us at <strong>519-712-1431</strong> or reply to this email.</p>
+    <p style="margin-top:16px;font-size:13px;color:#888">Your secure payment page is at <a href="${checkoutUrl}" style="color:#0a1628">${checkoutUrl.replace('https://','')}</a>. Questions? Call us at <strong>519-712-1431</strong> or reply to this email.</p>
     <p style="margin-top:16px">Best regards,<br><strong>${repName}</strong><br>Core Exteriors<br>
       <a href="mailto:corexteriors@gmail.com" style="color:#0a1628">corexteriors@gmail.com</a>
     </p>

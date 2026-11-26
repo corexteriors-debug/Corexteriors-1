@@ -97,6 +97,7 @@ src/
 - Daily reminder cron: `api/remind.js` runs at 1pm UTC via Vercel Cron, emails clients scheduled for tomorrow
 - Cron protected by `CRON_SECRET` env var (Bearer token)
 - Stripe payments + webhook handler in `api/payment.js` + `api/stripe-webhook.js`
+- Branded pay links: `corexteriors.ca/pay/<code>` (`pay.html`, rewrite in `vercel.json`) backed by KV `paylink:<code>` (`api/_paylink.js`). Links never expire; each "Pay by card" click opens a fresh Checkout session and the webhook marks the link paid. Routes live in `api/payment.js` (`?action=link|checkout|void`) because the Hobby plan caps us at 12 functions.
 - Google Calendar auto-updates when admin reschedules a job (`api/calendar.js`)
 
 ## Git / GitHub
