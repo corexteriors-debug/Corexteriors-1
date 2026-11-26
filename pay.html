@@ -211,7 +211,7 @@
                 '</div>' +
                 '<div class="lines">' +
                     '<div class="row"><span>' + esc(LABEL[link.type] || 'Payment') + '</span><span>' + money(link.amount) + '</span></div>' +
-                    '<div class="row"><span>Card processing fee (5%)</span><span>' + money(link.fee) + '</span></div>' +
+                    (link.fee > 0 ? '<div class="row"><span>Card processing fee (5%)</span><span>' + money(link.fee) + '</span></div>' : '') +
                     '<div class="row total"><span>Total</span><span>' + money(link.total) + ' CAD</span></div>' +
                 '</div>' +
                 '<div class="actions">' +
@@ -219,7 +219,7 @@
                     '<div class="secure">' + lock + ' Secured by Stripe · Apple Pay & Google Pay accepted</div>' +
                     '<div class="error" id="err"></div>' +
                 '</div>' +
-                '<div class="alt">Prefer to skip the card fee? Send an Interac e-Transfer of <b>' + money(link.amount) +
+                '<div class="alt">' + (link.fee > 0 ? 'Prefer to skip the card fee? Send' : 'Prefer e-Transfer? Send') + ' an Interac e-Transfer of <b>' + money(link.amount) +
                     '</b> to <b>corexteriors@gmail.com</b>' + (link.estimateNumber ? ' with <b>' + esc(link.estimateNumber) + '</b> in the message' : '') + '.</div>';
 
             var btn = document.getElementById('pay');

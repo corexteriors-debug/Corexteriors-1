@@ -54,7 +54,7 @@ async function createPayLink(kv, input, createdBy) {
         status: 'open',
         type,
         amountCents,
-        feeCents: feeFor(amountCents),
+        feeCents: input.noFee === true ? 0 : feeFor(amountCents), // noFee: Luke waived the card fee for this client
         clientName: clip(input.clientName, 120),
         email,
         description: clip(input.description, 300) || 'Exterior services',
@@ -134,14 +134,14 @@ async function startCheckout(kv, code) {
                 },
                 quantity: 1,
             },
-            {
+            ...(link.feeCents > 0 ? [{
                 price_data: {
                     currency: 'cad',
                     product_data: { name: 'Card processing fee (5%)', description: 'Applies to card payments only' },
                     unit_amount: link.feeCents,
                 },
                 quantity: 1,
-            },
+            }] : []),
         ],
         payment_intent_data: {
             description: `Core Exteriors ${LABEL[link.type].toLowerCase()}${ref} — ${link.clientName || link.email}`,
