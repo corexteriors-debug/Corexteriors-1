@@ -108,7 +108,7 @@
     "rewrites": [
         {
             "source": "/pay/:code",
-            "destination": "/pay.html"
+            "destination": "/pay"
         }
     ],
     "redirects": [
