@@ -1041,7 +1041,7 @@
     </style>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <!-- Bump ?v= on every change: vercel.json caches .js for a year. -->
-    <script src="/crm-app.js?v=1"></script>
+    <script src="/crm-app.js?v=2"></script>
 </head>
 
 <body>
@@ -1122,7 +1122,7 @@
 
                 <!-- CRM at a glance (from the CRM tab) -->
                 <div class="chart-card" id="crmOverview" style="margin-bottom:1.5rem;display:none">
-                    <h3 style="display:flex;align-items:center;gap:.5rem">🧭 CRM <span id="crmOverviewSync" style="color:rgba(255,255,255,.4);font-weight:400;font-size:.8rem"></span>
+                    <h3 style="display:flex;align-items:center;gap:.5rem">CRM <span id="crmOverviewSync" style="color:rgba(255,255,255,.4);font-weight:400;font-size:.8rem"></span>
                         <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="openCrmTab()">Open CRM →</button></h3>
                     <div class="stats-row" id="crmOverviewStats" style="margin:0"></div>
                     <div id="crmOverviewToday" style="display:flex;flex-direction:column;gap:.35rem;font-size:.85rem"></div>
@@ -1862,7 +1862,7 @@ Tasks:
         function crmBadge(lead) {
             const m = crmCardFor(lead);
             if (!m) return '';
-            return ` <button type="button" onclick="openCrmContact('${esc(m.contact.id)}')" title="Open in the CRM" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:#C9A84C;border-radius:20px;padding:1px 8px;font-size:.68rem;cursor:pointer;font-family:inherit">🧭 ${esc(m.opp.stage)}</button>`;
+            return ` <button type="button" onclick="openCrmContact('${esc(m.contact.id)}')" title="Open in the CRM" style="background:none;border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.65);border-radius:4px;padding:0 6px;font-size:.68rem;cursor:pointer;font-family:inherit">CRM · ${esc(m.opp.stage)}</button>`;
         }
         function openCrmTab() { document.querySelector('.tab-btn[data-tab="crm"]').click(); }
         function openCrmContact(id) { openCrmTab(); crmApp?.openContact(id); }
@@ -1878,13 +1878,12 @@ Tasks:
             const jobs = D.opps.filter(o => o.stage === 'Booked' && o.booked?.when && o.booked.when.slice(0, 10) >= today).sort((a, b) => a.booked.when.localeCompare(b.booked.when));
             const stat = (v, l) => `<div class="stat-card"><div class="stat-value">${esc(String(v))}</div><div class="stat-label">${esc(l)}</div></div>`;
             document.getElementById('crmOverviewStats').innerHTML = stat(money(r.openPipelineValue), 'Open pipeline')
-                + stat(D.opps.filter(o => D.openStages.includes(o.stage)).length, 'Open cards')
                 + stat(money(unpaid.reduce((s, o) => s + (o.invoice?.amount || o.value || 0), 0)), `Unpaid (${unpaid.length})`)
                 + stat(due.length, 'Tasks due') + stat((r.winRate ?? 0) + '%', 'Win rate, 30d');
             const name = (id) => esc(D.contacts.find(c => c.id === id)?.name || '');
             document.getElementById('crmOverviewToday').innerHTML = [
-                ...jobs.slice(0, 3).map(o => `<div>📅 <strong>${esc(new Date(o.booked.when).toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}</strong> · ${name(o.contactId)} · ${esc(o.service || '')}</div>`),
-                ...due.slice(0, 4).map(t => `<div>☎️ ${esc(t.title)} <span style="color:rgba(255,255,255,.4)">due ${esc(t.due)}</span></div>`),
+                ...jobs.slice(0, 3).map(o => `<div><strong>${esc(new Date(o.booked.when).toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}</strong> · ${name(o.contactId)} · ${esc(o.service || '')}</div>`),
+                ...due.slice(0, 4).map(t => `<div>${esc(t.title)} <span style="color:rgba(255,255,255,.4)">due ${esc(t.due)}</span></div>`),
             ].join('') || '<div style="color:rgba(255,255,255,.4)">No jobs coming up and no tasks due.</div>';
             const s = D.sync || {};
             document.getElementById('crmOverviewSync').textContent = s.syncedAt
