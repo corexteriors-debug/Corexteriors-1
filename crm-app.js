@@ -72,7 +72,10 @@
   .embedded .nav { border-bottom: 1px solid var(--line); overflow-x: auto; gap: 22px; margin-bottom: 20px; scrollbar-width: none; }
   .embedded .nav button { padding: 10px 0; border-bottom: 2px solid transparent; margin-bottom: -1px; font-size: 13.5px; }
   .embedded .nav button[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
-  .embedded.dark .nav button[aria-current="page"] { border-bottom-color: var(--gold); }
+  .embedded .nav button[aria-current="page"] { border-bottom-color: var(--gold); }
+  .embedded .tile { position: relative; }
+  .embedded .tile::before { content: ""; position: absolute; top: -1px; left: 18px; width: 28px; height: 2px; background: var(--gold); }
+  .embedded .btn.primary { box-shadow: inset 0 -2px 0 var(--gold); }
 
   .main { min-width: 0; display: flex; flex-direction: column; }
   .top { display: flex; align-items: center; gap: 10px; padding: 16px 28px; flex-wrap: wrap; }
@@ -160,7 +163,7 @@
   .cal .day:not(:nth-child(7n+1)) { border-left: 1px solid var(--line); }
   .cal .day.out { color: var(--muted); opacity: .55; }
   .cal .day .d { font-variant-numeric: tabular-nums; }
-  .cal .day.today .d { color: var(--on-primary); background: var(--primary); border-radius: 4px; padding: 0 5px; font-weight: 600; }
+  .cal .day.today .d { color: #fff; background: var(--gold); border-radius: 4px; padding: 0 5px; font-weight: 600; }
   .ev { display: block; margin-top: 4px; padding: 1px 0 1px 7px; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; border: 0; border-left: 2px solid var(--line); width: 100%; text-align: left; background: none; color: var(--ink-2); }
   .ev.job { border-left-color: var(--bar); color: var(--ink); font-weight: 500; }
   .ev.post { color: var(--muted); }

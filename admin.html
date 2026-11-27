@@ -1078,16 +1078,33 @@
         .rv-bar span { background: #002147 }
         .calc-result { background: #f3f6fa; border-color: #dfe5ee; color: #002147 }
         input[type="date"], input[type="time"] { color-scheme: light }
+        /* gold accents */
+        .eyebrow { font-size: .68rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #a8862f; margin-bottom: .15rem }
+        .login-card { border-top: 3px solid #C9A84C }
+        .stat-card { position: relative }
+        .stat-card::before { content: ""; position: absolute; top: -1px; left: 1.25rem; width: 28px; height: 2px; background: #C9A84C; border-radius: 0 0 2px 2px }
+        .chart-card h3::before, .table-title h2::before { content: ""; display: inline-block; width: 3px; height: .9em; background: #C9A84C; border-radius: 2px; margin-right: .55rem; vertical-align: -1px }
+        .btn-orange, .login-btn { box-shadow: inset 0 -2px 0 #C9A84C }
+        a.ql-drafts-mail, .rv-btn-gold { border-color: #C9A84C }
+
+        .wh-tag { display: inline-block; font-size: .72rem; font-weight: 600; padding: 2px 9px; border-radius: 20px; border: 1px solid #e6e8ec; color: #4b5563 }
+        .wh-tag.wh-whale { background: #C9A84C; border-color: #C9A84C; color: #fff }
+        .wh-tag.wh-muted { border-color: transparent; color: #9ca3af }
+        .wh-rank { color: #9ca3af; font-variant-numeric: tabular-nums; font-weight: 600 }
+        tr.wh-top td { background: #fcf9f0 }
+        tr.wh-top td:first-child { box-shadow: inset 3px 0 0 #C9A84C; color: #7a5f14 }
+
     </style>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <!-- Bump ?v= on every change: vercel.json caches .js for a year. -->
-    <script src="/crm-app.js?v=2"></script>
+    <script src="/crm-app.js?v=3"></script>
 </head>
 
 <body>
     <!-- LOGIN -->
     <div class="portal-wrapper" id="loginScreen">
         <div class="login-card">
+            <div class="eyebrow">Core Exteriors</div>
             <h1>Admin Dashboard</h1>
             <p class="subtitle">Core Exteriors — Manager Access</p>
             <form id="loginForm">
@@ -1103,7 +1120,7 @@
     <div class="dashboard-wrapper" id="dashboardScreen">
         <div class="dashboard-container">
             <div class="dashboard-header">
-                <h1>Admin Dashboard</h1>
+                <div><div class="eyebrow">Core Exteriors</div><h1>Admin Dashboard</h1></div>
                 <div class="header-actions">
                     <button class="btn btn-green" id="exportBtn">Export CSV</button>
                     <button class="btn btn-blue" id="followupBtn">Send Follow ups</button>
@@ -1119,6 +1136,7 @@
                 <button class="tab-btn" data-tab="crm">CRM</button>
                 <button class="tab-btn" data-tab="leads">Sales</button>
                 <button class="tab-btn" data-tab="salesleads">Leads</button>
+                <button class="tab-btn" data-tab="whales">Whales</button>
                 <button class="tab-btn" data-tab="relevel">Relevel</button>
                 <button class="tab-btn" data-tab="calendar">Calendar</button>
                 <button class="tab-btn" data-tab="materials">Materials</button>
@@ -1297,6 +1315,25 @@
                         <div style="color:rgba(15, 23, 42,.3);text-align:center;padding:2rem">Click Refresh or switch to this tab to load</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- ========== TAB: WHALES (interlock jobs ranked by value) ========== -->
+            <div class="tab-content" id="tab-whales">
+                <div class="stats-row" id="whStats"></div>
+                <div class="table-card">
+                    <div class="table-title" style="gap:1rem;flex-wrap:wrap">
+                        <div><h2>Whales <span id="whCount" style="color:rgba(15, 23, 42,.4);font-weight:400;font-size:.85rem"></span></h2>
+                            <div style="font-size:.78rem;color:#6b7280;margin-top:.2rem">Every interlock request, ranked by job value (price book, before HST). Biggest first.</div></div>
+                        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                            <input type="text" id="whSearch" placeholder="Search name, address..." oninput="renderWhales()" class="rv-input" style="min-width:200px">
+                            <select id="whClass" onchange="renderWhales()" class="rv-input"><option value="all">All sizes</option><option value="Whale">Whales only</option><option value="Big">Big and up</option></select>
+                            <label style="font-size:.8rem;color:#4b5563;display:flex;gap:.35rem;align-items:center"><input type="checkbox" id="whOpen" checked onchange="renderWhales()"> Open only</label>
+                            <button onclick="loadWhales(true)" class="btn btn-outline btn-sm">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="table-scroll" id="whList"><div class="loading">Loading...</div></div>
+                </div>
+                <p style="font-size:.75rem;color:#6b7280;margin:.75rem .25rem">Sizes: <b style="color:#7a5f14">Whale</b> $8,000+ · Big $4,000+ · Standard $1,500+ · Small under $1,500. Value = relevel sq ft × rate ($8.60 / $9.00 / $10.25) + poly sq ft × stone rate (+$0.40 sealer), with the $1,500 relevel or $1,200 poly-only minimum. Requests with no sq ft yet are listed last as "Needs measuring".</p>
             </div>
 
             <!-- ========== TAB: RELEVEL MAILER ========== -->
@@ -1883,6 +1920,7 @@ Tasks:
                 document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
                 if (btn.dataset.tab === 'salesleads') loadQLLeads();
                 if (btn.dataset.tab === 'relevel') loadRelevel();
+                if (btn.dataset.tab === 'whales') loadWhales();
                 if (btn.dataset.tab === 'crm') crmApp?.reload();
             });
         });
@@ -3133,8 +3171,8 @@ Tasks:
                 const y = 180 - h;
 
                 const grad = ctx.createLinearGradient(x, y, x, 180);
-                grad.addColorStop(0, '#002147');
-                grad.addColorStop(1, '#002147');
+                grad.addColorStop(0, '#C9A84C');
+                grad.addColorStop(1, '#C9A84C');
                 ctx.fillStyle = grad;
                 ctx.beginPath();
                 ctx.roundRect(x, y, barW, h, 4);
@@ -3824,6 +3862,121 @@ Tasks:
         }
 
         // ESCAPE HTML
+
+        // ── WHALES: interlock jobs ranked by value ─────────────────────
+        // Same price book as sales.html / save_crm_estimate.mjs (2026-11-24).
+        const WH_RELEVEL = { 8.6: 'Relevel', 9: 'Relevel + seal', 10.25: 'Relevel Premium' };
+        const WH_CLASSES = [['Whale', 8000], ['Big', 4000], ['Standard', 1500], ['Small', 0]];
+        let whLoadedQL = false;
+        function whNum(v) { return Number(String(v ?? '').replace(/[$,\s]/g, '')) || 0; }
+        function whJob(rec, from) {
+            const jd = rec.jobDetails || {};
+            const text = [rec.serviceType, ...(rec.services || []).map(x => typeof x === 'string' ? x : x?.name)].join(' ').toLowerCase();
+            let areas = Array.isArray(jd.interlock) ? jd.interlock : jd.interlock ? [jd.interlock] : [];
+            if (!areas.length && !/interlock|relevel|paver|polymeric|poly sand/.test(text)) return null;
+            let relevel = 0, poly = 0, sealer = 0, raw = 0, relevelRaw = 0, polyRaw = 0, rates = new Set(), names = [];
+            for (const a of areas) {
+                if (a.name) names.push(a.name);
+                if (a.relevelSqft !== undefined || a.polySqft !== undefined) {
+                    const rs = whNum(a.relevelSqft), ps = a.stone === 'none' ? 0 : whNum(a.polySqft), rate = Number(a.relevelRate) || 8.6;
+                    relevel += rs; poly += ps; if (a.sealer && ps) sealer += ps; if (rs) rates.add(rate);
+                    relevelRaw += rs * rate; polyRaw += ps * (Number(a.stone) || 0) + (a.sealer ? ps * 0.4 : 0);
+                } else if (a.sqft) { // older portal shape: { sqft, severity, seal }
+                    const sq = whNum(a.sqft), rate = a.seal ? 9 : 8.6;
+                    relevel += sq; rates.add(rate); relevelRaw += sq * rate;
+                }
+            }
+            raw = relevelRaw + polyRaw;
+            const sqft = relevel + poly;
+            let value = 0, type;
+            if (sqft > 0) {
+                // Job minimums, as in save_crm_estimate.mjs: $1,500 when there's relevel, else $1,200 poly-only.
+                value = raw + (relevelRaw > 0 ? Math.max(0, 1500 - relevelRaw) : Math.max(0, 1200 - polyRaw));
+                const top = Math.max(0, ...rates);
+                type = relevel ? (WH_RELEVEL[top] || 'Relevel') + (poly ? ' + poly' : '') : sealer ? 'Poly sand + sealer' : 'Poly sand';
+            } else {
+                type = 'Needs measuring';
+            }
+            const open = from === 'Sales' ? !['Closed', 'Lost'].includes(rec.status) : !['Not Interested', 'Booked'].includes(rec.callStatus);
+            const cls = sqft > 0 ? (WH_CLASSES.find(c => value >= c[1]) || WH_CLASSES[3])[0] : '';
+            return {
+                id: rec.id, from, name: rec.clientName || rec.name || '(no name)', address: rec.address || '', email: rec.email || '',
+                estimate: rec.estimateNumber || '', status: from === 'Sales' ? rec.status : rec.callStatus || 'New',
+                createdAt: rec.createdAt || '', relevel, poly, sqft, value, type, cls, open, areas: names,
+                quoted: whNum(rec.total) || whNum(rec.estimatedValue),
+            };
+        }
+        async function loadWhales(force) {
+            if ((force || !whLoadedQL) && !allQLLeads.length) {
+                try {
+                    const r = await fetch(`${API_BASE}/quick-leads`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                    const d = await r.json();
+                    if (d.success) allQLLeads = d.leads || [];
+                } catch (e) { /* Sales still ranks */ }
+            }
+            whLoadedQL = true;
+            renderWhales();
+        }
+        function whMoney(n) { return '$' + Math.round(n).toLocaleString('en-CA'); }
+        function renderWhales() {
+            const list = document.getElementById('whList');
+            if (!list) return;
+            // One row per job: a lead promoted to a sale keeps its estimate number, so prefer the Sales copy.
+            const seen = new Set(), jobs = [];
+            for (const [recs, from] of [[allLeads, 'Sales'], [allQLLeads, 'Leads']]) {
+                for (const rec of recs) {
+                    const j = whJob(rec, from);
+                    if (!j) continue;
+                    const key = j.estimate || (j.email + '|' + j.address).toLowerCase();
+                    if (key.replace('|', '') && seen.has(key)) continue;
+                    seen.add(key); jobs.push(j);
+                }
+            }
+            const q = (document.getElementById('whSearch').value || '').toLowerCase();
+            const cls = document.getElementById('whClass').value;
+            const openOnly = document.getElementById('whOpen').checked;
+            const shown = jobs
+                .filter(j => !openOnly || j.open)
+                .filter(j => cls === 'all' || (cls === 'Whale' ? j.cls === 'Whale' : ['Whale', 'Big'].includes(j.cls)))
+                .filter(j => !q || (j.name + ' ' + j.address + ' ' + j.estimate).toLowerCase().includes(q))
+                .sort((a, b) => (b.sqft > 0) - (a.sqft > 0) || b.value - a.value || b.quoted - a.quoted);
+            const measured = jobs.filter(j => j.open && j.sqft > 0);
+            const stat = (v, l) => `<div class="stat-card"><div class="stat-value">${esc(String(v))}</div><div class="stat-label">${esc(l)}</div></div>`;
+            document.getElementById('whStats').innerHTML =
+                stat(jobs.filter(j => j.open).length, 'Open interlock requests')
+                + stat(measured.filter(j => j.cls === 'Whale').length, 'Whales ($8,000+)')
+                + stat(whMoney(measured.reduce((s, j) => s + j.value, 0)), 'Open interlock value')
+                + stat(whMoney(measured.sort((a, b) => b.value - a.value).slice(0, 10).reduce((s, j) => s + j.value, 0)), 'Top 10 value')
+                + stat(jobs.filter(j => j.open && !j.sqft).length, 'Need measuring');
+            document.getElementById('whCount').textContent = `(${shown.length} of ${jobs.length})`;
+            if (!shown.length) { list.innerHTML = '<div class="empty-state">No interlock requests match.</div>'; return; }
+            let rank = 0;
+            list.innerHTML = `<table><thead><tr><th style="width:3rem">#</th><th>Client</th><th>Job</th><th style="text-align:right">Sq ft</th><th style="text-align:right">Value</th><th>Size</th><th>Status</th><th>Received</th></tr></thead><tbody>${shown.map(j => {
+                const r = j.sqft > 0 ? ++rank : '';
+                const sizeTag = j.cls === 'Whale' ? '<span class="wh-tag wh-whale">Whale</span>' : j.cls ? `<span class="wh-tag">${j.cls}</span>` : '<span class="wh-tag wh-muted">—</span>';
+                return `<tr class="wh-row${j.cls === 'Whale' ? ' wh-top' : ''}" onclick="openWhale('${esc(j.from)}','${esc(j.id)}')" style="cursor:pointer">
+                    <td class="wh-rank">${r}</td>
+                    <td><div style="font-weight:600">${esc(j.name)}</div><div style="font-size:.75rem;color:#6b7280">${esc(j.address)}${j.estimate ? ' · ' + esc(j.estimate) : ''}</div></td>
+                    <td>${esc(j.type)}${j.areas.length ? `<div style="font-size:.75rem;color:#6b7280">${esc(j.areas.join(', '))}</div>` : ''}</td>
+                    <td style="text-align:right;font-variant-numeric:tabular-nums">${j.sqft ? Math.round(j.sqft).toLocaleString('en-CA') : '—'}</td>
+                    <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${j.sqft ? whMoney(j.value) : (j.quoted ? `<span style="font-weight:400;color:#6b7280">quoted ${whMoney(j.quoted)}</span>` : '—')}</td>
+                    <td>${sizeTag}</td>
+                    <td style="font-size:.8rem">${esc(j.status || '')} <span style="color:#9ca3af">· ${esc(j.from)}</span></td>
+                    <td style="font-size:.8rem;color:#6b7280;white-space:nowrap">${j.createdAt ? esc(new Date(j.createdAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })) : ''}</td>
+                </tr>`;
+            }).join('')}</tbody></table>`;
+        }
+        function openWhale(from, id) {
+            if (from === 'Sales') {
+                const l = allLeads.find(x => x.id === id);
+                document.querySelector('.tab-btn[data-tab="leads"]').click();
+                const s = document.getElementById('searchInput'); s.value = l?.clientName || ''; s.dispatchEvent(new Event('input'));
+            } else {
+                const l = allQLLeads.find(x => x.id === id);
+                document.querySelector('.tab-btn[data-tab="salesleads"]').click();
+                setTimeout(() => { const s = document.getElementById('qlSearch'); s.value = l?.name || ''; filterQLLeads(); }, 600);
+            }
+        }
         function esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML }
 
 // == LABOUR TAB ==
