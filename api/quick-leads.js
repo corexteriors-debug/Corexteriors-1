@@ -1,5 +1,6 @@
 const { kv } = require('@vercel/kv');
 const { runFbLeadsSync } = require('./_syncFbLeads');
+const { handleCrm } = require('./_crm');
 
 const CALL_STATUSES = ['New', 'Called', 'No Answer', 'Interested', 'Not Interested', 'Booked'];
 
@@ -150,6 +151,16 @@ module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
+
+    // The agents' CRM (manager dashboard CRM tab + the Mac's sync). Does its own auth.
+    if (req.query?.kind === 'crm') {
+        try {
+            return await handleCrm(req, res, { kv });
+        } catch (err) {
+            console.error('crm error:', err);
+            return res.status(500).json({ error: 'CRM error' });
+        }
+    }
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
